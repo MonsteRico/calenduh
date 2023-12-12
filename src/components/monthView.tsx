@@ -74,13 +74,13 @@ function Day({
   const isToday = day.hasSame(today, "day");
   return (
     <div
-      className={`h-32 border-l-4 border-t-4 border-black ${
+      className={`h-32 text-3xl relative border-l-4 border-t-4 border-primary-foreground ${
         dayIsSaturday && "border-r-4"
       } ${bottomRow && "border-b-4"} ${
-        currentMonth ? "text-black" : "font-bold text-red-600"
-      } ${isToday && "bg-blue-300"}`}
+        currentMonth ? "text-primary" : "font-bold text-muted"
+      } ${isToday && "bg-blue-800"}`}
     >
-      <h2 className="absolute">{dayNumber}</h2>
+      <h2 className="absolute left-4 top-2">{dayNumber}</h2>
     </div>
   );
 }
