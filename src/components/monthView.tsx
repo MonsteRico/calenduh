@@ -1,8 +1,7 @@
 import type { DateTime } from "luxon";
-import React, { useContext, useState } from "react";
+import React, { useContext } from "react";
 import { useToday } from "~/hooks/useToday";
 
-import { Day } from "./day";
 import { DayBeingViewedContext } from "~/hooks/contexts";
 
 export default function MonthView() {
@@ -41,36 +40,7 @@ export default function MonthView() {
     .slice(0, 42);
 
   return (
-    <main className="flex flex-col">
-      <div className="flex flex-row justify-center gap-8">
-        <h2
-          onClick={() => {
-            setDayBeingViewed(dayBeingViewed.minus({ month: 1 }));
-          }}
-          className="cursor-pointer"
-        >
-          {"<"}
-        </h2>
-        <h2>
-          {dayBeingViewed.monthLong} {dayBeingViewed.year}
-        </h2>
-        <h2
-          onClick={() => {
-            setDayBeingViewed(dayBeingViewed.plus({ month: 1 }));
-          }}
-          className="cursor-pointer"
-        >
-          {">"}
-        </h2>
-        <h2
-          onClick={() => {
-            setDayBeingViewed(today);
-          }}
-          className="cursor-pointer underline"
-        >
-          Today
-        </h2>
-      </div>
+    <section className="flex flex-col">
       <div className="grid grid-cols-7">
         <h2 className="">Sunday</h2>
         <h2 className="">Monday</h2>
@@ -85,6 +55,32 @@ export default function MonthView() {
           <Day bottomRow={Math.floor(i / 7) == 5} day={day} key={day.toISO()} />
         ))}
       </div>
-    </main>
+    </section>
+  );
+}
+
+function Day({
+  day,
+  bottomRow = false,
+}: {
+  day: DateTime<true>;
+  bottomRow?: boolean;
+}) {
+  const today = useToday();
+  const dayNumber = day.day;
+  const { value: dayBeingViewed } = useContext(DayBeingViewedContext);
+  const currentMonth = dayBeingViewed.month == day.month;
+  const dayIsSaturday = day.weekday === 6;
+  const isToday = day.hasSame(today, "day");
+  return (
+    <div
+      className={`h-32 border-l-4 border-t-4 border-black ${
+        dayIsSaturday && "border-r-4"
+      } ${bottomRow && "border-b-4"} ${
+        currentMonth ? "text-black" : "font-bold text-red-600"
+      } ${isToday && "bg-blue-300"}`}
+    >
+      <h2 className="absolute">{dayNumber}</h2>
+    </div>
   );
 }
