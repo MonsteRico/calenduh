@@ -5,6 +5,7 @@ import React, { useContext, useState } from "react";
 import MonthView from "~/components/monthView";
 import { ThemeToggle } from "~/components/themeToggle";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "~/components/ui/tabs";
+import WeekView from "~/components/weekView";
 import { CurrentViewContext, DayBeingViewedContext } from "~/hooks/contexts";
 import { useToday } from "~/hooks/useToday";
 
@@ -37,7 +38,7 @@ export default function Home() {
               <MonthView />
             </TabsContent>
             <TabsContent value="week">
-              <h1>Week</h1>
+              <WeekView />
             </TabsContent>
             <TabsContent value="day">
               <h1>Day</h1>
@@ -57,7 +58,7 @@ function TopBar() {
   const { value: currentView, setValue: setCurrentView } =
     useContext(CurrentViewContext);
   return (
-    <div className="flex flex-row justify-center gap-8">
+    <div className="sticky top-0 flex flex-row justify-center gap-8 bg-background py-4">
       <h2
         onClick={() => {
           setDayBeingViewed(dayBeingViewed.minus({ month: 1 }));
