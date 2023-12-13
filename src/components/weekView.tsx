@@ -23,30 +23,14 @@ export default function WeekView() {
   ];
 
   return (
-    <section className="flex flex-row">
-      <div className="mt-[-1.4rem] flex flex-col">
-        {Array.from({ length: 24 }, (_, i) => {
-          if (i == 0)
-            return (
-              <div
-                className={`text-muted-foreground bg-background sticky top-11 flex h-24 w-24 items-end justify-end  text-center`}
-                key={i}
-              >
-                <h2 className="mr-4">All Day</h2>
-              </div>
-            );
-          return (
-            <div
-              className={`text-muted-foreground flex h-24 w-24 justify-end`}
-              key={i}
-            >
-              <h2 className="my-auto mr-4">{hours[i + 1]}</h2>
-            </div>
-          );
-        })}
-      </div>
-      <div className="flex w-full flex-col">
-        <div className="bg-background sticky top-16 grid grid-cols-7 pt-1 ">
+    <div className="flex flex-col">
+      <section className="sticky top-16 flex w-full flex-row">
+        <div
+          className={`text-muted-foreground bg-background flex w-24 items-end text-center`}
+        >
+          <h2 className="mb-1 mr-4 w-full text-right">All Day</h2>
+        </div>
+        <div className="bg-background grid w-full grid-cols-7 pt-1 ">
           {days.map((day, i) => {
             return (
               <div key={i} className="flex flex-col">
@@ -63,17 +47,39 @@ export default function WeekView() {
             );
           })}
         </div>
-        <div className="grid grid-cols-7 grid-rows-6">
-          {days.map((day, i) => (
-            <Day day={day} key={day.toISO()} />
-          ))}
+      </section>
+      <section className="flex flex-row">
+        <div className="flex flex-col">
+          {Array.from({ length: 24 }, (_, i) => {
+            if (i == 0)
+              return (
+                <div key={i}>
+                  <h2 className="mr-4"></h2>
+                </div>
+              );
+            return (
+              <div
+                className={`text-muted-foreground flex h-24 w-24 justify-end`}
+                key={i}
+              >
+                <h2 className="my-auto mr-4">{hours[i + 1]}</h2>
+              </div>
+            );
+          })}
         </div>
-      </div>
-    </section>
+        <div className="flex w-full flex-col">
+          <div className="grid grid-cols-7">
+            {days.map((day, i) => (
+              <DaysHours day={day} key={day.toISO()} />
+            ))}
+          </div>
+        </div>
+      </section>
+    </div>
   );
 }
 
-function Day({
+function DaysHours({
   day,
   bottomRow = false,
 }: {
