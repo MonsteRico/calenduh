@@ -41,7 +41,7 @@ export default function MonthView() {
 
   return (
     <section className="flex flex-col">
-      <div className="grid grid-cols-7">
+      <div className="grid grid-cols-7 text-center text-xl mb-2">
         <h2 className="">Sunday</h2>
         <h2 className="">Monday</h2>
         <h2 className="">Tuesday</h2>
