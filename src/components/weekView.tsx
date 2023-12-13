@@ -1,8 +1,11 @@
-import { DateTime } from "luxon";
-import React, { useContext } from "react";
+import { DateTime, Interval } from "luxon";
+import React, { useContext, useEffect, useState } from "react";
 import { useToday } from "~/hooks/useToday";
 
 import { DayBeingViewedContext } from "~/hooks/contexts";
+import { cn, hexToRgb } from "~/utils/utils";
+import { events } from "~/utils/testEvents";
+import { CalendarEvent } from "~/utils/types";
 
 export default function WeekView() {
   const today = useToday();
@@ -15,16 +18,13 @@ export default function WeekView() {
     startOfWeek.plus({ day: i }),
   );
 
-  const hours = [
-    "All-Day",
-    ...Array.from({ length: 24 }, (_, i) =>
-      DateTime.fromObject({ hour: i }).toLocaleString(DateTime.TIME_SIMPLE),
-    ),
-  ];
+  const fifteenMinChunks = Array.from({ length: 96 }, (_, i) =>
+    startOfWeek.plus({ minutes: i * 15 }),
+  );
 
   return (
     <div className="flex flex-col">
-      <section className="sticky top-16 flex w-full flex-row">
+      <section className="sticky top-16 z-10 flex w-full flex-row">
         <div
           className={`text-muted-foreground bg-background flex w-24 items-end text-center`}
         >
@@ -49,21 +49,25 @@ export default function WeekView() {
         </div>
       </section>
       <section className="flex flex-row">
-        <div className="flex flex-col">
-          {Array.from({ length: 24 }, (_, i) => {
-            if (i == 0)
+        <div className="grid-rows-96 grid">
+          {fifteenMinChunks.map((time, i) => {
+            if (time.minute == 0 && time.hour != 0) {
               return (
-                <div key={i}>
-                  <h2 className="mr-4"></h2>
+                <div
+                  className={`text-muted-foreground relative h-6 w-24 justify-end`}
+                  key={i}
+                >
+                  <h2 className="absolute right-4 top-[-12px]">
+                    {time.toLocaleString(DateTime.TIME_SIMPLE)}
+                  </h2>
                 </div>
               );
+            }
             return (
               <div
-                className={`text-muted-foreground flex h-24 w-24 justify-end`}
+                className={`text-muted-foreground h-6 w-24 justify-end`}
                 key={i}
-              >
-                <h2 className="my-auto mr-4">{hours[i + 1]}</h2>
-              </div>
+              ></div>
             );
           })}
         </div>
@@ -92,24 +96,94 @@ function DaysHours({
   const currentMonth = dayBeingViewed.month == day.month;
   const dayIsSaturday = day.weekday === 6;
   const isToday = day.hasSame(today, "day");
+
+  const displayedEvents: CalendarEvent[] = [];
+
   return (
     <div
-      className={`${dayIsSaturday && "border-r-4"} ${
+      className={`relative ${dayIsSaturday && "border-r-4"} ${
         bottomRow && "border-b-4"
       } ${currentMonth ? "text-primary" : "text-muted font-bold"} ${
         isToday && "bg-blue-800 bg-opacity-50"
       }`}
     >
-      {Array.from({ length: 48 }, (_, i) => {
+      {Array.from({ length: 96 }, (_, i) => {
+        const interval = Interval.fromDateTimes(
+          day.startOf("day").plus({ minutes: i * 15 }),
+          day.startOf("day").plus({ minutes: (i + 1) * 15 }),
+        );
+        return <FifteenMinBlock i={i} interval={interval} />;
+      })}
+      {events.map((event) => {
+            if (
+              !event.interval.overlaps(
+                Interval.fromDateTimes(day.startOf("day"), day.endOf("day")),
+              )
+            ) {
+              return null;
+            }
+            return <Event event={event} displayedEvents={displayedEvents} />;
+      })}
+    </div>
+  );
+}
+
+function Event({event, displayedEvents}:{event:CalendarEvent, displayedEvents:CalendarEvent[]}) {
+
+        if (!event.interval.start || !event.interval.end) {
+          return null;
+        }
+        const eventDay = event.interval.start.startOf("day");
+        const today = useToday();
+        const eventIsToday = eventDay.hasSame(today, "day");
+        const numberInConflictingRow = displayedEvents.filter((e) =>
+          e.interval.overlaps(event.interval),
+        ).length;
+        displayedEvents.push(event);
+
+        const rgb = hexToRgb(event.color)
         return (
           <div
-            className={`text-muted-foreground border     ${
-              i % 2 == 0 ? "border-t-4" : "border-t-1"
-            } h-12`}
-            key={i}
-          ></div>
+            className="absolute w-full bg-red-500 bg-opacity-50"
+            style={{
+              top: `${
+                (event.interval.start.diff(eventDay.startOf("day")).as("minutes") /
+                  15) *
+                1.5
+              }rem`,
+              height: `${
+                (event.interval.end.diff(event.interval.start).as("minutes") /
+                  15) *
+                1.5
+              }rem`,
+              width: `${(1 / (event.numConflicts + 1)) * 100}%`,
+              left: `${
+                numberInConflictingRow > 0
+                  ? (1 / (event.numConflicts + 1)) *
+                    numberInConflictingRow *
+                    100
+                  : 0
+              }%`,
+              backgroundColor: rgb ? `rgba(${rgb.r}, ${rgb.g}, ${rgb.b}, ${eventIsToday ? 0.75 : 0.5})` : event.color,
+              borderLeft: `6px solid ${event.color}`
+            }}
+          >
+            <h4 className="text-center text-sm">{event.name}</h4>
+          </div>
         );
-      })}
+}
+
+
+function FifteenMinBlock({ interval, i }: { interval: Interval; i: number }) {
+  return (
+    <div
+      className={cn(
+        "text-muted-foreground h-6",
+        i % 4 == 0 ? "border-t-4" : i % 2 == 0 ? "border-t-2" : "border-t-1", // remove this to turn off the 15 minute lines
+      )}
+      key={i}
+    >
+      
     </div>
   );
 }

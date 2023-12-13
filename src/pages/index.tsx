@@ -58,7 +58,7 @@ function TopBar() {
   const { value: currentView, setValue: setCurrentView } =
     useContext(CurrentViewContext);
   return (
-    <div className="sticky top-0 flex flex-row justify-center gap-8 bg-background py-4">
+    <div className="sticky top-0 flex flex-row justify-center gap-8 bg-background z-10 py-4">
       <h2
         onClick={() => {
           setDayBeingViewed(dayBeingViewed.minus({ month: 1 }));
