@@ -41,7 +41,7 @@ export default function MonthView() {
 
   return (
     <section className="flex flex-col">
-      <div className="grid grid-cols-7 text-center text-xl mb-2">
+      <div className="mb-2 grid grid-cols-7 text-center text-xl">
         <h2 className="">Sunday</h2>
         <h2 className="">Monday</h2>
         <h2 className="">Tuesday</h2>
@@ -74,7 +74,7 @@ function Day({
   const isToday = day.hasSame(today, "day");
   return (
     <div
-      className={`border-primary-foreground relative h-32 border-l-4 border-t-4 text-3xl ${
+      className={`relative h-32 border-l-4 border-t-4 border-primary-foreground text-3xl ${
         dayIsSaturday && "border-r-4"
       } ${bottomRow && "border-b-4"} ${
         currentMonth ? "font-bold text-primary" : "text-muted-foreground"
