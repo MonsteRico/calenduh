@@ -15,28 +15,32 @@ export default function WeekView() {
     startOfWeek.plus({ day: i }),
   );
 
-  const hours = ["All-Day", ...Array.from({ length: 24 }, (_, i) =>
-    DateTime.fromObject({ hour: i }).toLocaleString(DateTime.TIME_SIMPLE),
-  )]
+  const hours = [
+    "All-Day",
+    ...Array.from({ length: 24 }, (_, i) =>
+      DateTime.fromObject({ hour: i }).toLocaleString(DateTime.TIME_SIMPLE),
+    ),
+  ];
 
   return (
     <section className="flex flex-row">
-      <div className="mt-[-10px] flex flex-col">
+      <div className="mt-[-1.4rem] flex flex-col">
         {Array.from({ length: 24 }, (_, i) => {
-          if (i == 0) return (
-            <div
-              className={`text-muted-foreground flex h-24 w-24 justify-end text-center pb-3 items-end sticky top-11 bg-background`}
-              key={i}
-            >
-              <h2 className="mr-4">All Day</h2>
-            </div>
-          );
+          if (i == 0)
+            return (
+              <div
+                className={`text-muted-foreground bg-background sticky top-11 flex h-24 w-24 items-end justify-end  text-center`}
+                key={i}
+              >
+                <h2 className="mr-4">All Day</h2>
+              </div>
+            );
           return (
             <div
               className={`text-muted-foreground flex h-24 w-24 justify-end`}
               key={i}
             >
-              <h2 className="my-auto mr-4">{hours[i+1]}</h2>
+              <h2 className="my-auto mr-4">{hours[i + 1]}</h2>
             </div>
           );
         })}
@@ -97,9 +101,7 @@ function Day({
               i % 2 == 0 ? "border-t-4" : "border-t-1"
             } h-12`}
             key={i}
-          >
-            
-          </div>
+          ></div>
         );
       })}
     </div>
