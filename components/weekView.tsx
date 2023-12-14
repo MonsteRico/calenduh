@@ -1,10 +1,10 @@
 import { DateTime, Interval } from "luxon";
-import React, { useContext, useEffect, useState } from "react";
+import React, { use, useContext, useEffect, useState } from "react";
 import { useToday } from "~/hooks/useToday";
 
 import { DayBeingViewedContext } from "~/hooks/contexts";
 import { cn, hexToRgb } from "~/lib/utils";
-import { events } from "~/lib/testEvents";
+import { manyEvents as events } from "~/lib/testEvents";
 import { CalendarEvent } from "~/lib/types";
 
 export default function WeekView() {
@@ -75,7 +75,30 @@ function DaysHours({ day, bottomRow = false }: { day: DateTime<true>; bottomRow?
     const dayIsSaturday = day.weekday === 6;
     const isToday = day.hasSame(today, "day");
 
-    const displayedEvents: CalendarEvent[] = [];
+    const myEvents = events.filter((event) => {
+        return event.interval.overlaps(Interval.fromDateTimes(day.startOf("day"), day.endOf("day")));
+    });
+    // sort myEvents by start time
+    myEvents.sort((a, b) => {
+        if (!a.interval.start || !b.interval.start) {
+            return 0;
+        }
+        return a.interval.start.toMillis() - b.interval.start.toMillis();
+    });
+
+    // update numConflicts for each event
+    myEvents.forEach((event, i) => {
+        let numConflicts = 0;
+        myEvents.forEach((otherEvent, j) => {
+            if (i === j) {
+                return;
+            }
+            if (event.interval.overlaps(otherEvent.interval)) {
+                numConflicts++;
+            }
+        });
+        event.numConflicts = numConflicts;
+    });
 
     return (
         <div
@@ -86,21 +109,18 @@ function DaysHours({ day, bottomRow = false }: { day: DateTime<true>; bottomRow?
             {Array.from({ length: 96 }, (_, i) => {
                 const interval = Interval.fromDateTimes(
                     day.startOf("day").plus({ minutes: i * 15 }),
-                    day.startOf("day").plus({ minutes: (i + 1) * 15 }),
+                    day.startOf("day").plus({ minutes: (i + 1) * 15 })
                 );
                 return <FifteenMinBlock key={i} i={i} interval={interval} />;
             })}
-            {events.map((event, i) => {
-                if (!event.interval.overlaps(Interval.fromDateTimes(day.startOf("day"), day.endOf("day")))) {
-                    return null;
-                }
-                return <Event key={i} event={event} displayedEvents={displayedEvents} />;
+            {myEvents.map((event, i) => {
+                return <Event key={i} event={event} allEvents={myEvents} />;
             })}
         </div>
     );
 }
 
-function Event({ event, displayedEvents }: { event: CalendarEvent; displayedEvents: CalendarEvent[] }) {
+function Event({ event, allEvents }: { event: CalendarEvent; allEvents: CalendarEvent[] }) {
     const today = useToday();
 
     if (!event.interval.start || !event.interval.end) {
@@ -108,27 +128,61 @@ function Event({ event, displayedEvents }: { event: CalendarEvent; displayedEven
     }
     const eventDay = event.interval.start.startOf("day");
     const eventIsToday = eventDay.hasSame(today, "day");
-    const numberInConflictingRow = displayedEvents.filter((e) => e.interval.overlaps(event.interval)).length;
-    displayedEvents.push(event);
-
-    console.log(event.name, (1 / (event.numConflicts + 1)) * numberInConflictingRow * 100);
 
     const rgb = hexToRgb(event.color);
+
+    const currentEventIndex = allEvents.findIndex((e) => e.id === event.id);
+
+    const top = (event.interval.start.diff(eventDay.startOf("day")).as("minutes") / 15) * 1.5;
+    const height = (event.interval.end.diff(event.interval.start).as("minutes") / 15) * 1.5;
+
+    // Step 1: Filter allEvents to only include events that overlap with the current event
+    const overlappingEvents = allEvents.filter((e) => e.interval.overlaps(event.interval));
+
+    // include into overlappingEvents any events that overlap with events in overlappingEvents. Don't include duplicates
+    overlappingEvents.forEach((overlappingEvent, i) => {
+        const otherOverlappingEvents = allEvents.filter((e) => e.interval.overlaps(overlappingEvent.interval));
+        otherOverlappingEvents.forEach((otherEvent) => {
+            if (!overlappingEvents.includes(otherEvent) && otherEvent.id !== event.id) {
+                overlappingEvents.push(otherEvent);
+            }
+        });
+    });
+
+    // Step 2: Sort the overlapping events by their start time
+    overlappingEvents.sort((a, b) => {
+        if (!a.interval.start || !b.interval.start) {
+            return 0;
+        }
+        return a.interval.start.toMillis() - b.interval.start.toMillis();
+    });
+
+    // Step 3: Find the index of the current event in the sorted array of overlapping events
+    const currentEventIndexAmongConflicts = overlappingEvents.findIndex((e) => e.id === event.id);
+
+    // set numConflictsForWidth to the maximum number of conflicts among all overlapping events
+    const numConflictsForWidth = overlappingEvents.reduce((acc, e) => {
+        return Math.max(acc, e.numConflicts);
+    }, 0);
+
+    // Now you can use currentEventIndexAmongConflicts to calculate the left property
+    const left = (currentEventIndexAmongConflicts / overlappingEvents.length) * 100;
+    const width = (1 / (numConflictsForWidth + 1)) * 100;
+
+    const backgroundColor = rgb ? `rgba(${rgb.r}, ${rgb.g}, ${rgb.b}, ${eventIsToday ? 0.75 : 0.5})` : event.color;
     return (
         <div
-            className="absolute w-full bg-red-500 bg-opacity-50"
+            className="absolute w-full bg-red-500 bg-opacity-50 overflow-hidden"
             style={{
-                top: `${(event.interval.start.diff(eventDay.startOf("day")).as("minutes") / 15) * 1.5}rem`,
-                height: `${(event.interval.end.diff(event.interval.start).as("minutes") / 15) * 1.5}rem`,
-                width: `${(1 / (event.numConflicts + 1)) * 100}%`,
-                left: `${
-                    numberInConflictingRow > 0 ? (1 / (event.numConflicts + 1)) * numberInConflictingRow * 100 : 0
-                }%`,
-                backgroundColor: rgb ? `rgba(${rgb.r}, ${rgb.g}, ${rgb.b}, ${eventIsToday ? 0.75 : 0.5})` : event.color,
+                top: `${top}rem`,
+                height: `${height}rem`,
+                width: `${width}%`,
+                left: `${left}%`,
+                backgroundColor,
                 borderLeft: `6px solid ${event.color}`,
             }}
         >
-            <h4 className="text-center text-sm">{event.name}</h4>
+            <h4 className="text-center text-sm break-all">{event.name}</h4>
         </div>
     );
 }
@@ -138,7 +192,7 @@ function FifteenMinBlock({ interval, i }: { interval: Interval; i: number }) {
         <div
             className={cn(
                 "h-6 text-muted-foreground",
-                i % 4 == 0 ? "border-t-4" : i % 2 == 0 ? "border-t-2" : "border-t-1", // remove this to turn off the 15 minute lines
+                i % 4 == 0 ? "border-t-4" : i % 2 == 0 ? "border-t-2" : "border-t-1" // remove this to turn off the 15 minute lines
             )}
             key={i}
         ></div>
