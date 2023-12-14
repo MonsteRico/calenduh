@@ -3,23 +3,23 @@ import React, { useContext, useEffect, useState } from "react";
 import { useToday } from "~/hooks/useToday";
 
 import { DayBeingViewedContext } from "~/hooks/contexts";
-import { cn, hexToRgb } from "~/utils/utils";
-import { events } from "~/utils/testEvents";
-import { CalendarEvent } from "~/utils/types";
+import { cn, hexToRgb } from "~/lib/utils";
+import { events } from "~/lib/testEvents";
+import { CalendarEvent } from "~/lib/types";
 
 export default function WeekView() {
   const today = useToday();
   const { value: dayBeingViewed, setValue: setDayBeingViewed } = useContext(
-    DayBeingViewedContext,
+    DayBeingViewedContext
   );
 
   const startOfWeek = dayBeingViewed.startOf("week").minus({ day: 1 });
   const days = Array.from({ length: 7 }, (_, i) =>
-    startOfWeek.plus({ day: i }),
+    startOfWeek.plus({ day: i })
   );
 
   const fifteenMinChunks = Array.from({ length: 96 }, (_, i) =>
-    startOfWeek.plus({ minutes: i * 15 }),
+    startOfWeek.plus({ minutes: i * 15 })
   );
 
   return (
@@ -110,19 +110,21 @@ function DaysHours({
       {Array.from({ length: 96 }, (_, i) => {
         const interval = Interval.fromDateTimes(
           day.startOf("day").plus({ minutes: i * 15 }),
-          day.startOf("day").plus({ minutes: (i + 1) * 15 }),
+          day.startOf("day").plus({ minutes: (i + 1) * 15 })
         );
-        return <FifteenMinBlock i={i} interval={interval} />;
+        return <FifteenMinBlock key={i} i={i} interval={interval} />;
       })}
-      {events.map((event) => {
+      {events.map((event, i) => {
         if (
           !event.interval.overlaps(
-            Interval.fromDateTimes(day.startOf("day"), day.endOf("day")),
+            Interval.fromDateTimes(day.startOf("day"), day.endOf("day"))
           )
         ) {
           return null;
         }
-        return <Event event={event} displayedEvents={displayedEvents} />;
+        return (
+          <Event key={i} event={event} displayedEvents={displayedEvents} />
+        );
       })}
     </div>
   );
@@ -135,16 +137,19 @@ function Event({
   event: CalendarEvent;
   displayedEvents: CalendarEvent[];
 }) {
+  const today = useToday();
+
   if (!event.interval.start || !event.interval.end) {
     return null;
   }
   const eventDay = event.interval.start.startOf("day");
-  const today = useToday();
   const eventIsToday = eventDay.hasSame(today, "day");
   const numberInConflictingRow = displayedEvents.filter((e) =>
-    e.interval.overlaps(event.interval),
+    e.interval.overlaps(event.interval)
   ).length;
   displayedEvents.push(event);
+
+  console.log(event.name, (1 / (event.numConflicts + 1)) * numberInConflictingRow * 100);
 
   const rgb = hexToRgb(event.color);
   return (
@@ -182,7 +187,7 @@ function FifteenMinBlock({ interval, i }: { interval: Interval; i: number }) {
     <div
       className={cn(
         "h-6 text-muted-foreground",
-        i % 4 == 0 ? "border-t-4" : i % 2 == 0 ? "border-t-2" : "border-t-1", // remove this to turn off the 15 minute lines
+        i % 4 == 0 ? "border-t-4" : i % 2 == 0 ? "border-t-2" : "border-t-1" // remove this to turn off the 15 minute lines
       )}
       key={i}
     ></div>
