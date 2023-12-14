@@ -10,27 +10,25 @@ import { DayBeingViewedContext } from "~/hooks/contexts";
 import { useToday } from "~/hooks/useToday";
 
 export default function Home() {
-  const today = useToday();
-  const [dayBeingViewed, setDayBeingViewed] = useState<DateTime<true>>(today);
+    const today = useToday();
+    const [dayBeingViewed, setDayBeingViewed] = useState<DateTime<true>>(today);
 
-  return (
-    <DayBeingViewedContext.Provider
-      value={{ value: dayBeingViewed, setValue: setDayBeingViewed }}
-    >
-      <Tabs defaultValue="month">
-        <TopBar />
-        <main>
-          <TabsContent value="month">
-            <MonthView />
-          </TabsContent>
-          <TabsContent value="week">
-            <WeekView />
-          </TabsContent>
-          <TabsContent value="day">
-            <h1>Day</h1>
-          </TabsContent>
-        </main>
-      </Tabs>
-    </DayBeingViewedContext.Provider>
-  );
+    return (
+        <DayBeingViewedContext.Provider value={{ value: dayBeingViewed, setValue: setDayBeingViewed }}>
+            <Tabs defaultValue="month">
+                <TopBar />
+                <main>
+                    <TabsContent value="month">
+                        <MonthView />
+                    </TabsContent>
+                    <TabsContent value="week">
+                        <WeekView />
+                    </TabsContent>
+                    <TabsContent value="day">
+                        <h1>Day</h1>
+                    </TabsContent>
+                </main>
+            </Tabs>
+        </DayBeingViewedContext.Provider>
+    );
 }

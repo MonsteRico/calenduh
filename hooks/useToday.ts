@@ -3,5 +3,5 @@
 import { DateTime } from "luxon";
 
 export const useToday = () => {
-  return DateTime.now().startOf("day");
+    return DateTime.now().startOf("day");
 };
