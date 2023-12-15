@@ -4,6 +4,7 @@ import { useToday } from "~/hooks/useToday";
 
 import { DayBeingViewedContext } from "~/hooks/contexts";
 import useGetEvents from "~/hooks/useGetEvents";
+import { CalendarEvent } from "~/lib/types";
 
 export default function MonthView() {
     const today = useToday();
@@ -75,6 +76,15 @@ function Day({ day, bottomRow = false }: { day: DateTime<true>; bottomRow?: bool
             }`}
         >
             <h2 className="absolute left-4 top-2">{dayNumber}</h2>
+            <div className="flex flex-col">{events && events.map((event) => <MonthEvent key={event.id} event={event} />)}</div>
+        </div>
+    );
+}
+
+function MonthEvent({ event }: { event: CalendarEvent }) {
+    return (
+        <div className="bg-primary-foreground rounded-md">
+            <h2 className="text-sm">{event.name}</h2>
         </div>
     );
 }
