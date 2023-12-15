@@ -4,8 +4,9 @@ import { useToday } from "~/hooks/useToday";
 
 import { DayBeingViewedContext } from "~/hooks/contexts";
 import { cn, hexToRgb } from "~/lib/utils";
-import { manyEvents as events } from "~/lib/testEvents";
+import { events } from "~/lib/testEvents";
 import { CalendarEvent } from "~/lib/types";
+import { useQuery } from "react-query";
 
 export default function WeekView() {
     const today = useToday();
