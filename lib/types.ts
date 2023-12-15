@@ -3,6 +3,13 @@ export type CalendarEvent = {
     id: string;
     interval: Interval;
     name: string;
+    numConflicts?: number;
+    calendar: Calendar;
+};
+
+export type Calendar = {
+    id: string;
+    name: string;
     color: string;
-    numConflicts: number;
+    events?: CalendarEvent[];
 };

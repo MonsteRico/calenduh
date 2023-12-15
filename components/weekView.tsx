@@ -4,9 +4,9 @@ import { useToday } from "~/hooks/useToday";
 
 import { DayBeingViewedContext } from "~/hooks/contexts";
 import { cn, hexToRgb } from "~/lib/utils";
-import { events } from "~/lib/testEvents";
 import { CalendarEvent } from "~/lib/types";
 import { useQuery } from "react-query";
+import useGetEvents from "~/hooks/useGetEvents";
 
 export default function WeekView() {
     const today = useToday();
@@ -75,32 +75,28 @@ function DaysHours({ day, bottomRow = false }: { day: DateTime<true>; bottomRow?
     const currentMonth = dayBeingViewed.month == day.month;
     const dayIsSaturday = day.weekday === 6;
     const isToday = day.hasSame(today, "day");
+    const { data: events, isLoading } = useGetEvents(day, [1]);
 
-    const myEvents = events.filter((event) => {
-        return event.interval.overlaps(Interval.fromDateTimes(day.startOf("day"), day.endOf("day")));
-    });
-    // sort myEvents by start time
-    myEvents.sort((a, b) => {
-        if (!a.interval.start || !b.interval.start) {
-            return 0;
-        }
-        return a.interval.start.toMillis() - b.interval.start.toMillis();
-    });
+    if (!events && isLoading) {
+        return (
+            <div
+                className={`relative ${dayIsSaturday && "border-r-4"} ${bottomRow && "border-b-4"} ${
+                    currentMonth ? "text-primary" : "font-bold text-muted"
+                } ${isToday && "bg-blue-800 bg-opacity-50"}`}
+            >
+                {Array.from({ length: 96 }, (_, i) => {
+                    const interval = Interval.fromDateTimes(
+                        day.startOf("day").plus({ minutes: i * 15 }),
+                        day.startOf("day").plus({ minutes: (i + 1) * 15 })
+                    );
+                    return <FifteenMinBlock key={i} i={i} interval={interval} />;
+                })}
+            </div>
+        );
+    }
 
-    // update numConflicts for each event
-    myEvents.forEach((event, i) => {
-        let numConflicts = 0;
-        myEvents.forEach((otherEvent, j) => {
-            if (i === j) {
-                return;
-            }
-            if (event.interval.overlaps(otherEvent.interval)) {
-                numConflicts++;
-            }
-        });
-        event.numConflicts = numConflicts;
-    });
 
+ 
     return (
         <div
             className={`relative ${dayIsSaturday && "border-r-4"} ${bottomRow && "border-b-4"} ${
@@ -114,8 +110,8 @@ function DaysHours({ day, bottomRow = false }: { day: DateTime<true>; bottomRow?
                 );
                 return <FifteenMinBlock key={i} i={i} interval={interval} />;
             })}
-            {myEvents.map((event, i) => {
-                return <Event key={i} event={event} allEvents={myEvents} />;
+            {events && events.map((event, i) => {
+                return <Event key={i} event={event} allEvents={events} />;
             })}
         </div>
     );
@@ -130,7 +126,7 @@ function Event({ event, allEvents }: { event: CalendarEvent; allEvents: Calendar
     const eventDay = event.interval.start.startOf("day");
     const eventIsToday = eventDay.hasSame(today, "day");
 
-    const rgb = hexToRgb(event.color);
+    const rgb = hexToRgb(event.calendar.color);
 
     const currentEventIndex = allEvents.findIndex((e) => e.id === event.id);
 
@@ -163,14 +159,14 @@ function Event({ event, allEvents }: { event: CalendarEvent; allEvents: Calendar
 
     // set numConflictsForWidth to the maximum number of conflicts among all overlapping events
     const numConflictsForWidth = overlappingEvents.reduce((acc, e) => {
-        return Math.max(acc, e.numConflicts);
+        return Math.max(acc, e.numConflicts as number);
     }, 0);
 
     // Now you can use currentEventIndexAmongConflicts to calculate the left property
     const left = (currentEventIndexAmongConflicts / overlappingEvents.length) * 100;
     const width = (1 / (numConflictsForWidth + 1)) * 100;
 
-    const backgroundColor = rgb ? `rgba(${rgb.r}, ${rgb.g}, ${rgb.b}, ${eventIsToday ? 0.75 : 0.5})` : event.color;
+    const backgroundColor = rgb ? `rgba(${rgb.r}, ${rgb.g}, ${rgb.b}, ${eventIsToday ? 0.75 : 0.5})` : event.calendar.color;
     return (
         <div
             className="absolute w-full bg-red-500 bg-opacity-50 overflow-hidden"
@@ -180,10 +176,10 @@ function Event({ event, allEvents }: { event: CalendarEvent; allEvents: Calendar
                 width: `${width}%`,
                 left: `${left}%`,
                 backgroundColor,
-                borderLeft: `6px solid ${event.color}`,
+                borderLeft: `6px solid ${event.calendar.color}`,
             }}
         >
-            <h4 className="text-center text-sm break-all">{event.name}</h4>
+            <h4 className="text-center text-sm break-all">{event.name}, {event.numConflicts}</h4>
         </div>
     );
 }

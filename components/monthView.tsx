@@ -3,6 +3,7 @@ import React, { useContext } from "react";
 import { useToday } from "~/hooks/useToday";
 
 import { DayBeingViewedContext } from "~/hooks/contexts";
+import useGetEvents from "~/hooks/useGetEvents";
 
 export default function MonthView() {
     const today = useToday();
@@ -63,6 +64,8 @@ function Day({ day, bottomRow = false }: { day: DateTime<true>; bottomRow?: bool
     const currentMonth = dayBeingViewed.month == day.month;
     const dayIsSaturday = day.weekday === 6;
     const isToday = day.hasSame(today, "day");
+
+    const {data:events} = useGetEvents(day, [1]);
     return (
         <div
             className={`relative h-32 border-l-4 border-t-4 border-primary-foreground text-3xl ${
