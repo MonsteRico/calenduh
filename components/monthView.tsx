@@ -1,10 +1,14 @@
-import type { DateTime } from "luxon";
-import React, { useContext } from "react";
+import { DateTime } from "luxon";
+import React, { useContext, useEffect, useState } from "react";
 import { useToday } from "~/hooks/useToday";
 
-import { DayBeingViewedContext } from "~/hooks/contexts";
+import { DayBeingViewedContext, EnabledCalendarIdsContext } from "~/hooks/contexts";
 import useGetEvents from "~/hooks/useGetEvents";
 import { CalendarEvent } from "~/lib/types";
+import { cn } from "~/lib/utils";
+import { useQueries, useQuery } from "react-query";
+import { dbCalendarEvent } from "~/lib/schema";
+import { useGetMonthsEvents } from "~/hooks/useGetMonthsEvents";
 
 export default function MonthView() {
     const today = useToday();
@@ -20,23 +24,25 @@ export default function MonthView() {
         dayBeingViewed
             .minus({ month: 1 })
             .startOf("day")
-            .set({ day: i + 1 }),
+            .set({ day: i + 1 })
     )
         .slice(-daysBeforeFirst)
         .concat(
             Array.from({ length: dayBeingViewed.daysInMonth }, (_, i) =>
-                dayBeingViewed.startOf("day").set({ day: i + 1 }),
-            ),
+                dayBeingViewed.startOf("day").set({ day: i + 1 })
+            )
         )
         .concat(
             Array.from({ length: daysInNextMonth }, (_, i) =>
                 dayBeingViewed
                     .plus({ month: 1 })
                     .startOf("day")
-                    .set({ day: i + 1 }),
-            ).slice(0, daysAfterLast),
+                    .set({ day: i + 1 })
+            ).slice(0, daysAfterLast)
         )
         .slice(0, 42);
+
+    
 
     return (
         <section className="flex flex-col">
@@ -66,25 +72,48 @@ function Day({ day, bottomRow = false }: { day: DateTime<true>; bottomRow?: bool
     const dayIsSaturday = day.weekday === 6;
     const isToday = day.hasSame(today, "day");
 
-    const {data:events} = useGetEvents(day, [1]);
+    const { value: enabledCalendarIds } = useContext(EnabledCalendarIdsContext);
+    const { data: events, isLoading } = useGetEvents(day);
+    const [myEvents, setMyEvents] = useState<CalendarEvent[]>([]);
+
+    useEffect(() => {
+        console.log("setting my events with", enabledCalendarIds)
+        if (events) {
+            setMyEvents(events.filter((event) => enabledCalendarIds.includes(event.calendar.id)));
+        }
+    }, [events, enabledCalendarIds]);
     return (
         <div
-            className={`relative h-32 border-l-4 border-t-4 border-primary-foreground text-3xl ${
-                dayIsSaturday && "border-r-4"
-            } ${bottomRow && "border-b-4"} ${currentMonth ? "font-bold text-primary" : "text-muted-foreground"} ${
-                isToday && "bg-blue-800"
-            }`}
+            className={cn(
+                "relative h-32 border-l-4 border-t-4 border-primary-foreground text-2xl",
+                dayIsSaturday && "border-r-4",
+                bottomRow && "border-b-4",
+                currentMonth ? "font-bold text-primary" : "text-muted-foreground",
+                isToday && "text-blue-800"
+            )}
         >
             <h2 className="absolute left-4 top-2">{dayNumber}</h2>
-            <div className="flex flex-col">{events && events.map((event) => <MonthEvent key={event.id} event={event} />)}</div>
+            <div className="flex flex-col mt-8 p-2">
+                {myEvents && myEvents.slice(0, 3).map((event) => <MonthEvent key={event.id} event={event} />)}
+                {myEvents && myEvents.length > 3 && (
+                    <h2 className="text-xs text-secondary">{myEvents.length - 3} more events...</h2>
+                )}
+            </div>
         </div>
     );
 }
 
 function MonthEvent({ event }: { event: CalendarEvent }) {
     return (
-        <div className="bg-primary-foreground rounded-md">
-            <h2 className="text-sm">{event.name}</h2>
+        <div className="flex flex-row justify-between text-xs text-primary">
+            <div className="flex flex-row">
+                <div
+                    style={{ backgroundColor: event.calendar.color }}
+                    className="w-2 h-2 rounded-full mr-2 my-auto"
+                ></div>
+                <h2>{event.name}</h2>
+            </div>
+            <h2 className="text-gray-500">{event.interval.start?.toLocaleString(DateTime.TIME_SIMPLE)}</h2>
         </div>
     );
 }

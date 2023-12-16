@@ -3,10 +3,10 @@ import { useQuery } from "react-query";
 import { dbCalendar, dbCalendarEvent } from "~/lib/schema";
 import { CalendarEvent } from "~/lib/types";
 
-export default function useGetEvents(day: DateTime, calendarIds: number[]) {
-    return useQuery<CalendarEvent[], {error:string}>(["events", day, calendarIds], async () => {
+export default function useGetEvents(day: DateTime) {
+    return useQuery<CalendarEvent[], {error:string}>(["events", day], async () => {
         const response = await fetch(
-            `/api/events?month=${day.month}&day=${day.day}&year=${day.year}&calendarIds=${calendarIds.join(",")}`
+            `/api/events?month=${day.month}&day=${day.day}&year=${day.year}`
         );
         const dbEvents = (await response.json()) as (dbCalendarEvent & { calendar: dbCalendar })[];
         const events = dbEvents.map((dbEvent) => {
@@ -45,19 +45,7 @@ export default function useGetEvents(day: DateTime, calendarIds: number[]) {
             return a.interval.start.toMillis() - b.interval.start.toMillis();
         });
 
-        // update numConflicts for each event
-        events.forEach((event, i) => {
-            let numConflicts = 0;
-            events.forEach((otherEvent, j) => {
-                if (i === j) {
-                    return;
-                }
-                if (event.interval.overlaps(otherEvent.interval)) {
-                    numConflicts++;
-                }
-            });
-            event.numConflicts = numConflicts;
-        });
+
 
         return events;
     });

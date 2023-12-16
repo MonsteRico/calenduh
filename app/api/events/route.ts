@@ -11,8 +11,6 @@ export async function GET(request: NextRequest) {
     const month = searchParams.get("month");
     const day = searchParams.get("day");
     const year = searchParams.get("year");
-    const calendarIdsParam = searchParams.get("calendarIds");
-    const calendarIds = calendarIdsParam ? calendarIdsParam.split(",").map((id) => parseInt(id)) : [];
     if (!month || !day || !year) {
         return NextResponse.json(
             {
@@ -24,7 +22,7 @@ export async function GET(request: NextRequest) {
 
     const events = await db.query.calendarEvents.findMany({
         where: (events, { eq }) =>
-            and(eq(events.month, parseInt(month)), eq(events.day, parseInt(day)), eq(events.year, parseInt(year)), inArray(events.calendarId, calendarIds)),
+            and(eq(events.month, parseInt(month)), eq(events.day, parseInt(day)), eq(events.year, parseInt(year))),
         with: {
             calendar: true,
         }

@@ -3,11 +3,14 @@ import { TabsList, TabsTrigger } from "~/components/ui/tabs";
 import { ThemeToggle } from "~/components/themeToggle";
 import { useToday } from "~/hooks/useToday";
 import { useContext } from "react";
-import { DayBeingViewedContext } from "~/hooks/contexts";
+import { DayBeingViewedContext, EnabledCalendarIdsContext } from "~/hooks/contexts";
+import { Button } from "./ui/button";
 
 export default function TopBar() {
     const today = useToday();
     const { value: dayBeingViewed, setValue: setDayBeingViewed } = useContext(DayBeingViewedContext);
+    const {value: enabledCalendarIds, setValue: setEnabledCalendarIds} = useContext(EnabledCalendarIdsContext);
+
     return (
         <div className="sticky top-0 z-10 flex flex-row justify-center gap-8 bg-background py-4">
             <h2
@@ -37,6 +40,13 @@ export default function TopBar() {
             >
                 Today
             </h2>
+            <Button
+                onClick={() => {
+                    setEnabledCalendarIds(["1"]);
+                }}
+            >
+                Disable second calendar
+            </Button>
             <TabsList>
                 <TabsTrigger value="month">Month</TabsTrigger>
                 <TabsTrigger value="week">Week</TabsTrigger>
