@@ -45,8 +45,9 @@ export default function useGetEvents(day: DateTime) {
             return a.interval.start.toMillis() - b.interval.start.toMillis();
         });
 
-
-
         return events;
+    }, {
+        refetchInterval: 1000 * 30,
+        refetchIntervalInBackground: true,
     });
 }
