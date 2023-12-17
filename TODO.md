@@ -1,0 +1,3 @@
+-   Showing calendars
+-   Event pop up for info/editing
+-   Adding events

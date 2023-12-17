@@ -26,7 +26,7 @@ export async function fetchMonthsEvents(dayBeingViewed: DateTime, queryClient: Q
             day: i + 1,
             year: dayBeingViewed.year,
         });
-        queryClient.setQueryData(["events", day], convertedEvents);
+        queryClient.setQueryData(["events", day.month, day.day, day.year], convertedEvents);
     });
     return "done";
 }

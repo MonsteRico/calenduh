@@ -9,6 +9,7 @@ import { cn } from "~/lib/utils";
 import { useQueries, useQuery } from "react-query";
 import { dbCalendarEvent } from "~/lib/schema";
 import { useGetMonthsEvents } from "~/hooks/useGetMonthsEvents";
+import { MonthEvent } from "./event";
 
 export default function MonthView() {
     const today = useToday();
@@ -41,8 +42,6 @@ export default function MonthView() {
             ).slice(0, daysAfterLast)
         )
         .slice(0, 42);
-
-    
 
     return (
         <section className="flex flex-col">
@@ -77,7 +76,7 @@ function Day({ day, bottomRow = false }: { day: DateTime<true>; bottomRow?: bool
     const [myEvents, setMyEvents] = useState<CalendarEvent[]>([]);
 
     useEffect(() => {
-        console.log("setting my events with", enabledCalendarIds)
+        console.log("setting my events with", enabledCalendarIds);
         if (events) {
             setMyEvents(events.filter((event) => enabledCalendarIds.includes(event.calendar.id)));
         }
@@ -88,32 +87,23 @@ function Day({ day, bottomRow = false }: { day: DateTime<true>; bottomRow?: bool
                 "relative h-32 border-l-4 border-t-4 border-primary-foreground text-2xl",
                 dayIsSaturday && "border-r-4",
                 bottomRow && "border-b-4",
-                currentMonth ? "font-bold text-primary" : "text-muted-foreground",
                 isToday && "text-blue-800"
             )}
         >
-            <h2 className="absolute left-4 top-2">{dayNumber}</h2>
+            <h2
+                className={cn(
+                    "absolute left-4 top-2",
+                    currentMonth ? "font-bold text-primary" : "text-muted-foreground"
+                )}
+            >
+                {dayNumber}
+            </h2>
             <div className="flex flex-col mt-8 p-2">
                 {myEvents && myEvents.slice(0, 3).map((event) => <MonthEvent key={event.id} event={event} />)}
                 {myEvents && myEvents.length > 3 && (
                     <h2 className="text-xs text-secondary">{myEvents.length - 3} more events...</h2>
                 )}
             </div>
-        </div>
-    );
-}
-
-function MonthEvent({ event }: { event: CalendarEvent }) {
-    return (
-        <div className="flex flex-row justify-between text-xs text-primary">
-            <div className="flex flex-row">
-                <div
-                    style={{ backgroundColor: event.calendar.color }}
-                    className="w-2 h-2 rounded-full mr-2 my-auto"
-                ></div>
-                <h2>{event.name}</h2>
-            </div>
-            <h2 className="text-gray-500">{event.interval.start?.toLocaleString(DateTime.TIME_SIMPLE)}</h2>
         </div>
     );
 }

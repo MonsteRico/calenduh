@@ -18,7 +18,7 @@ export default function Home() {
     const [enabledCalendarIds, setEnabledCalendarIds] = useState<string[]>([]);
 
     const { data: calendars, isLoading: calendarsLoading } = useGetCalendars({});
-    const { data: monthsEvents, isLoading: eventsLoading } = useGetMonthsEvents(dayBeingViewed);
+    // const { data: monthsEvents, isLoading: eventsLoading } = useGetMonthsEvents(dayBeingViewed);
 
     useEffect(() => {
         if (calendars) {
@@ -27,25 +27,25 @@ export default function Home() {
     }, [calendars]);
 
     const queryClient = useQueryClient();
-    useEffect(() => {
-        queryClient.prefetchQuery(
-            ["events", dayBeingViewed.plus({ month: 1 }).month, dayBeingViewed.plus({ month: 1 }).year],
-            async () => {
-                await fetchMonthsEvents(dayBeingViewed.plus({ month: 1 }), queryClient);
-                return "done";
-            }
-        );
+    // useEffect(() => {
+    //     queryClient.prefetchQuery(
+    //         ["events", dayBeingViewed.plus({ month: 1 }).month, dayBeingViewed.plus({ month: 1 }).year],
+    //         async () => {
+    //             await fetchMonthsEvents(dayBeingViewed.plus({ month: 1 }), queryClient);
+    //             return "done";
+    //         }
+    //     );
 
-        queryClient.prefetchQuery(
-            ["events", dayBeingViewed.minus({ month: 1 }).month, dayBeingViewed.minus({ month: 1 }).year],
-            async () => {
-                await fetchMonthsEvents(dayBeingViewed.minus({ month: 1 }), queryClient);
-                return "done";
-            }
-        );
-    }, [dayBeingViewed, queryClient]);
+    //     queryClient.prefetchQuery(
+    //         ["events", dayBeingViewed.minus({ month: 1 }).month, dayBeingViewed.minus({ month: 1 }).year],
+    //         async () => {
+    //             await fetchMonthsEvents(dayBeingViewed.minus({ month: 1 }), queryClient);
+    //             return "done";
+    //         }
+    //     );
+    // }, [dayBeingViewed, queryClient]);
 
-    if (enabledCalendarIds.length == 0 || !monthsEvents) {
+    if (enabledCalendarIds.length == 0) {
         // TODO better loading state for whole app
         return <h1>Loading</h1>;
     }

@@ -8,6 +8,7 @@ import { CalendarEvent } from "~/lib/types";
 import { useQuery } from "react-query";
 import useGetEvents from "~/hooks/useGetEvents";
 import Color from "color";
+import { AllDayEvent, Event } from "./event";
 
 export default function WeekView() {
     const today = useToday();
@@ -22,23 +23,11 @@ export default function WeekView() {
         <div className="flex flex-col">
             <section className="sticky top-16 z-10 flex w-full flex-row">
                 <div className={`flex w-24 items-end bg-background text-center text-muted-foreground`}>
-                    <h2 className="mb-1 mr-4 w-full text-right">All Day</h2>
+                    <h2 className="my-auto mr-4 w-full text-right">All Day</h2>
                 </div>
                 <div className="grid w-full grid-cols-7 bg-background pt-1 ">
                     {days.map((day, i) => {
-                        return (
-                            <div key={i} className="flex flex-col">
-                                <div className="mb-2 flex flex-grow flex-row gap-3">
-                                    <h2 className="text-center text-2xl">{day.day}</h2>
-                                    <h2 className="my-auto text-center text-xl text-muted-foreground">
-                                        {day.weekdayLong}
-                                    </h2>
-                                </div>
-                                <div className="h-8">
-                                    <h4 className="py-2 text-center text-sm">An All-Day Event</h4>
-                                </div>
-                            </div>
-                        );
+                        return <DayHeader key={i} i={i} day={day} />;
                     })}
                 </div>
             </section>
@@ -69,6 +58,38 @@ export default function WeekView() {
     );
 }
 
+function DayHeader({ i, day }: { i: number; day: DateTime<true> }) {
+    const today = useToday();
+    const dayNumber = day.day;
+    const { value: dayBeingViewed } = useContext(DayBeingViewedContext);
+    const currentMonth = dayBeingViewed.month == day.month;
+    const dayIsSaturday = day.weekday === 6;
+    const isToday = day.hasSame(today, "day");
+    const { value: enabledCalendarIds } = useContext(EnabledCalendarIdsContext);
+    const { data: events, isLoading } = useGetEvents(day);
+    const [allDayEvents, setAllDayEvents] = useState<CalendarEvent[]>([]);
+
+    useEffect(() => {
+        if (events) {
+            setAllDayEvents(
+                events.filter((event) => enabledCalendarIds.includes(event.calendar.id)).filter((event) => event.allDay)
+            );
+        }
+    }, [events, enabledCalendarIds]);
+
+    return (
+        <div key={i} className="flex flex-col">
+            <div className="mb-2 flex flex-grow flex-row gap-3">
+                <h2 className="text-center text-2xl">{day.day}</h2>
+                <h2 className="my-auto text-center text-xl text-muted-foreground">{day.weekdayLong}</h2>
+            </div>
+            <div style={{gridTemplateColumns: "1fr auto"}} className="h-16  grid grid-cols-2 grid-rows-2">
+                {allDayEvents.map((event) => <AllDayEvent key={event.id} event={event} />)}
+            </div>
+        </div>
+    );
+}
+
 function DaysHours({ day, bottomRow = false }: { day: DateTime<true>; bottomRow?: boolean }) {
     const today = useToday();
     const dayNumber = day.day;
@@ -80,9 +101,10 @@ function DaysHours({ day, bottomRow = false }: { day: DateTime<true>; bottomRow?
     const { data: events, isLoading } = useGetEvents(day);
     const [myEvents, setMyEvents] = useState<CalendarEvent[]>([]);
 
+
     useEffect(() => {
         if (events) {
-            setMyEvents(events.filter((event) => enabledCalendarIds.includes(event.calendar.id)));
+            setMyEvents(events.filter((event) => enabledCalendarIds.includes(event.calendar.id)).filter((event) => !event.allDay));
         }
     }, [events, enabledCalendarIds]);
 
@@ -121,97 +143,6 @@ function DaysHours({ day, bottomRow = false }: { day: DateTime<true>; bottomRow?
                 myEvents.map((event, i) => {
                     return <Event key={i} event={event} allEvents={myEvents} />;
                 })}
-        </div>
-    );
-}
-
-function Event({ event, allEvents }: { event: CalendarEvent; allEvents: CalendarEvent[] }) {
-    const today = useToday();
-    const { value: enabledCalendarIds } = useContext(EnabledCalendarIdsContext);
-
-    if (!event.interval.start || !event.interval.end) {
-        return null;
-    }
-    const eventDay = event.interval.start.startOf("day");
-    const eventIsToday = eventDay.hasSame(today, "day");
-
-    const rgb = hexToRgb(event.calendar.color);
-
-    const currentEventIndex = allEvents.findIndex((e) => e.id === event.id);
-
-    const top = (event.interval.start.diff(eventDay.startOf("day")).as("minutes") / 15) * 1.5;
-    const height = (event.interval.end.diff(event.interval.start).as("minutes") / 15) * 1.5;
-
-    // Step 1: Filter allEvents to only include events that overlap with the current event
-    const overlappingEvents = allEvents
-        .filter((e) => enabledCalendarIds.includes(e.calendar.id))
-        .filter((e) => e.interval.overlaps(event.interval));
-
-    // include into overlappingEvents any events that overlap with events in overlappingEvents. Don't include duplicates
-    overlappingEvents.forEach((overlappingEvent, i) => {
-        const otherOverlappingEvents = allEvents
-            .filter((e) => enabledCalendarIds.includes(e.calendar.id))
-            .filter((e) => e.interval.overlaps(overlappingEvent.interval));
-        otherOverlappingEvents.forEach((otherEvent) => {
-            if (!overlappingEvents.includes(otherEvent) && otherEvent.id !== event.id) {
-                overlappingEvents.push(otherEvent);
-            }
-        });
-    });
-
-    // Step 2: Sort the overlapping events by their start time
-    overlappingEvents.sort((a, b) => {
-        if (!a.interval.start || !b.interval.start) {
-            return 0;
-        }
-        return a.interval.start.toMillis() - b.interval.start.toMillis();
-    });
-
-    // update numConflicts for each event
-    overlappingEvents.forEach((event, i) => {
-        let numConflicts = 0;
-        overlappingEvents.forEach((otherEvent, j) => {
-            if (i === j) {
-                return;
-            }
-            if (event.interval.overlaps(otherEvent.interval)) {
-                numConflicts++;
-            }
-        });
-        event.numConflicts = numConflicts;
-    });
-
-    // Step 3: Find the index of the current event in the sorted array of overlapping events
-    const currentEventIndexAmongConflicts = overlappingEvents.findIndex((e) => e.id === event.id);
-
-    // set numConflictsForWidth to the maximum number of conflicts among all overlapping events
-    const numConflictsForWidth = overlappingEvents.reduce((acc, e) => {
-        return Math.max(acc, e.numConflicts as number);
-    }, 0);
-
-    // Now you can use currentEventIndexAmongConflicts to calculate the left property
-    const left = (currentEventIndexAmongConflicts / overlappingEvents.length) * 100;
-    const width = (1 / (numConflictsForWidth + 1)) * 100;
-
-    const backgroundColorString = rgb ? `rgba(${rgb.r}, ${rgb.g}, ${rgb.b})` : event.calendar.color;
-    const backgroundColor = Color(backgroundColorString);
-    const borderColor = backgroundColor.darken(0.35);
-    return (
-        <div
-            className="absolute w-full overflow-hidden"
-            style={{
-                top: `${top}rem`,
-                height: `${height}rem`,
-                width: `${width}%`,
-                left: `${left}%`,
-                backgroundColor: backgroundColor.string(),
-                borderLeft: `8px solid ${borderColor.string()}`,
-                opacity: 1,
-            }}
-        >
-            <h4 className="text-center text-sm break-words">
-                {event.name}, {event.numConflicts}
-            </h4>
         </div>
     );
 }

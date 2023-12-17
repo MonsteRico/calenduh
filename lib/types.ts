@@ -3,6 +3,7 @@ export type CalendarEvent = {
     id: string;
     interval: Interval;
     name: string;
+    allDay: boolean;
     numConflicts?: number;
     calendar: Calendar;
 };

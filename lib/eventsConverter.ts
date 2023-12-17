@@ -30,6 +30,7 @@ export function eventsConverter(dbEvents: (dbCalendarEvent & { calendar: dbCalen
                 name: dbEvent.calendar.name,
                 color: dbEvent.calendar.color,
             },
+            allDay: dbEvent.allDay,
         } as CalendarEvent;
     });
 
