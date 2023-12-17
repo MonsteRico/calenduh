@@ -8,6 +8,7 @@ import { Button } from "./ui/button";
 import { useIsFetching, useQueryClient } from "react-query";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faArrowsRotate } from "@fortawesome/free-solid-svg-icons";
+import SideBar from "./sideBar";
 
 export default function TopBar() {
     const today = useToday();
@@ -16,6 +17,7 @@ export default function TopBar() {
 
     return (
         <div className="sticky top-0 z-10 flex flex-row justify-center gap-8 bg-background py-4">
+            <SideBar />
             <h2
                 onClick={() => {
                     setDayBeingViewed(dayBeingViewed.minus({ month: 1 }));

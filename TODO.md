@@ -13,7 +13,7 @@
 -   keep track of the last view you were on and automatically load into that view
     -   similarly, keep track of the last _day_ you were viewing and automatically pull that day up
 -   user preferences
-    -   theme
+    -   theme settings (for all colors? not just light/dark?)
     -   start on today or start on last day viewed
     -   default calendar for new events
 -   users
