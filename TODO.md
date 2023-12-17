@@ -1,3 +1,28 @@
 -   Showing calendars
+    -   should be in a side drawer, show list of all calendars and make them toggleable
+    -   allow creation of new calendars from here as well
+    -   allow deletion of calendars
 -   Event pop up for info/editing
+    -   shows up when you click an event
+-   day view
 -   Adding events
+    -   add via button
+    -   add via double click on day in month view
+    -   add via click and drag in week/day view
+    -   also allow you to click and drag existing events around and drag edges to change duration/start and end
+-   keep track of the last view you were on and automatically load into that view
+    -   similarly, keep track of the last _day_ you were viewing and automatically pull that day up
+-   user preferences
+    -   theme
+    -   start on today or start on last day viewed
+    -   default calendar for new events
+-   users
+    -   users are attached to calendars they create AND events they create
+    -   change every GET to first filter based on calendars the user has attached to them
+-   notifications for events coming up
+-   mobile friendlyfy
+    -   PWA stuff
+-   export as iCal? import from iCal?
+-   subscribe to iCal?
+    -   importing from iCal does not automatically add new events. either a way to subscribe to other peoples calendars in this app or to iCal format is useful
+        -   maybe it has to pull the iCal periodically to see if there are any new events to add?
