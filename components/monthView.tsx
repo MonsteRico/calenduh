@@ -6,9 +6,6 @@ import { DayBeingViewedContext, EnabledCalendarIdsContext } from "~/hooks/contex
 import useGetEvents from "~/hooks/useGetEvents";
 import { CalendarEvent } from "~/lib/types";
 import { cn } from "~/lib/utils";
-import { useQueries, useQuery } from "react-query";
-import { dbCalendarEvent } from "~/lib/schema";
-import { useGetMonthsEvents } from "~/hooks/useGetMonthsEvents";
 import { MonthEvent } from "./event";
 
 export default function MonthView() {

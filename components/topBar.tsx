@@ -5,11 +5,14 @@ import { useToday } from "~/hooks/useToday";
 import { useContext } from "react";
 import { DayBeingViewedContext, EnabledCalendarIdsContext } from "~/hooks/contexts";
 import { Button } from "./ui/button";
+import { useIsFetching, useQueryClient } from "react-query";
+import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
+import { faArrowsRotate } from "@fortawesome/free-solid-svg-icons";
 
 export default function TopBar() {
     const today = useToday();
     const { value: dayBeingViewed, setValue: setDayBeingViewed } = useContext(DayBeingViewedContext);
-    const {value: enabledCalendarIds, setValue: setEnabledCalendarIds} = useContext(EnabledCalendarIdsContext);
+    const { value: enabledCalendarIds, setValue: setEnabledCalendarIds } = useContext(EnabledCalendarIdsContext);
 
     return (
         <div className="sticky top-0 z-10 flex flex-row justify-center gap-8 bg-background py-4">
@@ -53,6 +56,19 @@ export default function TopBar() {
                 <TabsTrigger value="day">Day</TabsTrigger>
             </TabsList>
             <ThemeToggle />
+            <RefreshButton />
         </div>
     );
+}
+
+function RefreshButton() {
+    const numFetching = useIsFetching();
+    const queryClient = useQueryClient();
+    return <Button variant="ghost" onClick={() => {
+        queryClient.refetchQueries(["events"])
+    }}>
+        <FontAwesomeIcon 
+        className={numFetching > 0 ? "animate-spin" : ""}
+        icon={faArrowsRotate} />
+    </Button>;
 }
