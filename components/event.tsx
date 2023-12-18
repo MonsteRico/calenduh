@@ -8,18 +8,23 @@ import { CalendarEvent } from "~/lib/types";
 import { useQuery } from "react-query";
 import useGetEvents from "~/hooks/useGetEvents";
 import Color from "color";
+import useGetCalendar from "~/hooks/useGetCalendar";
 
 export function Event({ event, allEvents }: { event: CalendarEvent; allEvents: CalendarEvent[] }) {
+    const { data: calendar } = useGetCalendar(event.calendar.id);
+
+
     const today = useToday();
     const { value: enabledCalendarIds } = useContext(EnabledCalendarIdsContext);
 
-    if (!event.interval.start || !event.interval.end) {
+    if (!event.interval.start || !event.interval.end || !calendar) {
         return null;
     }
+    
     const eventDay = event.interval.start.startOf("day");
     const eventIsToday = eventDay.hasSame(today, "day");
 
-    const rgb = hexToRgb(event.calendar.color);
+    const rgb = hexToRgb(calendar.color);
 
     const currentEventIndex = allEvents.findIndex((e) => e.id === event.id);
 
@@ -77,7 +82,7 @@ export function Event({ event, allEvents }: { event: CalendarEvent; allEvents: C
     const left = (currentEventIndexAmongConflicts / overlappingEvents.length) * 100;
     const width = (1 / (numConflictsForWidth + 1)) * 100;
 
-    const backgroundColorString = rgb ? `rgba(${rgb.r}, ${rgb.g}, ${rgb.b})` : event.calendar.color;
+    const backgroundColorString = rgb ? `rgba(${rgb.r}, ${rgb.g}, ${rgb.b})` : calendar.color;
     const backgroundColor = Color(backgroundColorString);
     const borderColor = backgroundColor.darken(0.35);
     return (
@@ -101,9 +106,15 @@ export function Event({ event, allEvents }: { event: CalendarEvent; allEvents: C
 }
 
 export function AllDayEvent({ event }: { event: CalendarEvent }) {
-    const rgb = hexToRgb(event.calendar.color);
+    const {data:calendar} = useGetCalendar(event.calendar.id)
 
-    const backgroundColorString = rgb ? `rgba(${rgb.r}, ${rgb.g}, ${rgb.b})` : event.calendar.color;
+    if (!calendar) {
+        return null;
+    }
+
+    const rgb = hexToRgb(calendar.color);
+
+    const backgroundColorString = rgb ? `rgba(${rgb.r}, ${rgb.g}, ${rgb.b})` : calendar.color;
     const backgroundColor = Color(backgroundColorString);
     const borderColor = backgroundColor.darken(0.35);
     return (
@@ -118,11 +129,17 @@ export function AllDayEvent({ event }: { event: CalendarEvent }) {
 }
 
 export function MonthEvent({ event }: { event: CalendarEvent }) {
+        const { data: calendar } = useGetCalendar(event.calendar.id);
+
+        if (!calendar) {
+            return null;
+        }
+
     return (
         <div className="flex flex-row justify-between text-xs text-primary">
             <div className="flex flex-row">
                 <div
-                    style={{ backgroundColor: event.calendar.color }}
+                    style={{ backgroundColor: calendar.color }}
                     className="w-2 h-2 rounded-full mr-2 my-auto"
                 ></div>
                 <h2>{event.name}</h2>

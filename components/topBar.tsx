@@ -45,13 +45,6 @@ export default function TopBar() {
             >
                 Today
             </h2>
-            <Button
-                onClick={() => {
-                    setEnabledCalendarIds(["1"]);
-                }}
-            >
-                Disable second calendar
-            </Button>
             <TabsList>
                 <TabsTrigger value="month">Month</TabsTrigger>
                 <TabsTrigger value="week">Week</TabsTrigger>

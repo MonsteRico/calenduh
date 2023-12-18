@@ -1,7 +1,3 @@
--   Showing calendars
-    -   should be in a side drawer, show list of all calendars and make them toggleable
-    -   allow creation of new calendars from here as well
-    -   allow deletion of calendars
 -   Event pop up for info/editing
     -   shows up when you click an event
 -   day view
@@ -12,6 +8,7 @@
     -   also allow you to click and drag existing events around and drag edges to change duration/start and end
 -   keep track of the last view you were on and automatically load into that view
     -   similarly, keep track of the last _day_ you were viewing and automatically pull that day up
+-   unify and fix top bar
 -   user preferences
     -   theme settings (for all colors? not just light/dark?)
     -   start on today or start on last day viewed
