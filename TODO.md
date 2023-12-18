@@ -1,6 +1,7 @@
 -   Event pop up for info/editing
     -   shows up when you click an event
 -   day view
+-   events that span days
 -   Adding events
     -   add via button
     -   add via double click on day in month view

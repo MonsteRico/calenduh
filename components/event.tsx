@@ -9,10 +9,10 @@ import { useQuery } from "react-query";
 import useGetEvents from "~/hooks/useGetEvents";
 import Color from "color";
 import useGetCalendar from "~/hooks/useGetCalendar";
+import { Popover, PopoverContent, PopoverTrigger } from "./ui/popover";
 
 export function Event({ event, allEvents }: { event: CalendarEvent; allEvents: CalendarEvent[] }) {
     const { data: calendar } = useGetCalendar(event.calendar.id);
-
 
     const today = useToday();
     const { value: enabledCalendarIds } = useContext(EnabledCalendarIdsContext);
@@ -85,23 +85,30 @@ export function Event({ event, allEvents }: { event: CalendarEvent; allEvents: C
     const backgroundColorString = rgb ? `rgba(${rgb.r}, ${rgb.g}, ${rgb.b})` : calendar.color;
     const backgroundColor = Color(backgroundColorString);
     const borderColor = backgroundColor.darken(0.35);
+
+
+
     return (
-        <div
-            className="absolute w-full overflow-hidden"
-            style={{
-                top: `${top}rem`,
-                height: `${height}rem`,
-                width: `${width}%`,
-                left: `${left}%`,
-                backgroundColor: backgroundColor.string(),
-                borderLeft: `8px solid ${borderColor.string()}`,
-                opacity: 1,
-            }}
-        >
-            <h4 className="text-center text-sm break-words">
-                {event.name}, {event.numConflicts}
-            </h4>
-        </div>
+        <Popover>
+            <PopoverTrigger
+                className="absolute w-full overflow-ellipsis cursor-pointer flex"
+                style={{
+                    top: `${top}rem`,
+                    zIndex: 0,
+                    height: `${height}rem`,
+                    width: `${width}%`,
+                    left: `${left}%`,
+                    backgroundColor: backgroundColor.string(),
+                    borderLeft: `8px solid ${borderColor.string()}`,
+                    opacity: 1,
+                }}
+            >
+                    <h4 className="text-center text-sm break-words">
+                        {event.name}, {event.numConflicts}
+                    </h4>
+            </PopoverTrigger>
+            <EditEvent event={event} />
+        </Popover>
     );
 }
 
@@ -118,13 +125,21 @@ export function AllDayEvent({ event }: { event: CalendarEvent }) {
     const backgroundColor = Color(backgroundColorString);
     const borderColor = backgroundColor.darken(0.35);
     return (
-        <h4
-            key={event.id}
-            style={{ backgroundColor: backgroundColor.string(), borderLeft: `8px solid ${borderColor.string()}` }}
-            className="py-2 text-center text-xs"
-        >
-            {event.name}
-        </h4>
+        <Popover>
+            <PopoverTrigger>
+                <h4
+                    key={event.id}
+                    style={{
+                        backgroundColor: backgroundColor.string(),
+                        borderLeft: `8px solid ${borderColor.string()}`,
+                    }}
+                    className="py-2 text-center text-xs"
+                >
+                    {event.name}
+                </h4>
+            </PopoverTrigger>
+            <EditEvent event={event} />
+        </Popover>
     );
 }
 
@@ -136,17 +151,37 @@ export function MonthEvent({ event }: { event: CalendarEvent }) {
         }
 
     return (
-        <div className="flex flex-row justify-between text-xs text-primary">
-            <div className="flex flex-row">
-                <div
-                    style={{ backgroundColor: calendar.color }}
-                    className="w-2 h-2 rounded-full mr-2 my-auto"
-                ></div>
-                <h2>{event.name}</h2>
+        <Popover>
+            <PopoverTrigger>
+                <div className="flex flex-row justify-between text-xs text-primary">
+                    <div className="flex flex-row">
+                        <div
+                            style={{ backgroundColor: calendar.color }}
+                            className="w-2 h-2 rounded-full mr-2 my-auto"
+                        ></div>
+                        <h2>{event.name}</h2>
+                    </div>
+                    <h2 className="text-gray-500">
+                        {event.allDay ? "All Day" : event.interval.start?.toLocaleString(DateTime.TIME_SIMPLE)}
+                    </h2>
+                </div>
+            </PopoverTrigger>
+            <EditEvent event={event} />
+        </Popover>
+    );
+}
+
+function EditEvent({ event }: { event: CalendarEvent }) {
+    if (!event.interval.start || !event.interval.end) {
+        return null;
+    }
+    return (
+        <PopoverContent>
+            <div className="flex flex-col">
+                <h1>{event.name}</h1>
+                <h2>{event.interval.start.toLocaleString(DateTime.TIME_SIMPLE)}</h2>
+                <h2>{event.interval.end.toLocaleString(DateTime.TIME_SIMPLE)}</h2>
             </div>
-            <h2 className="text-gray-500">
-                {event.allDay ? "All Day" : event.interval.start?.toLocaleString(DateTime.TIME_SIMPLE)}
-            </h2>
-        </div>
+        </PopoverContent>
     );
 }
