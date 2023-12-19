@@ -83,14 +83,14 @@ function Day({ day, bottomRow = false }: { day: DateTime<true>; bottomRow?: bool
             className={cn(
                 "relative h-32 border-l-4 border-t-4 border-primary-foreground text-2xl",
                 dayIsSaturday && "border-r-4",
-                bottomRow && "border-b-4",
-                isToday && "text-blue-800"
+                bottomRow && "border-b-4"
             )}
         >
             <h2
                 className={cn(
                     "absolute left-4 top-2",
-                    currentMonth ? "font-bold text-primary" : "text-muted-foreground"
+                    currentMonth ? "font-bold text-primary" : "text-muted-foreground",
+                    isToday && "text-blue-800"
                 )}
             >
                 {dayNumber}

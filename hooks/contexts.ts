@@ -17,8 +17,8 @@ export const DayBeingViewedContext = React.createContext({
     },
 });
 export const EnabledCalendarIdsContext = React.createContext({
-    value: [] as string[],
-    setValue: (_value: string[]) => {
+    value: [] as number[],
+    setValue: (_value: number[]) => {
         console.log("EnabledCalendarIdsContext.setValue not implemented");
     },
 });

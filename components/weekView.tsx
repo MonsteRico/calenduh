@@ -83,8 +83,10 @@ function DayHeader({ i, day }: { i: number; day: DateTime<true> }) {
                 <h2 className="text-center text-2xl">{day.day}</h2>
                 <h2 className="my-auto text-center text-xl text-muted-foreground">{day.weekdayLong}</h2>
             </div>
-            <div style={{gridTemplateColumns: "1fr auto"}} className="h-16  grid grid-cols-2 grid-rows-2">
-                {allDayEvents.map((event) => <AllDayEvent key={event.id} event={event} />)}
+            <div style={{ gridTemplateColumns: "1fr auto" }} className="h-16  grid grid-cols-2 grid-rows-2">
+                {allDayEvents.map((event) => (
+                    <AllDayEvent key={event.id} event={event} />
+                ))}
             </div>
         </div>
     );
@@ -101,10 +103,13 @@ function DaysHours({ day, bottomRow = false }: { day: DateTime<true>; bottomRow?
     const { data: events, isLoading } = useGetEvents(day);
     const [myEvents, setMyEvents] = useState<CalendarEvent[]>([]);
 
-
     useEffect(() => {
         if (events) {
-            setMyEvents(events.filter((event) => enabledCalendarIds.includes(event.calendar.id)).filter((event) => !event.allDay));
+            setMyEvents(
+                events
+                    .filter((event) => enabledCalendarIds.includes(event.calendar.id))
+                    .filter((event) => !event.allDay)
+            );
         }
     }, [events, enabledCalendarIds]);
 
@@ -116,11 +121,7 @@ function DaysHours({ day, bottomRow = false }: { day: DateTime<true>; bottomRow?
                 } ${isToday && "bg-blue-800 bg-opacity-50"}`}
             >
                 {Array.from({ length: 96 }, (_, i) => {
-                    const interval = Interval.fromDateTimes(
-                        day.startOf("day").plus({ minutes: i * 15 }),
-                        day.startOf("day").plus({ minutes: (i + 1) * 15 })
-                    );
-                    return <FifteenMinBlock key={i} i={i} interval={interval} />;
+                    return <FifteenMinBlock key={i} i={i} />;
                 })}
             </div>
         );
@@ -137,7 +138,7 @@ function DaysHours({ day, bottomRow = false }: { day: DateTime<true>; bottomRow?
                     day.startOf("day").plus({ minutes: i * 15 }),
                     day.startOf("day").plus({ minutes: (i + 1) * 15 })
                 );
-                return <FifteenMinBlock key={i} i={i} interval={interval} />;
+                return <FifteenMinBlock key={i} i={i} />;
             })}
             {myEvents &&
                 myEvents.map((event, i) => {
@@ -147,7 +148,7 @@ function DaysHours({ day, bottomRow = false }: { day: DateTime<true>; bottomRow?
     );
 }
 
-function FifteenMinBlock({ interval, i }: { interval: Interval; i: number }) {
+function FifteenMinBlock({ i }: { i: number }) {
     return (
         <div
             className={cn(

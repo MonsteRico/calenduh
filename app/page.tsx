@@ -15,7 +15,7 @@ import { useToday } from "~/hooks/useToday";
 export default function Home() {
     const today = useToday();
     const [dayBeingViewed, setDayBeingViewed] = useState<DateTime<true>>(today);
-    const [enabledCalendarIds, setEnabledCalendarIds] = useState<string[]>([]);
+    const [enabledCalendarIds, setEnabledCalendarIds] = useState<number[]>([]);
     const [previousMonthBeingViewed, setPreviousMonthBeingViewed] = useState(dayBeingViewed.month);
 
     const { data: calendars, isLoading: calendarsLoading } = useGetCalendars({});

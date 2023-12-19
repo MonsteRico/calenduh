@@ -1,15 +1,15 @@
 import type { Interval } from "luxon";
-export type CalendarEvent = {
-    id: string;
-    interval: Interval;
-    name: string;
-    allDay: boolean;
-    numConflicts?: number;
+import { dbCalendarEvent } from "./schema";
+
+export type CalendarEvent = Omit<dbCalendarEvent, "startMonth" | "startDay" 
+| "startYear" | "endMonth" | "endDay" | "endYear" | "startTime" | "endTime"
+> & {
+    interval: Interval<true>;
     calendar: Calendar;
-};
+}
 
 export type Calendar = {
-    id: string;
+    id: number;
     name: string;
     color: string;
     events?: CalendarEvent[];

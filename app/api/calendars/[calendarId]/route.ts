@@ -2,7 +2,7 @@ import { and, eq, inArray } from "drizzle-orm";
 import { DateTime } from "luxon";
 import { NextRequest, NextResponse } from "next/server";
 import { db } from "~/lib/db";
-import { calendarEvents, calendars, recurringEvents } from "~/lib/schema";
+import { calendarEvents, calendars } from "~/lib/schema";
 
 export const dynamic = "force-dynamic"; // defaults to auto
 
@@ -81,6 +81,5 @@ export async function DELETE(request: NextRequest, { params }: { params: { calen
 
     await db.delete(calendars).where(eq(calendars.id, calendarId));
     await db.delete(calendarEvents).where(eq(calendarEvents.calendarId, calendarId));
-    await db.delete(recurringEvents).where(eq(recurringEvents.calendarId, calendarId));
     return NextResponse.json({});
 }

@@ -10,7 +10,7 @@ export default function useGetCalendars(options?: UseQueryOptions<Calendar[], { 
 
         const calendars = dbCalendars.map((dbCalendar) => {
             return {
-                id: dbCalendar.id.toString(),
+                id: dbCalendar.id,
                 name: dbCalendar.name,
                 color: dbCalendar.color,
             } as Calendar;
