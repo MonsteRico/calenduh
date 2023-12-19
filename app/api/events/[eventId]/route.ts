@@ -35,7 +35,7 @@ export async function PATCH(request: NextRequest, { params }: { params: { eventI
         endTime,
         calendarId,
         allDay,
-        daysOfWeek,
+        daysOfWeekString,
         repeatType,
     } = body as {
         title?: string;
@@ -49,7 +49,7 @@ export async function PATCH(request: NextRequest, { params }: { params: { eventI
         endTime?: string;
         calendarId?: number;
         allDay?: boolean;
-        daysOfWeek?: number[];
+        daysOfWeekString?: string;
         repeatType?: "daily" | "weekly" | "monthly" | "yearly";
     };
 
@@ -59,7 +59,7 @@ export async function PATCH(request: NextRequest, { params }: { params: { eventI
         !title &&
         !calendarId &&
         allDay === undefined &&
-        !daysOfWeek &&
+        !daysOfWeekString &&
         !repeatType &&
         !startTime &&
         !startDay &&
@@ -104,8 +104,6 @@ export async function PATCH(request: NextRequest, { params }: { params: { eventI
             );
         }
     }
-
-    const daysOfWeekString = daysOfWeek ? daysOfWeek.join(",") : null;
 
 
     await db

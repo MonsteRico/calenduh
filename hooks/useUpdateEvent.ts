@@ -8,28 +8,36 @@ export default function useUpdateEvent(event: CalendarEvent) {
         mutationFn: async ({
             title,
             eventDay,
+            startTime,
+            endTime,
             recurringEndDay,
             calendarId,
             allDay,
-            daysOfWeek,
+            daysOfWeekString,
             repeatType,
+            forceRefetch,
         }: {
             title?: string;
             eventDay?: DateTime<true>;
             recurringEndDay?: DateTime<true> | null;
             calendarId?: number;
             allDay?: boolean;
-            daysOfWeek?: number[];
+            daysOfWeekString?: string;
             repeatType?: "daily" | "weekly" | "monthly" | "yearly" | "none";
+            forceRefetch?: boolean;
+            startTime?: DateTime<true>;
+            endTime?: DateTime<true>;
         }) => {
             if (
                 !title &&
                 !eventDay &&
                 !calendarId &&
                 allDay === undefined &&
-                !daysOfWeek &&
+                !daysOfWeekString &&
                 !repeatType &&
-                !(recurringEndDay == undefined)
+                !(recurringEndDay == undefined) &&
+                !startTime &&
+                !endTime
             ) {
                 return;
             }
@@ -40,16 +48,16 @@ export default function useUpdateEvent(event: CalendarEvent) {
                     title,
                     calendarId,
                     allDay,
-                    daysOfWeek: daysOfWeek ? daysOfWeek.join(",") : undefined,
+                    daysOfWeekString,
                     repeatType,
                     startDay: eventDay?.day,
                     startMonth: eventDay?.month,
                     startYear: eventDay?.year,
-                    startTime: eventDay?.toLocaleString(DateTime.TIME_24_SIMPLE),
+                    startTime: startTime?.toLocaleString(DateTime.TIME_24_SIMPLE),
+                    endTime: endTime?.toLocaleString(DateTime.TIME_24_SIMPLE),
                     endDay: recurringEndDay?.day ?? null,
                     endMonth: recurringEndDay?.month ?? null,
                     endYear: recurringEndDay?.year ?? null,
-                    endTime: recurringEndDay?.toLocaleString(DateTime.TIME_24_SIMPLE),
                 }),
             });
             return res.json();
@@ -63,7 +71,8 @@ export default function useUpdateEvent(event: CalendarEvent) {
                 newEventData.repeatType != event.repeatType ||
                 !newEventData.recurringEndDay?.hasSame(event.interval.end, "day") ||
                 !newEventData.recurringEndDay?.hasSame(event.interval.end, "month") ||
-                !newEventData.recurringEndDay?.hasSame(event.interval.end, "year")
+                !newEventData.recurringEndDay?.hasSame(event.interval.end, "year") ||
+                newEventData.forceRefetch
             ) {
                 return;
             }
@@ -87,10 +96,11 @@ export default function useUpdateEvent(event: CalendarEvent) {
                 }
                 return old.map((c) => {
                     if (c.id === event.id) {
+                        console.log("updating event", c, newEventData);
                         return {
                             ...c,
                             ...newEventData,
-                            daysOfWeek: newEventData.daysOfWeek ? newEventData.daysOfWeek.join(",") : "",
+                            daysOfWeek: newEventData.daysOfWeekString ?? c.daysOfWeek,
                         };
                     }
                     return c;
@@ -116,7 +126,7 @@ export default function useUpdateEvent(event: CalendarEvent) {
                             return {
                                 ...c,
                                 ...newEventData,
-                                daysOfWeek: newEventData.daysOfWeek ? newEventData.daysOfWeek.join(",") : "",
+                                daysOfWeek: newEventData.daysOfWeekString ?? c.daysOfWeek,
                             };
                         }
                         return c;
@@ -128,7 +138,7 @@ export default function useUpdateEvent(event: CalendarEvent) {
                 return {
                     ...event,
                     ...newEventData,
-                    daysOfWeek: newEventData.daysOfWeek ? newEventData.daysOfWeek.join(",") : "",
+                    daysOfWeek: newEventData.daysOfWeekString ?? event.daysOfWeek,
                 };
             });
 
@@ -165,13 +175,27 @@ export default function useUpdateEvent(event: CalendarEvent) {
             ]);
             queryClient.invalidateQueries(["events", event.id]);
             if (
+                data.forceRefetch ||
                 data.repeatType != event.repeatType ||
                 !data.recurringEndDay?.hasSame(event.interval.end, "day") ||
                 !data.recurringEndDay?.hasSame(event.interval.end, "month") ||
                 !data.recurringEndDay?.hasSame(event.interval.end, "year")
             ) {
-                queryClient.invalidateQueries("events");
+                console.log("invalidating quries");
+                queryClient.invalidateQueries();
             }
         },
     });
+}
+
+function areArraysEqual(arr1: string[] | undefined, arr2: string[] | undefined) {
+    if (!arr1 || !arr2) {
+        return false;
+    }
+    if (arr1.length !== arr2.length) {
+        return false;
+    }
+    const sortedArr1 = [...arr1].sort();
+    const sortedArr2 = [...arr2].sort();
+    return sortedArr1.every((a, i) => a === sortedArr2[i]);
 }

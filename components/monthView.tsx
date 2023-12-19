@@ -73,7 +73,6 @@ function Day({ day, bottomRow = false }: { day: DateTime<true>; bottomRow?: bool
     const [myEvents, setMyEvents] = useState<CalendarEvent[]>([]);
 
     useEffect(() => {
-        console.log("setting my events with", enabledCalendarIds);
         if (events) {
             setMyEvents(events.filter((event) => enabledCalendarIds.includes(event.calendar.id)));
         }
