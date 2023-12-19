@@ -47,6 +47,11 @@ export async function GET(request: NextRequest) {
     });
 
     recurringEvents.forEach((recurringEvent) => {
+        const daysTurnedOffIsos = recurringEvent.daysTurnedOff.split(",");
+        if (daysTurnedOffIsos.includes(thisDay.toISODate())) {
+            return;
+        }
+
         const startDate = DateTime.fromObject({
             month: recurringEvent.startMonth,
             day: recurringEvent.startDay,

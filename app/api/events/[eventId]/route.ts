@@ -23,24 +23,23 @@ export async function GET(request: NextRequest, { params }: { params: { eventId:
 export async function PATCH(request: NextRequest, { params }: { params: { eventId: string } }) {
     const eventId = parseInt(params.eventId);
     const body = await request.json();
-    const { title, interval, calendarId, allDay, daysOfWeek, repeatType } = (await body.value) as {
+    const { title, interval, calendarId, allDay, daysOfWeek, repeatType, daysTurnedOff } = (await body.value) as {
         title?: string;
         interval?: Interval;
         calendarId?: number;
         allDay?: boolean;
         daysOfWeek?: number[];
         repeatType?: "daily" | "weekly" | "monthly" | "yearly";
+        daysTurnedOff?: DateTime[];
     };
     if (!title && !interval && !calendarId && allDay === undefined && !daysOfWeek && !repeatType) {
         return NextResponse.json(
             {
-                error: "title, interval, allDay, or calendarId are required",
+                error: "title, interval, allDay, daysOfWeek, repeatType, daysTurnedOff, or calendarId required",
             },
             { status: 400 }
         );
     }
-
-
 
     const startTime = interval ? interval.start?.toLocaleString(DateTime.TIME_24_SIMPLE) : null;
     const endTime = interval ? interval.end?.toLocaleString(DateTime.TIME_24_SIMPLE) : null;
@@ -80,6 +79,8 @@ export async function PATCH(request: NextRequest, { params }: { params: { eventI
 
     const daysOfWeekString = daysOfWeek ? daysOfWeek.join(",") : null;
 
+    const daysTurnedOffString = daysTurnedOff ? daysTurnedOff.map((day) => day.toISODate()).join(",") : null;
+
     await db
         .update(calendarEvents)
         .set({
@@ -96,6 +97,7 @@ export async function PATCH(request: NextRequest, { params }: { params: { eventI
             allDay: allDay ?? originalEvent.allDay,
             daysOfWeek: daysOfWeekString ?? originalEvent.daysOfWeek,
             repeatType: repeatType ?? originalEvent.repeatType,
+            daysTurnedOff: daysTurnedOffString ?? originalEvent.daysTurnedOff,
         })
         .where(eq(calendarEvents.id, eventId));
 
@@ -111,6 +113,7 @@ export async function PATCH(request: NextRequest, { params }: { params: { eventI
 
 // DELETE /api/events/[eventId]
 // delete event by id
+// if day, month, and year query params are provided, it will instead turn off the event for that day (for toggling recurring events without deleting all instances)
 export async function DELETE(request: NextRequest, { params }: { params: { eventId: string } }) {
     const eventId = parseInt(params.eventId);
     const event = await db.query.calendarEvents.findFirst({
@@ -124,6 +127,31 @@ export async function DELETE(request: NextRequest, { params }: { params: { event
             },
             { status: 404 }
         );
+    }
+
+    const searchParams = request.nextUrl.searchParams;
+    if (searchParams.get("day") && searchParams.get("month") && searchParams.get("year")) {
+        const day = parseInt(searchParams.get("day") as string);
+        const month = parseInt(searchParams.get("month") as string);
+        const year = parseInt(searchParams.get("year") as string);
+
+        const date = DateTime.fromObject({
+            day,
+            month,
+            year,
+        }) as DateTime<true>;
+
+        const daysTurnedOff = event.daysTurnedOff.split(",");
+        daysTurnedOff.push(date.toISODate());
+
+        await db
+            .update(calendarEvents)
+            .set({
+                daysTurnedOff: daysTurnedOff.join(","),
+            })
+            .where(eq(calendarEvents.id, eventId));
+
+        return NextResponse.json({ ...event, daysTurnedOff: daysTurnedOff.join(",") });
     }
 
     await db.delete(calendarEvents).where(eq(calendarEvents.id, eventId));

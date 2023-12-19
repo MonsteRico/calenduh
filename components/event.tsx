@@ -18,8 +18,9 @@ import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigge
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faCaretDown } from "@fortawesome/free-solid-svg-icons";
 import useGetCalendars from "~/hooks/useGetCalendars";
+import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from "./ui/alert-dialog";
 
-export function Event({ event, allEvents }: { event: CalendarEvent; allEvents: CalendarEvent[] }) {
+export function Event({ event, allEvents, dayItsOn }: { event: CalendarEvent; allEvents: CalendarEvent[], dayItsOn: DateTime }) {
     const { data: calendar } = useGetCalendar(event.calendar.id);
     console.log(allEvents)
     const today = useToday();
@@ -113,12 +114,12 @@ export function Event({ event, allEvents }: { event: CalendarEvent; allEvents: C
                     {event.title}, {event.numConflicts}
                 </h4>
             </PopoverTrigger>
-            <ViewEvent event={event} />
+            <ViewEvent event={event} dayItsOn={dayItsOn} />
         </Popover>
     );
 }
 
-export function AllDayEvent({ event }: { event: CalendarEvent }) {
+export function AllDayEvent({ event, dayItsOn }: { event: CalendarEvent; dayItsOn: DateTime }) {
     const { data: calendar } = useGetCalendar(event.calendar.id);
 
     if (!calendar) {
@@ -144,12 +145,12 @@ export function AllDayEvent({ event }: { event: CalendarEvent }) {
                     {event.title}
                 </h4>
             </PopoverTrigger>
-            <ViewEvent event={event} />
+            <ViewEvent event={event} dayItsOn={dayItsOn} />
         </Popover>
     );
 }
 
-export function MonthEvent({ event }: { event: CalendarEvent }) {
+export function MonthEvent({ event, dayItsOn }: { event: CalendarEvent; dayItsOn: DateTime }) {
     const { data: calendar } = useGetCalendar(event.calendar.id);
 
     if (!calendar) {
@@ -172,68 +173,106 @@ export function MonthEvent({ event }: { event: CalendarEvent }) {
                     </h2>
                 </div>
             </PopoverTrigger>
-            <ViewEvent event={event} />
+            <ViewEvent event={event} dayItsOn={dayItsOn} />
         </Popover>
     );
 }
 
 // Only for normal events, not recurring events
-function ViewEvent({ event }: { event: CalendarEvent }) {
+function ViewEvent({ event, dayItsOn }: { event: CalendarEvent; dayItsOn: DateTime }) {
     const updateEvent = useUpdateEvent(event);
     const deleteEvent = useDeleteEvent(event);
     const { data: calendars } = useGetCalendars();
-
+    const [deleteAlertOpen, setDeleteAlertOpen] = useState(false);
     if (!event.interval.start || !event.interval.end || !calendars) {
         return null;
     }
     return (
-        <PopoverContent className="">
-            <div className="flex flex-row justify-between">
-                <h2 className="font-bold text-xl text-primary my-auto">{event.title}</h2>
-                <Button variant={"link"} className="text-blue-500 my-auto">
-                    Edit
-                </Button>
-            </div>
-            <hr className="my-3"></hr>
-            <div className="flex flex-col text-sm">
-                <h3 className="text-muted-foreground">{event.interval.start.toLocaleString(DateTime.DATE_HUGE)}</h3>
-                <h3 className="text-muted-foreground">{event.interval.toLocaleString(DateTime.TIME_SIMPLE)}</h3>
-            </div>
-            <hr className="my-3"></hr>
+        <>
+            <PopoverContent className="">
+                <div className="flex flex-row justify-between">
+                    <h2 className="font-bold text-xl text-primary my-auto">{event.title}</h2>
+                    <Button variant={"link"} className="text-blue-500 my-auto">
+                        Edit
+                    </Button>
+                </div>
+                <hr className="my-3"></hr>
+                <div className="flex flex-col text-sm">
+                    <h3 className="text-muted-foreground">{event.interval.start.toLocaleString(DateTime.DATE_HUGE)}</h3>
+                    <h3 className="text-muted-foreground">{event.interval.toLocaleString(DateTime.TIME_SIMPLE)}</h3>
+                </div>
+                <hr className="my-3"></hr>
 
-            <div className="flex flex-row justify-between">
-                <Label className=" my-auto">Calendar</Label>
-                <DropdownMenu>
-                    <DropdownMenuTrigger className="text-sm flex flex-row text-muted-foreground">
-                        <div
-                            style={{ backgroundColor: event.calendar.color }}
-                            className="w-3 h-3 rounded-full my-auto"
-                        ></div>
-                        <h3 className="text-ellipsis px-2 overflow-hidden">{event.calendar.name}</h3>
-                        <FontAwesomeIcon icon={faCaretDown} className="my-auto" />
-                    </DropdownMenuTrigger>
-                    <DropdownMenuContent>
-                        {calendars.map((calendar) => {
-                            return (
-                                <DropdownMenuItem key={calendar.id} className="flex flex-row">
-                                    <div
-                                        style={{ backgroundColor: calendar.color }}
-                                        className="w-3 h-3 rounded-full my-auto"
-                                    ></div>
-                                    <h3 className="text-ellipsis px-2 overflow-hidden">{calendar.name}</h3>
-                                </DropdownMenuItem>
-                            );
-                        })}
-                    </DropdownMenuContent>
-                </DropdownMenu>
-            </div>
-            <hr className="my-3"></hr>
-            <Button variant="destructive" onClick={() => {
-                deleteEvent.mutate();
-                // TODO bubble burst animation would be cool
-            }} className="w-full">
-                Delete Event
-            </Button>
-        </PopoverContent>
+                <div className="flex flex-row justify-between">
+                    <Label className=" my-auto">Calendar</Label>
+                    <DropdownMenu>
+                        <DropdownMenuTrigger className="text-sm flex flex-row text-muted-foreground">
+                            <div
+                                style={{ backgroundColor: event.calendar.color }}
+                                className="w-3 h-3 rounded-full my-auto"
+                            ></div>
+                            <h3 className="text-ellipsis px-2 overflow-hidden">{event.calendar.name}</h3>
+                            <FontAwesomeIcon icon={faCaretDown} className="my-auto" />
+                        </DropdownMenuTrigger>
+                        <DropdownMenuContent>
+                            {calendars.map((calendar) => {
+                                return (
+                                    <DropdownMenuItem key={calendar.id} className="flex flex-row">
+                                        <div
+                                            style={{ backgroundColor: calendar.color }}
+                                            className="w-3 h-3 rounded-full my-auto"
+                                        ></div>
+                                        <h3 className="text-ellipsis px-2 overflow-hidden">{calendar.name}</h3>
+                                    </DropdownMenuItem>
+                                );
+                            })}
+                        </DropdownMenuContent>
+                    </DropdownMenu>
+                </div>
+                <hr className="my-3"></hr>
+                <Button
+                    variant="destructive"
+                    onClick={() => {
+                        if (event.repeatType === "none") {
+                        deleteEvent.mutate({});
+                        }
+                        else {
+                            setDeleteAlertOpen(true);
+                        }
+                        // TODO bubble burst animation would be cool
+                    }}
+                    className="w-full"
+                >
+                    Delete Event
+                </Button>
+            </PopoverContent>
+            <AlertDialog open={deleteAlertOpen} onOpenChange={setDeleteAlertOpen}>
+                <AlertDialogContent>
+                    <AlertDialogHeader>
+                        <AlertDialogTitle>Delete all instances of event or just this one?</AlertDialogTitle>
+                    </AlertDialogHeader>
+                    <AlertDialogFooter>
+                        <AlertDialogAction
+                            onClick={() => {
+                                deleteEvent.mutate({date: dayItsOn})
+                                setDeleteAlertOpen(false);
+                            }}
+                            className="bg-red-500 hover:bg-red-800 transition-all duration-300"
+                        >
+                            Delete Only This Instance
+                        </AlertDialogAction>
+                        <AlertDialogAction
+                            onClick={() => {
+                                deleteEvent.mutate({});
+                                setDeleteAlertOpen(false);
+                            }}
+                            className="bg-red-500 hover:bg-red-800 transition-all duration-300"
+                        >
+                            Delete All Instances
+                        </AlertDialogAction>
+                    </AlertDialogFooter>
+                </AlertDialogContent>
+            </AlertDialog>
+        </>
     );
 }

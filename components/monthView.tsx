@@ -96,7 +96,7 @@ function Day({ day, bottomRow = false }: { day: DateTime<true>; bottomRow?: bool
                 {dayNumber}
             </h2>
             <div className="flex flex-col mt-8 p-2">
-                {myEvents && myEvents.slice(0, 3).map((event) => <MonthEvent key={event.id} event={event} />)}
+                {myEvents && myEvents.slice(0, 3).map((event) => <MonthEvent key={event.id} event={event} dayItsOn={day} />)}
                 {myEvents && myEvents.length > 3 && (
                     <h2 className="text-xs text-secondary">{myEvents.length - 3} more events...</h2>
                 )}

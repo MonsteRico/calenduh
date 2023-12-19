@@ -2,7 +2,7 @@ import type { Interval } from "luxon";
 import { dbCalendarEvent } from "./schema";
 
 export type CalendarEvent = Omit<dbCalendarEvent, "startMonth" | "startDay" 
-| "startYear" | "endMonth" | "endDay" | "endYear" | "startTime" | "endTime"
+| "startYear" | "endMonth" | "endDay" | "endYear" | "startTime" | "endTime" | "daysTurnedOff"
 > & {
     interval: Interval<true>;
     calendar: Calendar;

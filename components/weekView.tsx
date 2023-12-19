@@ -85,7 +85,7 @@ function DayHeader({ i, day }: { i: number; day: DateTime<true> }) {
             </div>
             <div style={{ gridTemplateColumns: "1fr auto" }} className="h-16  grid grid-cols-2 grid-rows-2">
                 {allDayEvents.map((event) => (
-                    <AllDayEvent key={event.id} event={event} />
+                    <AllDayEvent key={event.id} event={event} dayItsOn={day} />
                 ))}
             </div>
         </div>
@@ -142,7 +142,7 @@ function DaysHours({ day, bottomRow = false }: { day: DateTime<true>; bottomRow?
             })}
             {myEvents &&
                 myEvents.map((event, i) => {
-                    return <Event key={i} event={event} allEvents={myEvents} />;
+                    return <Event key={i} event={event} allEvents={myEvents} dayItsOn={day} />;
                 })}
         </div>
     );

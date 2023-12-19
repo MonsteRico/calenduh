@@ -1,4 +1,4 @@
-import { boolean, int, mysqlEnum, mysqlTable, serial, varchar } from "drizzle-orm/mysql-core";
+import { boolean, int, mysqlEnum, mysqlTable, serial, text, varchar } from "drizzle-orm/mysql-core";
 import { relations } from "drizzle-orm";
 
 export const calendars = mysqlTable("calendars", {
@@ -27,6 +27,7 @@ export const calendarEvents = mysqlTable("calendar_events", {
     daysOfWeek: varchar("days_of_week", { length: 255 }).notNull().default("1,2,3,4,5"), // 1 = monday, 2 = tuesday, etc so 7 = sunday and 6 = saturday
     repeatType: mysqlEnum("repeatType", ["daily", "weekly", "monthly", "yearly", "none"]).notNull().default("none"),
     numConflicts: int("num_conflicts").default(0), // This value is never actually properly stored in the database, its more here for the typescript type
+    daysTurnedOff: text("days_turned_off").notNull().default(""),
 });
 
 export const calendarEventsRelations = relations(calendarEvents, ({ one }) => ({
