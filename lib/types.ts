@@ -1,4 +1,4 @@
-import type { Interval } from "luxon";
+import type { DateTime, Interval } from "luxon";
 import { dbCalendarEvent } from "./schema";
 
 export type CalendarEvent = Omit<dbCalendarEvent, "startMonth" | "startDay" 
@@ -6,6 +6,7 @@ export type CalendarEvent = Omit<dbCalendarEvent, "startMonth" | "startDay"
 > & {
     interval: Interval<true>;
     calendar: Calendar;
+    recurringEndDay?: DateTime<true> | null;
 }
 
 export type Calendar = {

@@ -19,36 +19,64 @@ export async function GET(request: NextRequest, { params }: { params: { eventId:
 }
 
 // PATCH /api/events/[eventId]
-// update event by id, takes title, interval, allDay, daysOfWeek (an array of numbers), repeatType, and calendarId as body
+// update event by id, takes title, interval, allDay, repeatType, daysOfWeek, and calendarId as body
 export async function PATCH(request: NextRequest, { params }: { params: { eventId: string } }) {
     const eventId = parseInt(params.eventId);
     const body = await request.json();
-    const { title, interval, calendarId, allDay, daysOfWeek, repeatType, daysTurnedOff } = (await body.value) as {
+    const {
+        title,
+        startDay,
+        startMonth,
+        startYear,
+        startTime,
+        endDay,
+        endMonth,
+        endYear,
+        endTime,
+        calendarId,
+        allDay,
+        daysOfWeek,
+        repeatType,
+    } = body as {
         title?: string;
-        interval?: Interval;
+        startDay?: number;
+        startMonth?: number;
+        startYear?: number;
+        startTime?: string;
+        endDay?: number;
+        endMonth?: number;
+        endYear?: number;
+        endTime?: string;
         calendarId?: number;
         allDay?: boolean;
         daysOfWeek?: number[];
         repeatType?: "daily" | "weekly" | "monthly" | "yearly";
-        daysTurnedOff?: DateTime[];
     };
-    if (!title && !interval && !calendarId && allDay === undefined && !daysOfWeek && !repeatType) {
+
+    console.log("body", body);
+
+    if (
+        !title &&
+        !calendarId &&
+        allDay === undefined &&
+        !daysOfWeek &&
+        !repeatType &&
+        !startTime &&
+        !startDay &&
+        !startMonth &&
+        !startYear &&
+        !endTime &&
+        endDay !== undefined &&
+        endMonth !== undefined &&
+        endYear !== undefined
+    ) {
         return NextResponse.json(
             {
-                error: "title, interval, allDay, daysOfWeek, repeatType, daysTurnedOff, or calendarId required",
+                error: "no data provided",
             },
             { status: 400 }
         );
     }
-
-    const startTime = interval ? interval.start?.toLocaleString(DateTime.TIME_24_SIMPLE) : null;
-    const endTime = interval ? interval.end?.toLocaleString(DateTime.TIME_24_SIMPLE) : null;
-    const startMonth = interval ? interval.start?.month : null;
-    const startDay = interval ? interval.start?.day : null;
-    const startYear = interval ? interval.start?.year : null;
-    const endMonth = interval ? interval.end?.month : null;
-    const endDay = interval ? interval.end?.day : null;
-    const endYear = interval ? interval.end?.year : null;
 
     const originalEvent = await db.query.calendarEvents.findFirst({
         where: (calendarEvents, { eq }) => eq(calendarEvents.id, eventId),
@@ -79,7 +107,6 @@ export async function PATCH(request: NextRequest, { params }: { params: { eventI
 
     const daysOfWeekString = daysOfWeek ? daysOfWeek.join(",") : null;
 
-    const daysTurnedOffString = daysTurnedOff ? daysTurnedOff.map((day) => day.toISODate()).join(",") : null;
 
     await db
         .update(calendarEvents)
@@ -90,14 +117,13 @@ export async function PATCH(request: NextRequest, { params }: { params: { eventI
             startMonth: startMonth ?? originalEvent.startMonth,
             startDay: startDay ?? originalEvent.startDay,
             startYear: startYear ?? originalEvent.startYear,
-            endMonth: endMonth ?? originalEvent.endMonth,
-            endDay: endDay ?? originalEvent.endDay,
-            endYear: endYear ?? originalEvent.endYear,
+            endMonth: endMonth ?? null,
+            endDay: endDay ?? null,
+            endYear: endYear ?? null,
             calendarId: calendarId ?? originalEvent.calendarId,
             allDay: allDay ?? originalEvent.allDay,
             daysOfWeek: daysOfWeekString ?? originalEvent.daysOfWeek,
             repeatType: repeatType ?? originalEvent.repeatType,
-            daysTurnedOff: daysTurnedOffString ?? originalEvent.daysTurnedOff,
         })
         .where(eq(calendarEvents.id, eventId));
 
