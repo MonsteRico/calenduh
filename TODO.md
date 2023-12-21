@@ -2,7 +2,6 @@ TODO
 -   fix styling for time inputs
 -   events that span days
 -   Adding events
-    -   add via button
     -   add via double click on day in month view
     -   add via click and drag in week/day view
     -   also allow you to click and drag existing events around and drag edges to change duration/start and end
