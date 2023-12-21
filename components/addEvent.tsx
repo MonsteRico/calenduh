@@ -37,14 +37,18 @@ import { toast, useToast } from "./ui/use-toast";
 import useCreateEvent from "~/hooks/useCreateEvent";
 import TimePicker from "react-time-picker";
 
-export default function CreateEvent({ popoverOpen }: { popoverOpen: boolean }) {
+export default function CreateEvent({ popoverOpen, day,  }: { popoverOpen: boolean, day?: DateTime,  }) {
+        const today = useToday();
+
+
     const defaultEvent: CalendarEvent = useMemo(() => {
         return {
             id: -1,
             title: "New Event",
             interval: Interval.fromDateTimes(
-                DateTime.local().set({ minute: 0 }),
-                DateTime.local().set({ minute: 0 }).plus({ hour: 1 })
+                day?.set({ hour: DateTime.now().hour, minute: 0 }) ?? DateTime.local().set({ minute: 0 }),
+                day?.set({ hour: DateTime.now().hour, minute: 0 }).plus({ hour: 1 }) ??
+                    DateTime.local().set({ minute: 0 }).plus({ hour: 1 })
             ) as Interval<true>,
             allDay: false,
             calendar: {
@@ -60,9 +64,10 @@ export default function CreateEvent({ popoverOpen }: { popoverOpen: boolean }) {
         };
     }, []);
 
+    console.log(defaultEvent.interval.toISO())
+
     const { data: calendars } = useGetCalendars();
     const createEvent = useCreateEvent();
-    const today = useToday();
     const [title, setTitle] = useState(defaultEvent.title);
     const [eventDate, setEventDate] = useState<Date | undefined>(today.toJSDate());
     const [myCalendar, setMyCalendar] = useState(defaultEvent.calendar);
@@ -73,9 +78,9 @@ export default function CreateEvent({ popoverOpen }: { popoverOpen: boolean }) {
     const [daysOfWeekString, setDaysOfWeekString] = useState(defaultEvent.daysOfWeek);
     const [allDay, setAllDay] = useState(defaultEvent.allDay);
     const [startTimeString, setStartTimeString] = useState(
-        defaultEvent.interval.start.toLocaleString(DateTime.TIME_SIMPLE)
+        defaultEvent.interval.start.toLocaleString(DateTime.TIME_24_SIMPLE)
     );
-    const [endTimeString, setEndTimeString] = useState(defaultEvent.interval.end.toLocaleString(DateTime.TIME_SIMPLE));
+    const [endTimeString, setEndTimeString] = useState(defaultEvent.interval.end.toLocaleString(DateTime.TIME_24_SIMPLE));
     const [startTime, setStartTime] = useState(defaultEvent.interval.start);
     const [endTime, setEndTime] = useState(defaultEvent.interval.end);
 
@@ -97,7 +102,7 @@ export default function CreateEvent({ popoverOpen }: { popoverOpen: boolean }) {
 
     return (
         <>
-            <PopoverContent className="">
+            <PopoverContent>
                 {
                     // Title
                 }
@@ -154,7 +159,7 @@ export default function CreateEvent({ popoverOpen }: { popoverOpen: boolean }) {
                                         variant: "destructive",
                                     });
                                 }}
-                                value={startTimeString}
+                                value={startTimeString + ":00"}
                             />
                         </div>
                         <hr className="my-3" />
@@ -190,7 +195,7 @@ export default function CreateEvent({ popoverOpen }: { popoverOpen: boolean }) {
                                         variant: "destructive",
                                     });
                                 }}
-                                value={endTimeString}
+                                value={endTimeString + ":00"}
                             />
                         </div>
                         <hr className="my-3" />

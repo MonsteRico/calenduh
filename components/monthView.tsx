@@ -7,6 +7,8 @@ import useGetEvents from "~/hooks/useGetEvents";
 import { CalendarEvent } from "~/lib/types";
 import { cn } from "~/lib/utils";
 import { MonthEvent } from "./event";
+import { Popover, PopoverTrigger } from "./ui/popover";
+import CreateEvent from "./addEvent";
 
 export default function MonthView() {
     const today = useToday();
@@ -72,34 +74,54 @@ function Day({ day, bottomRow = false }: { day: DateTime<true>; bottomRow?: bool
     const { data: events, isLoading } = useGetEvents(day);
     const [myEvents, setMyEvents] = useState<CalendarEvent[]>([]);
 
+    const [createPopoverOpen, setCreatePopoverOpen] = useState(false);
+
     useEffect(() => {
         if (events) {
             setMyEvents(events.filter((event) => enabledCalendarIds.includes(event.calendar.id)));
         }
     }, [events, enabledCalendarIds]);
     return (
-        <div
-            className={cn(
-                "relative h-32 border-l-4 border-t-4 border-primary-foreground text-2xl",
-                dayIsSaturday && "border-r-4",
-                bottomRow && "border-b-4"
-            )}
-        >
-            <h2
-                className={cn(
-                    "absolute left-4 top-2",
-                    currentMonth ? "font-bold text-primary" : "text-muted-foreground",
-                    isToday && "text-blue-800"
-                )}
+        <Popover open={createPopoverOpen} onOpenChange={setCreatePopoverOpen}>
+            <PopoverTrigger
+                onClick={(e) => {
+                    e.preventDefault();
+                    e.stopPropagation();
+                }}
+                onDoubleClick={() => {
+                    console.log("double click");
+                    setCreatePopoverOpen(true);
+                }}
+                className="cursor-default"
             >
-                {dayNumber}
-            </h2>
-            <div className="flex flex-col mt-8 p-2">
-                {myEvents && myEvents.slice(0, 3).map((event) => <MonthEvent key={event.id} event={event} dayItsOn={day} />)}
-                {myEvents && myEvents.length > 3 && (
-                    <h2 className="text-xs text-secondary">{myEvents.length - 3} more events...</h2>
-                )}
-            </div>
-        </div>
+                <div
+                    className={cn(
+                        "relative h-32 border-l-4 border-t-4 border-primary-foreground text-2xl",
+                        dayIsSaturday && "border-r-4",
+                        bottomRow && "border-b-4"
+                    )}
+                >
+                    <h2
+                        className={cn(
+                            "absolute left-4 top-2",
+                            currentMonth ? "font-bold text-primary" : "text-muted-foreground",
+                            isToday && "text-blue-800"
+                        )}
+                    >
+                        {dayNumber}
+                    </h2>
+                    <div className="flex flex-col mt-8 p-2">
+                        {myEvents &&
+                            myEvents
+                                .slice(0, 3)
+                                .map((event) => <MonthEvent key={event.id} event={event} dayItsOn={day} />)}
+                        {myEvents && myEvents.length > 3 && (
+                            <h2 className="text-xs text-secondary">{myEvents.length - 3} more events...</h2>
+                        )}
+                    </div>
+                </div>
+            </PopoverTrigger>
+            <CreateEvent day={day} popoverOpen={createPopoverOpen} />
+        </Popover>
     );
 }
