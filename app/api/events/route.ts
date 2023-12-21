@@ -2,6 +2,7 @@ import { and } from "drizzle-orm";
 import { DateTime } from "luxon";
 import { NextRequest, NextResponse } from "next/server";
 import { db } from "~/lib/db";
+import { calendarEvents } from "~/lib/schema";
 export const dynamic = "force-dynamic"; // defaults to auto
 // GET /api/events?month=12&day=15&year=2023
 // get all events for the month/day/year passed in
@@ -93,4 +94,39 @@ export async function GET(request: NextRequest) {
     });
 
     return NextResponse.json(events);
+}
+
+// POST /api/events
+// create a new event
+export async function POST(request: NextRequest) {
+    const body = await request.json();
+
+        let fixedEndTime = body.endTime;
+        // if endTime starts with "00", change it to "24" so it's not interpreted as the next day
+        if (body.endTime && body.endTime.startsWith("00")) {
+            fixedEndTime = "24" + body.endTime.substring(2);
+        }
+
+    const event = await db.insert(calendarEvents).values({
+        calendarId: body.calendarId,
+        allDay: body.allDay,
+        daysOfWeek: body.daysOfWeekString,
+        repeatType: body.repeatType,
+        startDay: body.startDay,
+        startMonth: body.startMonth,
+        startYear: body.startYear,
+        startTime: body.startTime,
+        endTime: fixedEndTime,
+        endDay: body.endDay,
+        endMonth: body.endMonth,
+        endYear: body.endYear,
+        daysTurnedOff: "",
+        numConflicts: 0,
+        title: body.title,
+    });
+
+    console.log("event", event);
+
+
+    return NextResponse.json({});
 }

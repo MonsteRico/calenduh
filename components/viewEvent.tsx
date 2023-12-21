@@ -1,7 +1,8 @@
 import { DateTime, Interval } from "luxon";
 import React, { use, useContext, useEffect, useState } from "react";
 import { useToday } from "~/hooks/useToday";
-
+import "react-time-picker/dist/TimePicker.css";
+import "react-clock/dist/Clock.css";
 import { DayBeingViewedContext, EnabledCalendarIdsContext } from "~/hooks/contexts";
 import { capitalize, cn, hexToRgb } from "~/lib/utils";
 import { CalendarEvent } from "~/lib/types";
@@ -34,6 +35,7 @@ import useGetEvent from "~/hooks/useGetEvent";
 import { Switch } from "./ui/switch";
 import { Input } from "./ui/input";
 import { useToast } from "./ui/use-toast";
+import TimePicker from "react-time-picker";
 export default function ViewEvent({
     event,
     dayItsOn,
@@ -41,7 +43,7 @@ export default function ViewEvent({
 }: {
     event: CalendarEvent;
     dayItsOn: DateTime;
-    popoverOpen?: boolean;
+    popoverOpen: boolean;
 }) {
     const updateEvent = useUpdateEvent(event);
     const deleteEvent = useDeleteEvent(event);
@@ -58,8 +60,8 @@ export default function ViewEvent({
     );
     const [daysOfWeekString, setDaysOfWeekString] = useState(event.daysOfWeek);
     const [allDay, setAllDay] = useState(event.allDay);
-    const [startAmPm, setStartAmPm] = useState(event.interval.start.hour >= 12 ? "pm" : "am");
-    const [endAmPm, setEndAmPm] = useState(event.interval.end.hour >= 12 ? "pm" : "am");
+    const [startTimeString, setStartTimeString] = useState(event.interval.start.toLocaleString(DateTime.TIME_SIMPLE));
+    const [endTimeString, setEndTimeString] = useState(event.interval.end.toLocaleString(DateTime.TIME_SIMPLE));
     const [startTime, setStartTime] = useState(event.interval.start);
     const [endTime, setEndTime] = useState(event.interval.end);
 
@@ -211,59 +213,27 @@ export default function ViewEvent({
                     <>
                         <div className="flex flex-row justify-between">
                             <Label className="my-auto">Start Time</Label>
-                            <div className="flex flex-row">
-                                <input
-                                    className="w-8 text-center rounded"
-                                    type="text"
-                                    maxLength={2}
-                                    pattern={"[0-9]{2}"}
-                                    value={startTime.hour % 12 < 10 ? `0${startTime.hour % 12}` : startTime.hour % 12}
-                                    onChange={(e) => {
-                                        setStartTime(
-                                            startTime.set({
-                                                hour: parseInt(e.target.value) + (startAmPm === "pm" ? 12 : 0),
-                                            })
-                                        );
-                                    }}
-                                />
-                                <span className="my-auto mx-2">:</span>
-                                <input
-                                    className="w-8 text-center rounded"
-                                    type="text"
-                                    maxLength={2}
-                                    pattern={"[0-9]{2}"}
-                                    value={startTime.minute < 10 ? `0${startTime.minute}` : startTime.minute}
-                                    onChange={(e) => {
-                                        setStartTime(startTime.set({ minute: parseInt(e.target.value) }));
-                                    }}
-                                />
-                                <DropdownMenu>
-                                    <DropdownMenuTrigger className="text-sm flex flex-row text-muted-foreground">
-                                        <h3 className="text-ellipsis px-2 overflow-hidden my-auto">
-                                            {startAmPm.toUpperCase()}
-                                        </h3>
-                                        <FontAwesomeIcon icon={faCaretDown} className="my-auto" />
-                                    </DropdownMenuTrigger>
-                                    <DropdownMenuContent>
-                                        <DropdownMenuItem
-                                            onClick={() => {
-                                                setStartAmPm("am");
-                                            }}
-                                            className="flex flex-row"
-                                        >
-                                            AM
-                                        </DropdownMenuItem>
-                                        <DropdownMenuItem
-                                            onClick={() => {
-                                                setStartAmPm("pm");
-                                            }}
-                                            className="flex flex-row"
-                                        >
-                                            PM
-                                        </DropdownMenuItem>
-                                    </DropdownMenuContent>
-                                </DropdownMenu>
-                            </div>
+                            <TimePicker
+                                className="w-full"
+                                onChange={(e) => {
+                                    const time = e as string;
+                                    setStartTimeString(time);
+                                    setStartTime(
+                                        startTime.set({
+                                            hour: parseInt(time.split(":")[0]),
+                                            minute: parseInt(time.split(":")[1]),
+                                        })
+                                    );
+                                }}
+                                onInvalidChange={() => {
+                                    toast({
+                                        title: "Invalid time",
+                                        description: "Please enter a valid time",
+                                        variant: "destructive",
+                                    });
+                                }}
+                                value={startTimeString}
+                            />
                         </div>
                         <hr className="my-3" />
                     </>
@@ -276,59 +246,30 @@ export default function ViewEvent({
                     <>
                         <div className="flex flex-row justify-between">
                             <Label className="my-auto">End Time</Label>
-                            <div className="flex flex-row">
-                                <input
-                                    className="w-8 text-center rounded"
-                                    type="text"
-                                    maxLength={2}
-                                    pattern={"[0-9]{2}"}
-                                    value={endTime.hour % 12 < 10 ? `0${endTime.hour % 12}` : endTime.hour % 12}
-                                    onChange={(e) => {
-                                        setEndTime(
-                                            endTime.set({
-                                                hour: parseInt(e.target.value) + (endAmPm === "pm" ? 12 : 0),
-                                            })
-                                        );
-                                    }}
-                                />
-                                <span className="my-auto mx-2">:</span>
-                                <input
-                                    className="w-8 text-center rounded"
-                                    type="text"
-                                    maxLength={2}
-                                    pattern={"[0-9]{2}"}
-                                    value={endTime.minute < 10 ? `0${endTime.minute}` : endTime.minute}
-                                    onChange={(e) => {
-                                        setEndTime(endTime.set({ minute: parseInt(e.target.value) }));
-                                    }}
-                                />
-                                <DropdownMenu>
-                                    <DropdownMenuTrigger className="text-sm flex flex-row text-muted-foreground">
-                                        <h3 className="text-ellipsis px-2 overflow-hidden my-auto">
-                                            {endAmPm.toUpperCase()}
-                                        </h3>
-                                        <FontAwesomeIcon icon={faCaretDown} className="my-auto" />
-                                    </DropdownMenuTrigger>
-                                    <DropdownMenuContent>
-                                        <DropdownMenuItem
-                                            onClick={() => {
-                                                setEndAmPm("am");
-                                            }}
-                                            className="flex flex-row"
-                                        >
-                                            AM
-                                        </DropdownMenuItem>
-                                        <DropdownMenuItem
-                                            onClick={() => {
-                                                setEndAmPm("pm");
-                                            }}
-                                            className="flex flex-row"
-                                        >
-                                            PM
-                                        </DropdownMenuItem>
-                                    </DropdownMenuContent>
-                                </DropdownMenu>
-                            </div>
+                            <TimePicker
+                                className="w-full"
+                                onChange={(e) => {
+                                    let time = e as string;
+                                    if (time == "00:00") {
+                                        time = "24:00";
+                                    }
+                                    setEndTimeString(time);
+                                    setEndTime(
+                                        endTime.set({
+                                            hour: parseInt(time.split(":")[0]),
+                                            minute: parseInt(time.split(":")[1]),
+                                        })
+                                    );
+                                }}
+                                onInvalidChange={() => {
+                                    toast({
+                                        title: "Invalid time",
+                                        description: "Please enter a valid time",
+                                        variant: "destructive",
+                                    });
+                                }}
+                                value={endTimeString}
+                            />
                         </div>
                         <hr className="my-3" />
                     </>
@@ -373,11 +314,9 @@ export default function ViewEvent({
                                     <DropdownMenuItem
                                         onClick={() => {
                                             setMyCalendar(calendar);
-                                            if (!editing) {
-                                                updateEvent.mutate({
-                                                    calendarId: calendar.id,
-                                                });
-                                            }
+                                            updateEvent.mutate({
+                                                calendarId: calendar.id,
+                                            });
                                         }}
                                         key={calendar.id}
                                         className="flex flex-row"
@@ -492,7 +431,8 @@ export default function ViewEvent({
                                     X
                                 </Button>
                             </div>
-                        </div><hr className="my-3" />
+                        </div>
+                        <hr className="my-3" />
                     </>
                 )}
 
@@ -505,7 +445,8 @@ export default function ViewEvent({
                                     ? event.recurringEndDay.toLocaleString(DateTime.DATE_HUGE)
                                     : "Forever"}
                             </h3>
-                        </div><hr className="my-3" />
+                        </div>
+                        <hr className="my-3" />
                     </>
                 )}
 
@@ -666,7 +607,8 @@ export default function ViewEvent({
                                     S
                                 </div>
                             </div>
-                        </div><hr className="my-3" />
+                        </div>
+                        <hr className="my-3" />
                     </>
                 )}
 

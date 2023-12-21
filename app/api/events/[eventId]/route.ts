@@ -105,13 +105,19 @@ export async function PATCH(request: NextRequest, { params }: { params: { eventI
         }
     }
 
+    let fixedEndTime = endTime;
+    // if endTime starts with "00", change it to "24" so it's not interpreted as the next day
+    if (endTime && endTime.startsWith("00")) {
+        fixedEndTime = "24" + endTime.substring(2);
+    }
+
 
     await db
         .update(calendarEvents)
         .set({
             title: title ?? originalEvent.title,
             startTime: startTime ?? originalEvent.startTime,
-            endTime: endTime ?? originalEvent.endTime,
+            endTime: fixedEndTime ?? originalEvent.endTime,
             startMonth: startMonth ?? originalEvent.startMonth,
             startDay: startDay ?? originalEvent.startDay,
             startYear: startYear ?? originalEvent.startYear,

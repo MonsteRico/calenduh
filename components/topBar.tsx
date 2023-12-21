@@ -2,13 +2,15 @@
 import { TabsList, TabsTrigger } from "~/components/ui/tabs";
 import { ThemeToggle } from "~/components/themeToggle";
 import { useToday } from "~/hooks/useToday";
-import { useContext } from "react";
+import { useContext, useState } from "react";
 import { DayBeingViewedContext, EnabledCalendarIdsContext } from "~/hooks/contexts";
 import { Button } from "./ui/button";
 import { useIsFetching, useQueryClient } from "react-query";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faArrowsRotate } from "@fortawesome/free-solid-svg-icons";
 import SideBar from "./sideBar";
+import { Popover, PopoverTrigger } from "./ui/popover";
+import CreateEvent from "./addEvent";
 
 export default function TopBar() {
     const today = useToday();
@@ -52,7 +54,21 @@ export default function TopBar() {
             </TabsList>
             <ThemeToggle />
             <RefreshButton />
+                <AddEventButton />
         </div>
+    );
+}
+
+function AddEventButton() {
+    const [isOpen, setIsOpen] = useState(false);
+
+    return (
+        <Popover open={isOpen} onOpenChange={setIsOpen}>
+            <PopoverTrigger>
+                <Button variant="default">Add Event</Button>
+            </PopoverTrigger>
+            <CreateEvent popoverOpen={isOpen} />
+        </Popover>
     );
 }
 

@@ -1,6 +1,5 @@
 TODO
--   Event pop up for info/editing
-    -   shows up when you click an event
+-   fix styling for time inputs
 -   events that span days
 -   Adding events
     -   add via button
