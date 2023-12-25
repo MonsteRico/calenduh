@@ -36,35 +36,44 @@ import { Input } from "./ui/input";
 import { toast, useToast } from "./ui/use-toast";
 import useCreateEvent from "~/hooks/useCreateEvent";
 import TimePicker from "react-time-picker";
+import { start } from "repl";
 
-export default function CreateEvent({ popoverOpen, day,  }: { popoverOpen: boolean, day?: DateTime,  }) {
-        const today = useToday();
+const genericEvent = {
+    id: -1,
+    title: "New Event",
+    interval: Interval.fromDateTimes(
+        DateTime.local().set({ hour: DateTime.now().hour, minute: 0 }),
+        DateTime.local().set({ hour: DateTime.now().hour, minute: 0 }).plus({ hour: 1 })
+    ) as Interval<true>,
+    allDay: false,
+    calendar: {
+        id: -1,
+        name: "",
+        color: "",
+    },
+    repeatType: "none" as "none" | "daily" | "weekly" | "monthly" | "yearly",
+    recurringEndDay: undefined,
+    daysOfWeek: "",
+    calendarId: -1,
+    numConflicts: 0,
+};
 
 
-    const defaultEvent: CalendarEvent = useMemo(() => {
-        return {
-            id: -1,
-            title: "New Event",
-            interval: Interval.fromDateTimes(
-                day?.set({ hour: DateTime.now().hour, minute: 0 }) ?? DateTime.local().set({ minute: 0 }),
-                day?.set({ hour: DateTime.now().hour, minute: 0 }).plus({ hour: 1 }) ??
-                    DateTime.local().set({ minute: 0 }).plus({ hour: 1 })
-            ) as Interval<true>,
-            allDay: false,
-            calendar: {
-                id: -1,
-                name: "",
-                color: "",
-            },
-            repeatType: "none",
-            recurringEndDay: undefined,
-            daysOfWeek: "",
-            calendarId: -1,
-            numConflicts: 0,
-        };
-    }, []);
+export default function CreateEvent({
+    defaultEvent = genericEvent,
+    popoverOpen,
+    day,
+    onCreated,
+}: {
+    defaultEvent?: CalendarEvent;
+    popoverOpen: boolean;
+    day?: DateTime;
+    onCreated?: () => void;
+}) {
 
-    console.log(defaultEvent.interval.toISO())
+    console.log(defaultEvent)
+
+    const today = useToday();
 
     const { data: calendars } = useGetCalendars();
     const createEvent = useCreateEvent();
@@ -80,9 +89,17 @@ export default function CreateEvent({ popoverOpen, day,  }: { popoverOpen: boole
     const [startTimeString, setStartTimeString] = useState(
         defaultEvent.interval.start.toLocaleString(DateTime.TIME_24_SIMPLE)
     );
-    const [endTimeString, setEndTimeString] = useState(defaultEvent.interval.end.toLocaleString(DateTime.TIME_24_SIMPLE));
+    const [endTimeString, setEndTimeString] = useState(
+        defaultEvent.interval.end.toLocaleString(DateTime.TIME_24_SIMPLE)
+    );
     const [startTime, setStartTime] = useState(defaultEvent.interval.start);
     const [endTime, setEndTime] = useState(defaultEvent.interval.end);
+
+        useEffect(() => {
+            setStartTimeString(startTime.toLocaleString(DateTime.TIME_24_SIMPLE));
+            setEndTimeString(endTime.toLocaleString(DateTime.TIME_24_SIMPLE));
+        }, [startTime, endTime]);
+
 
     useEffect(() => {
         if (!popoverOpen) {
@@ -93,12 +110,18 @@ export default function CreateEvent({ popoverOpen, day,  }: { popoverOpen: boole
             setRecurringEndDay(defaultEvent.recurringEndDay?.toJSDate());
             setDaysOfWeekString(defaultEvent.daysOfWeek);
             setAllDay(defaultEvent.allDay);
+            setStartTime(defaultEvent.interval.start);
+            setEndTime(defaultEvent.interval.end);
+            setStartTimeString(defaultEvent.interval.start.toLocaleString(DateTime.TIME_24_SIMPLE));
+            setEndTimeString(defaultEvent.interval.end.toLocaleString(DateTime.TIME_24_SIMPLE));
         }
     }, [popoverOpen, defaultEvent]);
 
     if (!defaultEvent.interval.start || !defaultEvent.interval.end || !calendars) {
         return null;
     }
+
+    console.log(startTimeString, endTimeString)
 
     return (
         <>
@@ -555,6 +578,7 @@ export default function CreateEvent({ popoverOpen, day,  }: { popoverOpen: boole
                             }) as DateTime<true>,
                             startTime,
                         });
+                        onCreated?.();
                     }}
                     className="w-full"
                 >

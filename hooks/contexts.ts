@@ -22,3 +22,18 @@ export const EnabledCalendarIdsContext = React.createContext({
         console.log("EnabledCalendarIdsContext.setValue not implemented");
     },
 });
+
+export const DraggingContext = React.createContext({
+    dragging: false,
+    setDragging: (_value: boolean) => {
+        console.log("DraggingContext.setValue not implemented");
+    },
+    startDragTime: DateTime.now() as DateTime<true> | undefined,
+    setStartDragTime: (_value: DateTime<true> | undefined) => {
+        console.log("DraggingContext.setValue not implemented");
+    },
+    endDragTime: DateTime.now() as DateTime<true> | undefined,
+    setEndDragTime: (_value: DateTime<true> | undefined) => {
+        console.log("DraggingContext.setValue not implemented");
+    },
+});

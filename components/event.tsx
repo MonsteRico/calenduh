@@ -34,6 +34,7 @@ import useGetEvent from "~/hooks/useGetEvent";
 import { Switch } from "./ui/switch";
 import { Input } from "./ui/input";
 import ViewEvent from "./viewEvent";
+import CreateEvent from "./addEvent";
 
 export function Event({
     event,
@@ -203,3 +204,64 @@ export function MonthEvent({ event, dayItsOn }: { event: CalendarEvent; dayItsOn
     );
 }
 
+export function NewEvent({
+    event,
+    allEvents,
+    dayItsOn,
+    dragging,
+    onCreated,
+}: {
+    event: CalendarEvent;
+    allEvents: CalendarEvent[];
+    dayItsOn: DateTime;
+    dragging: boolean;
+    onCreated: () => void;
+}) {
+    const { data: calendar } = useGetCalendar(event.calendar.id);
+    const today = useToday();
+    const { value: enabledCalendarIds } = useContext(EnabledCalendarIdsContext);
+    const [popoverOpen, setPopoverOpen] = useState(!dragging);
+
+    useEffect(() => {
+        setPopoverOpen(!dragging);
+    }, [dragging]);
+
+    if (!event.interval.start || !event.interval.end || !calendar) {
+        return null;
+    }
+
+    const eventDay = event.interval.start.startOf("day");
+
+    const rgb = hexToRgb(calendar.color);
+
+
+    const top = (event.interval.start.diff(eventDay.startOf("day")).as("minutes") / 15) * 1.5;
+    const height = (event.interval.end.diff(event.interval.start).as("minutes") / 15) * 1.5;
+
+
+    const backgroundColorString = rgb ? `rgba(${rgb.r}, ${rgb.g}, ${rgb.b})` : calendar.color;
+    const backgroundColor = Color(backgroundColorString);
+    const borderColor = backgroundColor.darken(0.35);
+
+    return (
+        <Popover open={popoverOpen} onOpenChange={setPopoverOpen}>
+            <PopoverTrigger
+                className="absolute w-full overflow-ellipsis cursor-pointer flex"
+                style={{
+                    top: `${top}rem`,
+                    zIndex: 5,
+                    height: `${height}rem`,
+                    width: `100%`,
+                    backgroundColor: backgroundColor.string(),
+                    borderLeft: `8px solid ${borderColor.string()}`,
+                    opacity: 1,
+                }}
+            >
+                <h4 className="text-center text-sm break-words">
+                    {event.title}, {event.numConflicts}
+                </h4>
+            </PopoverTrigger>
+            <CreateEvent onCreated={onCreated} defaultEvent={event} day={dayItsOn} popoverOpen={popoverOpen} />
+        </Popover>
+    );
+}

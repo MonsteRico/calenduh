@@ -1,19 +1,19 @@
 TODO
 -   fix styling for time inputs
--   events that span days
 -   Adding events
-    -   add via double click on day in month view
-    -   add via click and drag in week/day view
     -   also allow you to click and drag existing events around and drag edges to change duration/start and end
 -   unify and fix top bar
 -   day view
+- make sure you cant disable a default calendar
 
 -   users
     -   users are attached to calendars they create AND events they create
+    - default calendar
     -   change every GET to first filter based on calendars the user has attached to them
 -   notifications for events coming up
 -   mobile friendlyfy
     -   PWA stuff
+    - fallback page for no internet
 
 -   user preferences
     -   theme settings (for all colors? not just light/dark?)
@@ -26,3 +26,4 @@ TODO
 -   subscribe to iCal?
     -   importing from iCal does not automatically add new events. either a way to subscribe to other peoples calendars in this app or to iCal format is useful
         -   maybe it has to pull the iCal periodically to see if there are any new events to add?
+- stuff to let it work offline? (react query persistent cache)
