@@ -9,6 +9,9 @@ import { cn } from "~/lib/utils";
 import { MonthEvent } from "./event";
 import { Popover, PopoverTrigger } from "./ui/popover";
 import CreateEvent from "./addEvent";
+import { useDrop } from "react-dnd";
+import { toast } from "./ui/use-toast";
+import useMoveEvent from "~/hooks/useMoveEvent";
 
 export default function MonthView() {
     const today = useToday();
@@ -63,6 +66,41 @@ export default function MonthView() {
 }
 
 function Day({ day, bottomRow = false }: { day: DateTime<true>; bottomRow?: boolean }) {
+    const moveEvent = useMoveEvent();
+  const [{ isOver, canDrop }, drop] = useDrop(() => ({
+      // The type (or types) to accept - strings or symbols
+      accept: "MonthEvent",
+      // Props to collect
+      canDrop: (item: { event: CalendarEvent; day: DateTime<true> }, monitor) => {
+          return !day.hasSame(item.day, "day");
+      },
+      collect: (monitor) => ({
+          isOver: monitor.isOver(),
+          canDrop: monitor.canDrop(),
+      }),
+      drop(item: { event: CalendarEvent; day: DateTime<true> }, monitor) {
+          const didDrop = monitor.didDrop();
+          if (didDrop) {
+              return;
+          }
+          console.log("dropped", item, day);
+          if (item.event.repeatType != "none") {
+            toast({
+                content: "Repeating events cannot be moved.",
+            })
+            return;
+          }
+          moveEvent.mutate({
+              event: item.event,
+              newDay: day,
+              newStartTime: item.event.interval.start,
+                newEndTime: item.event.interval.end,
+          });
+      },
+  }));
+
+
+
     const today = useToday();
     const dayNumber = day.day;
     const { value: dayBeingViewed } = useContext(DayBeingViewedContext);
@@ -95,10 +133,12 @@ function Day({ day, bottomRow = false }: { day: DateTime<true>; bottomRow?: bool
                 className="cursor-default"
             >
                 <div
+                    ref={drop}
                     className={cn(
                         "relative h-32 border-l-4 border-t-4 border-primary-foreground text-2xl",
                         dayIsSaturday && "border-r-4",
-                        bottomRow && "border-b-4"
+                        bottomRow && "border-b-4",
+                        isOver && canDrop && "bg-primary-foreground",
                     )}
                 >
                     <h2

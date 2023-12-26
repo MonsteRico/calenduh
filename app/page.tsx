@@ -11,7 +11,8 @@ import { DayBeingViewedContext, EnabledCalendarIdsContext } from "~/hooks/contex
 import useGetCalendars from "~/hooks/useGetCalendars";
 import { fetchEvents } from "~/hooks/useGetEvents";
 import { useToday } from "~/hooks/useToday";
-
+import { DndProvider } from 'react-dnd'
+import { HTML5Backend } from 'react-dnd-html5-backend'
 export default function Home() {
     const today = useToday();
     const [dayBeingViewed, setDayBeingViewed] = useState<DateTime<true>>(today);
@@ -66,6 +67,7 @@ export default function Home() {
     }
 
     return (
+        <DndProvider backend={HTML5Backend}>
         <DayBeingViewedContext.Provider value={{ value: dayBeingViewed, setValue: setDayBeingViewed }}>
             <EnabledCalendarIdsContext.Provider value={{ value: enabledCalendarIds, setValue: setEnabledCalendarIds }}>
                 <Tabs defaultValue="month">
@@ -84,5 +86,6 @@ export default function Home() {
                 </Tabs>
             </EnabledCalendarIdsContext.Provider>
         </DayBeingViewedContext.Provider>
+        </DndProvider>
     );
 }

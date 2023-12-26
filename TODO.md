@@ -2,9 +2,6 @@ TODO
 -   fix styling for time inputs
 -   Adding events
     -   also allow you to click and drag existing events around and drag edges to change duration/start and end
-        - add "eventBeingDragged" to the context for dragging
-        - if eventBeingDragged, dont create a "NewEvent" component, instead when the event is no longer being dragged update the evnet with the new start/end time
-        
 -   unify and fix top bar
 -   day view
 - make sure you cant disable a default calendar

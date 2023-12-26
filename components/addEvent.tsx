@@ -58,7 +58,6 @@ const genericEvent = {
     numConflicts: 0,
 };
 
-
 export default function CreateEvent({
     defaultEvent = genericEvent,
     popoverOpen,
@@ -70,15 +69,12 @@ export default function CreateEvent({
     day?: DateTime;
     onCreated?: () => void;
 }) {
-
-    console.log(defaultEvent)
-
     const today = useToday();
 
     const { data: calendars } = useGetCalendars();
     const createEvent = useCreateEvent();
     const [title, setTitle] = useState(defaultEvent.title);
-    const [eventDate, setEventDate] = useState<Date | undefined>(today.toJSDate());
+    const [eventDate, setEventDate] = useState<Date | undefined>(day?.toJSDate() ?? today.toJSDate());
     const [myCalendar, setMyCalendar] = useState(defaultEvent.calendar);
     const [repeatType, setRepeatType] = useState(defaultEvent.repeatType);
     const [recurringEndDay, setRecurringEndDay] = useState<Date | undefined>(
@@ -95,16 +91,15 @@ export default function CreateEvent({
     const [startTime, setStartTime] = useState(defaultEvent.interval.start);
     const [endTime, setEndTime] = useState(defaultEvent.interval.end);
 
-        useEffect(() => {
-            setStartTimeString(startTime.toLocaleString(DateTime.TIME_24_SIMPLE));
-            setEndTimeString(endTime.toLocaleString(DateTime.TIME_24_SIMPLE));
-        }, [startTime, endTime]);
-
+    useEffect(() => {
+        setStartTimeString(startTime.toLocaleString(DateTime.TIME_24_SIMPLE));
+        setEndTimeString(endTime.toLocaleString(DateTime.TIME_24_SIMPLE));
+    }, [startTime, endTime]);
 
     useEffect(() => {
         if (!popoverOpen) {
             setTitle(defaultEvent.title);
-            setEventDate(defaultEvent.interval.start.toJSDate());
+            setEventDate(day?.toJSDate() ?? defaultEvent.interval.start.toJSDate());
             setMyCalendar(defaultEvent.calendar);
             setRepeatType(defaultEvent.repeatType);
             setRecurringEndDay(defaultEvent.recurringEndDay?.toJSDate());
@@ -120,8 +115,6 @@ export default function CreateEvent({
     if (!defaultEvent.interval.start || !defaultEvent.interval.end || !calendars) {
         return null;
     }
-
-    console.log(startTimeString, endTimeString)
 
     return (
         <>

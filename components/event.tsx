@@ -35,6 +35,7 @@ import { Switch } from "./ui/switch";
 import { Input } from "./ui/input";
 import ViewEvent from "./viewEvent";
 import CreateEvent from "./addEvent";
+import { useDrag } from "react-dnd";
 
 export function Event({
     event,
@@ -179,14 +180,28 @@ export function MonthEvent({ event, dayItsOn }: { event: CalendarEvent; dayItsOn
     const { data: calendar } = useGetCalendar(event.calendar.id);
     const [popoverOpen, setPopoverOpen] = useState(false);
 
+    const [{ isDragging }, drag] = useDrag(() => ({
+        // "type" is required. It is used by the "accept" specification of drop targets.
+        type: "MonthEvent",
+        // The collect function utilizes a "monitor" instance (see the Overview for what this is)
+        // to pull important pieces of state from the DnD system.
+        collect: (monitor) => ({
+            isDragging: monitor.isDragging(),
+        }),
+        item: {
+            event: event,
+            day: dayItsOn,
+        },
+    }));
+
     if (!calendar) {
         return null;
     }
 
     return (
-        <Popover open={popoverOpen} onOpenChange={setPopoverOpen}>
-            <PopoverTrigger>
-                <div className="flex flex-row justify-between text-xs text-primary">
+        <Popover open={popoverOpen && !isDragging} onOpenChange={setPopoverOpen}>
+            <PopoverTrigger ref={drag}>
+                <div className={cn("flex flex-row justify-between text-xs text-primary", isDragging && "opacity-50")}>
                     <div className="flex flex-row">
                         <div
                             style={{ backgroundColor: calendar.color }}
@@ -234,10 +249,8 @@ export function NewEvent({
 
     const rgb = hexToRgb(calendar.color);
 
-
     const top = (event.interval.start.diff(eventDay.startOf("day")).as("minutes") / 15) * 1.5;
     const height = (event.interval.end.diff(event.interval.start).as("minutes") / 15) * 1.5;
-
 
     const backgroundColorString = rgb ? `rgba(${rgb.r}, ${rgb.g}, ${rgb.b})` : calendar.color;
     const backgroundColor = Color(backgroundColorString);
