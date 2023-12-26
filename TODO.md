@@ -11,6 +11,7 @@ TODO
     - default calendar
     -   change every GET to first filter based on calendars the user has attached to them
 -   notifications for events coming up
+
 -   mobile friendlyfy
     -   PWA stuff
     - fallback page for no internet

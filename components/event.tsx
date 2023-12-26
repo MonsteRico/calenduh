@@ -135,7 +135,7 @@ export function Event({
                     opacity: 1,
                 }}
             >
-                <h4 className="text-center text-sm break-words">
+                <h4 className={cn("p-2 text-center text-xs", backgroundColor.isDark() ? "text-white" : "text-black")}>
                     {event.title}, {event.numConflicts}
                 </h4>
             </PopoverTrigger>
@@ -157,6 +157,7 @@ export function AllDayEvent({ event, dayItsOn }: { event: CalendarEvent; dayItsO
     const backgroundColorString = rgb ? `rgba(${rgb.r}, ${rgb.g}, ${rgb.b})` : calendar.color;
     const backgroundColor = Color(backgroundColorString);
     const borderColor = backgroundColor.darken(0.35);
+
     return (
         <Popover open={popoverOpen} onOpenChange={setPopoverOpen}>
             <PopoverTrigger>
@@ -166,7 +167,7 @@ export function AllDayEvent({ event, dayItsOn }: { event: CalendarEvent; dayItsO
                         backgroundColor: backgroundColor.string(),
                         borderLeft: `8px solid ${borderColor.string()}`,
                     }}
-                    className="py-2 text-center text-xs"
+                    className={cn("py-2 text-center text-xs", backgroundColor.isDark() ? "text-white" : "text-black")}
                 >
                     {event.title}
                 </h4>
@@ -270,7 +271,7 @@ export function NewEvent({
                     opacity: 1,
                 }}
             >
-                <h4 className="text-center text-sm break-words">
+                <h4 className={cn("py-2 text-center text-xs", backgroundColor.isDark() ? "text-white" : "text-black")}>
                     {event.title}, {event.numConflicts}
                 </h4>
             </PopoverTrigger>
