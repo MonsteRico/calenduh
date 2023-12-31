@@ -1,8 +1,10 @@
 import { DateTime, Interval } from "luxon";
-import { dbCalendar, dbCalendarEvent } from "./schema";
+import { dbCalendar, dbCalendarEvent } from "./mainSchema";
 import { CalendarEvent } from "./types";
 
-export default function eventsConverter(dbCalendarEvents: (dbCalendarEvent&{calendar:dbCalendar})[]): CalendarEvent[] {
+export default function eventsConverter(
+    dbCalendarEvents: (dbCalendarEvent & { calendar: dbCalendar })[]
+): CalendarEvent[] {
     return dbCalendarEvents.map((dbEvent) => {
         const startDate = DateTime.fromObject({
             month: dbEvent.startMonth,
@@ -29,6 +31,6 @@ export default function eventsConverter(dbCalendarEvents: (dbCalendarEvent&{cale
             ...dbEvent,
             interval,
             recurringEndDay: endDate.isValid ? endDate : null,
-        }
+        };
     });
 }

@@ -33,7 +33,7 @@ import { DatePicker } from "./ui/date-picker";
 import useGetEvent from "~/hooks/useGetEvent";
 import { Switch } from "./ui/switch";
 import { Input } from "./ui/input";
-import { toast, useToast } from "./ui/use-toast";
+import { toast } from "sonner"
 import useCreateEvent from "~/hooks/useCreateEvent";
 import TimePicker from "react-time-picker";
 import { start } from "repl";
@@ -169,10 +169,8 @@ export default function CreateEvent({
                                     );
                                 }}
                                 onInvalidChange={() => {
-                                    toast({
-                                        title: "Invalid time",
+                                    toast.error("Invalid time", {
                                         description: "Please enter a valid time",
-                                        variant: "destructive",
                                     });
                                 }}
                                 value={startTimeString + ":00"}
@@ -205,10 +203,8 @@ export default function CreateEvent({
                                     );
                                 }}
                                 onInvalidChange={() => {
-                                    toast({
-                                        title: "Invalid time",
+                                    toast.error("Invalid time", {
                                         description: "Please enter a valid time",
-                                        variant: "destructive",
                                     });
                                 }}
                                 value={endTimeString + ":00"}
@@ -506,45 +502,35 @@ export default function CreateEvent({
                 <Button
                     onClick={() => {
                         if (!eventDate) {
-                            toast({
-                                variant: "destructive",
-                                title: "Error",
+                            toast.error("Error", {
                                 description: "Please select an event date",
                             });
                             return;
                         }
 
                         if (!startTime || !endTime) {
-                            toast({
-                                variant: "destructive",
-                                title: "Error",
-                                description: "Please select start and end times",
+                            toast.error("Error", {
+                                description: "Please select a start and end time",
                             });
                             return;
                         }
 
                         if (startTime > endTime) {
-                            toast({
-                                variant: "destructive",
-                                title: "Error",
+                            toast.error("Error", {
                                 description: "Start time must be before end time",
                             });
                             return;
                         }
 
                         if (repeatType == "weekly" && daysOfWeekString == "") {
-                            toast({
-                                variant: "destructive",
-                                title: "Error",
+                            toast.error("Error", {
                                 description: "Please select at least one day of the week",
                             });
                             return;
                         }
 
                         if (myCalendar == defaultEvent.calendar) {
-                            toast({
-                                variant: "destructive",
-                                title: "Error",
+                            toast.error("Error", {
                                 description: "Please select a calendar",
                             });
                             return;

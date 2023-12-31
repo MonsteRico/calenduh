@@ -34,7 +34,7 @@ import { DatePicker } from "./ui/date-picker";
 import useGetEvent from "~/hooks/useGetEvent";
 import { Switch } from "./ui/switch";
 import { Input } from "./ui/input";
-import { useToast } from "./ui/use-toast";
+import { toast } from "sonner";
 import TimePicker from "react-time-picker";
 export default function ViewEvent({
     event,
@@ -64,8 +64,6 @@ export default function ViewEvent({
     const [endTimeString, setEndTimeString] = useState(event.interval.end.toLocaleString(DateTime.TIME_SIMPLE));
     const [startTime, setStartTime] = useState(event.interval.start);
     const [endTime, setEndTime] = useState(event.interval.end);
-
-    const { toast } = useToast();
 
     const { data: thisEvent } = useGetEvent(event.id);
 
@@ -119,19 +117,15 @@ export default function ViewEvent({
                                 setEditing(false);
 
                                 if (!eventDate) {
-                                    toast({
-                                        title: "Event date is required",
+                                    toast.error("Event date is required", {
                                         description: "Please select a date for your event",
-                                        variant: "destructive",
                                     });
                                     return;
                                 }
 
                                 if (!startTime.isValid || !endTime.isValid) {
-                                    toast({
-                                        title: "Invalid time",
+                                    toast.error("Invalid time", {
                                         description: "Please enter a valid time",
-                                        variant: "destructive",
                                     });
                                     return;
                                 }
@@ -226,10 +220,8 @@ export default function ViewEvent({
                                     );
                                 }}
                                 onInvalidChange={() => {
-                                    toast({
-                                        title: "Invalid time",
+                                    toast.error("Invalid time", {
                                         description: "Please enter a valid time",
-                                        variant: "destructive",
                                     });
                                 }}
                                 value={startTimeString}
@@ -262,10 +254,8 @@ export default function ViewEvent({
                                     );
                                 }}
                                 onInvalidChange={() => {
-                                    toast({
-                                        title: "Invalid time",
+                                    toast.error("Invalid time", {
                                         description: "Please enter a valid time",
-                                        variant: "destructive",
                                     });
                                 }}
                                 value={endTimeString}

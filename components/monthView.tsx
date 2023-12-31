@@ -10,7 +10,7 @@ import { MonthEvent } from "./event";
 import { Popover, PopoverTrigger } from "./ui/popover";
 import CreateEvent from "./addEvent";
 import { useDrop } from "react-dnd";
-import { toast } from "./ui/use-toast";
+import { toast } from "sonner"
 import useMoveEvent from "~/hooks/useMoveEvent";
 
 export default function MonthView() {
@@ -85,9 +85,7 @@ function Day({ day, bottomRow = false }: { day: DateTime<true>; bottomRow?: bool
           }
           console.log("dropped", item, day);
           if (item.event.repeatType != "none") {
-            toast({
-                content: "Repeating events cannot be moved.",
-            })
+            toast.info("Cannot move repeating events yet")
             return;
           }
           moveEvent.mutate({

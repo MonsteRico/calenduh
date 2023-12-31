@@ -1,5 +1,5 @@
 import { useMutation, useQueryClient } from "react-query";
-import { newDbCalendar } from "~/lib/schema";
+import { newDbCalendar } from "~/lib/mainSchema";
 import { Calendar } from "~/lib/types";
 
 export default function useCreateCalendar() {

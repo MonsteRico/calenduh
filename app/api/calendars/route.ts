@@ -2,7 +2,7 @@ import { and, eq, inArray } from "drizzle-orm";
 import { DateTime } from "luxon";
 import { NextRequest, NextResponse } from "next/server";
 import { db } from "~/lib/db";
-import { calendars } from "~/lib/schema";
+import { calendars } from "~/lib/mainSchema";
 
 export const dynamic = "force-dynamic"; // defaults to auto
 

@@ -2,7 +2,7 @@ import { and, eq, inArray } from "drizzle-orm";
 import { DateTime, Interval } from "luxon";
 import { NextRequest, NextResponse } from "next/server";
 import { db } from "~/lib/db";
-import { calendarEvents } from "~/lib/schema";
+import { calendarEvents } from "~/lib/mainSchema";
 export const dynamic = "force-dynamic"; // defaults to auto
 // GET /api/events/[eventId]
 // get event by id
@@ -110,7 +110,6 @@ export async function PATCH(request: NextRequest, { params }: { params: { eventI
     if (endTime && endTime.startsWith("00")) {
         fixedEndTime = "24" + endTime.substring(2);
     }
-
 
     await db
         .update(calendarEvents)

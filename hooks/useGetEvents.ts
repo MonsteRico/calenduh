@@ -1,7 +1,7 @@
 import { DateTime, Interval } from "luxon";
 import { useQuery } from "react-query";
-import  eventsConverter from "~/lib/eventsConverter";
-import { dbCalendar, dbCalendarEvent } from "~/lib/schema";
+import eventsConverter from "~/lib/eventsConverter";
+import { dbCalendar, dbCalendarEvent } from "~/lib/mainSchema";
 import { CalendarEvent } from "~/lib/types";
 
 export default function useGetEvents(day: DateTime) {
