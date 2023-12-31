@@ -136,12 +136,15 @@ function DaysHours({ day, bottomRow = false }: { day: DateTime<true>; bottomRow?
                 id: 1, // would be the default calendar
                 name: "",
                 color: "#000000",
+                isDefault: true,
+                userId: "",
             },
             repeatType: "none",
             recurringEndDay: undefined,
             daysOfWeek: "",
             calendarId: 1, // would be the default calendar
             numConflicts: 0,
+            userId: "",
         };
     }, [startDragTime, endDragTime, day]);
 
