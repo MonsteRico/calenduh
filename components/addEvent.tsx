@@ -38,7 +38,7 @@ import useCreateEvent from "~/hooks/useCreateEvent";
 import TimePicker from "react-time-picker";
 import { start } from "repl";
 
-const genericEvent = {
+const genericEvent : CalendarEvent = {
     id: -1,
     title: "New Event",
     interval: Interval.fromDateTimes(
@@ -50,12 +50,15 @@ const genericEvent = {
         id: -1,
         name: "",
         color: "",
+        userId: "",
+        isDefault: false,
     },
     repeatType: "none" as "none" | "daily" | "weekly" | "monthly" | "yearly",
     recurringEndDay: undefined,
     daysOfWeek: "",
     calendarId: -1,
     numConflicts: 0,
+    userId: "",
 };
 
 export default function CreateEvent({

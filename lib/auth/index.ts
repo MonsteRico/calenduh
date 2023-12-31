@@ -6,6 +6,7 @@ import { users } from "~/db/schema/auth";
 import type { NextAuthOptions } from "next-auth";
 
 export const authOptions: NextAuthOptions = {
+    // @ts-expect-error
     adapter: DrizzleAdapter(db),
     session: {
         strategy: "jwt",
