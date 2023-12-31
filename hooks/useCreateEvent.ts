@@ -107,6 +107,7 @@ export default function useCreateEvent() {
                         title: newEventData.title,
                         recurringEndDay: newEventData.recurringEndDay,
                         calendar: {} as Calendar,
+                        userId: "",
                     },
                 ];
             });
