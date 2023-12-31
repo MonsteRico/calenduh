@@ -1,8 +1,10 @@
 import { and } from "drizzle-orm";
 import { DateTime } from "luxon";
+import { getServerSession } from "next-auth";
 import { NextRequest, NextResponse } from "next/server";
-import { db } from "~/lib/db";
-import { calendarEvents } from "~/lib/mainSchema";
+import { db } from "~/db/db";
+import { calendarEvents } from "~/db/schema/main";
+import getServerAuthSession from "~/lib/getServerAuthSession";
 export const dynamic = "force-dynamic"; // defaults to auto
 // GET /api/events?month=12&day=15&year=2023
 // get all events for the month/day/year passed in
@@ -100,7 +102,17 @@ export async function GET(request: NextRequest) {
 // create a new event
 export async function POST(request: NextRequest) {
     const body = await request.json();
+    const session = await getServerAuthSession();
+    const userId = session?.user?.id;
 
+    if (!userId) {
+        return NextResponse.json(
+            {
+                error: "no user found",
+            },
+            { status: 404 }
+        );
+    }
     let fixedEndTime = body.endTime;
     // if endTime starts with "00", change it to "24" so it's not interpreted as the next day
     if (body.endTime && body.endTime.startsWith("00")) {
@@ -108,6 +120,7 @@ export async function POST(request: NextRequest) {
     }
 
     const event = await db.insert(calendarEvents).values({
+        userId: userId,
         calendarId: body.calendarId,
         allDay: body.allDay,
         daysOfWeek: body.daysOfWeekString,

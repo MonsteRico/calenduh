@@ -11,6 +11,7 @@ import { faArrowsRotate } from "@fortawesome/free-solid-svg-icons";
 import SideBar from "./sideBar";
 import { Popover, PopoverTrigger } from "./ui/popover";
 import CreateEvent from "./addEvent";
+import UserButton from "./userButton";
 
 export default function TopBar() {
     const today = useToday();
@@ -55,6 +56,7 @@ export default function TopBar() {
             <ThemeToggle />
             <RefreshButton />
                 <AddEventButton />
+                <UserButton />
         </div>
     );
 }

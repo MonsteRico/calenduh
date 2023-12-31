@@ -70,6 +70,7 @@ function CalendarItem({ calendar }: { calendar: Calendar }) {
     const enabled = enabledCalendarIds.includes(calendar.id);
     const [dialogOpen, setDialogOpen] = useState(false);
     const [deleteAlertOpen, setDeleteAlertOpen] = useState(false);
+    console.log(calendar);
     return (
         <div
             onMouseDown={(e) => {
@@ -98,9 +99,7 @@ function CalendarItem({ calendar }: { calendar: Calendar }) {
                 <h2>{calendar.name}</h2>
             </div>
             <DropdownMenu>
-                <DropdownMenuTrigger
-                    className="my-auto px-1 rounded z-10 hover:bg-muted-foreground cursor-pointer  transition-colors duration-300"
-                >
+                <DropdownMenuTrigger className="my-auto px-1 rounded z-10 hover:bg-muted-foreground cursor-pointer  transition-colors duration-300">
                     <FontAwesomeIcon icon={faEllipsis} />
                 </DropdownMenuTrigger>
                 <DropdownMenuContent
@@ -112,23 +111,29 @@ function CalendarItem({ calendar }: { calendar: Calendar }) {
                     <DropdownMenuItem className="cursor-pointer">
                         <EditCalendar setDialogOpen={setDialogOpen} calendar={calendar} />
                     </DropdownMenuItem>
-                    <DropdownMenuSeparator />
-                    <DropdownMenuItem
-                        onClick={() => {
-                            setDeleteAlertOpen(true);
-                        }}
-                        className="text-red-500 hover:text-red-700 cursor-pointer transition-all duration-300"
-                    >
-                        Delete <FontAwesomeIcon icon={faTrash} className="ml-2" />
-                    </DropdownMenuItem>
+                    {!calendar.isDefault && (
+                        <>
+                            <DropdownMenuSeparator />
+                            <DropdownMenuItem
+                                onClick={() => {
+                                    setDeleteAlertOpen(true);
+                                }}
+                                className="text-red-500 hover:text-red-700 cursor-pointer transition-all duration-300"
+                            >
+                                Delete <FontAwesomeIcon icon={faTrash} className="ml-2" />
+                            </DropdownMenuItem>
+                        </>
+                    )}
                 </DropdownMenuContent>
             </DropdownMenu>
-            <DeleteCalendarAlert
-                deleteAlertOpen={deleteAlertOpen}
-                setDeleteAlertOpen={setDeleteAlertOpen}
-                setDialogOpen={setDialogOpen}
-                calendar={calendar}
-            />
+            {!calendar.isDefault && (
+                <DeleteCalendarAlert
+                    deleteAlertOpen={deleteAlertOpen}
+                    setDeleteAlertOpen={setDeleteAlertOpen}
+                    setDialogOpen={setDialogOpen}
+                    calendar={calendar}
+                />
+            )}
         </div>
     );
 }
@@ -225,7 +230,7 @@ function EditCalendar({ calendar, setDialogOpen }: { calendar: Calendar; setDial
                     <DialogDescription className="flex flex-col gap-4">
                         <div className="flex flex-row gap-4">
                             <Label htmlFor="name">Name</Label>
-                            <Input
+                            {!calendar.isDefault ? <Input
                                 type="text"
                                 id="name"
                                 placeholder="Calendar Name"
@@ -233,7 +238,7 @@ function EditCalendar({ calendar, setDialogOpen }: { calendar: Calendar; setDial
                                 onChange={(e) => {
                                     setEditedName(e.target.value);
                                 }}
-                            />
+                            /> : <Label>Default Calendar</Label>}
                         </div>
                         <div className="flex flex-row gap-4">
                             <Label htmlFor="color">Color</Label>

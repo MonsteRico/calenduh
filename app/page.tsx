@@ -13,6 +13,7 @@ import { fetchEvents } from "~/hooks/useGetEvents";
 import { useToday } from "~/hooks/useToday";
 import { DndProvider } from 'react-dnd'
 import { HTML5Backend } from 'react-dnd-html5-backend'
+import { SessionProvider } from "next-auth/react";
 export default function Home() {
     const today = useToday();
     const [dayBeingViewed, setDayBeingViewed] = useState<DateTime<true>>(today);
@@ -61,31 +62,35 @@ export default function Home() {
 
     }, [dayBeingViewed, queryClient, previousMonthBeingViewed]);
 
-    if (enabledCalendarIds.length == 0) {
+    if (calendarsLoading) {
         // TODO better loading state for whole app
         return <h1>Loading</h1>;
     }
 
     return (
         <DndProvider backend={HTML5Backend}>
-        <DayBeingViewedContext.Provider value={{ value: dayBeingViewed, setValue: setDayBeingViewed }}>
-            <EnabledCalendarIdsContext.Provider value={{ value: enabledCalendarIds, setValue: setEnabledCalendarIds }}>
-                <Tabs defaultValue="month">
-                    <TopBar />
-                    <main>
-                        <TabsContent value="month">
-                            <MonthView />
-                        </TabsContent>
-                        <TabsContent value="week">
-                            <WeekView />
-                        </TabsContent>
-                        <TabsContent value="day">
-                            <h1>Day</h1>
-                        </TabsContent>
-                    </main>
-                </Tabs>
-            </EnabledCalendarIdsContext.Provider>
-        </DayBeingViewedContext.Provider>
+            <SessionProvider>
+                <DayBeingViewedContext.Provider value={{ value: dayBeingViewed, setValue: setDayBeingViewed }}>
+                    <EnabledCalendarIdsContext.Provider
+                        value={{ value: enabledCalendarIds, setValue: setEnabledCalendarIds }}
+                    >
+                        <Tabs defaultValue="month">
+                            <TopBar />
+                            <main>
+                                <TabsContent value="month">
+                                    <MonthView />
+                                </TabsContent>
+                                <TabsContent value="week">
+                                    <WeekView />
+                                </TabsContent>
+                                <TabsContent value="day">
+                                    <h1>Day</h1>
+                                </TabsContent>
+                            </main>
+                        </Tabs>
+                    </EnabledCalendarIdsContext.Provider>
+                </DayBeingViewedContext.Provider>
+            </SessionProvider>
         </DndProvider>
     );
 }

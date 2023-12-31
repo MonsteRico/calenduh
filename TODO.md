@@ -4,9 +4,12 @@ TODO
 -   unify and fix top bar
 -   day view
 -   make sure you cant disable a default calendar
-
+- move any modal to be outside of wrappers with on clicks (update calendar, delete calendar, add event, delete event, update event)
 -   users
 
+    -   need a proper sign in sign out and user button for top bar
+    -   lock all things behind logged in status
+    -   create a custom sign in page
     -   users are attached to calendars they create AND events they create
     -   default calendar
     -   change every GET to first filter based on calendars the user has attached to them

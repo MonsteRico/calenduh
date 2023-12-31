@@ -1,6 +1,6 @@
 import type { Config } from "drizzle-kit";
 export default {
-    schema: "./lib/schema.ts",
+    schema: "./db/schema",
     dbCredentials: {
         uri: process.env.DATABASE_URL as string,
     },

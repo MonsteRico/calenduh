@@ -1,5 +1,5 @@
 import { DateTime, Interval } from "luxon";
-import { dbCalendar, dbCalendarEvent } from "./mainSchema";
+import { dbCalendar, dbCalendarEvent } from "../db/schema/main";
 import { CalendarEvent } from "./types";
 
 export default function eventsConverter(

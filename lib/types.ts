@@ -1,5 +1,6 @@
 import type { DateTime, Interval } from "luxon";
-import { dbCalendarEvent } from "./mainSchema";
+import { dbCalendarEvent } from "../db/schema/main";
+import { User } from "next-auth";
 
 export type CalendarEvent = Omit<
     dbCalendarEvent,
@@ -22,5 +23,8 @@ export type Calendar = {
     id: number;
     name: string;
     color: string;
+    userId: string;
+    isDefault: boolean;
+    user?: User;
     events?: CalendarEvent[];
 };

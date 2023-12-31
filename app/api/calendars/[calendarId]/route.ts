@@ -1,8 +1,8 @@
 import { and, eq, inArray } from "drizzle-orm";
 import { DateTime } from "luxon";
 import { NextRequest, NextResponse } from "next/server";
-import { db } from "~/lib/db";
-import { calendarEvents, calendars } from "~/lib/mainSchema";
+import { db } from "~/db/db";
+import { calendarEvents, calendars } from "~/db/schema/main";
 
 export const dynamic = "force-dynamic"; // defaults to auto
 
@@ -49,14 +49,14 @@ export async function PATCH(request: NextRequest, { params }: { params: { calend
     const updatedCalendar = await db
         .update(calendars)
         .set({
-            name: body.name ?? calendar.name,
+            name: calendar.isDefault ? "Default Calendar" : body.name ?? calendar.name,
             color: body.color ?? calendar.color,
         })
         .where(eq(calendars.id, calendarId));
 
     return NextResponse.json({
         ...calendar,
-        name: body.name ?? calendar.name,
+        name: calendar.isDefault ? "Default Calendar" : body.name ?? calendar.name,
         color: body.color ?? calendar.color,
     });
 }
@@ -76,6 +76,15 @@ export async function DELETE(request: NextRequest, { params }: { params: { calen
                 error: "calendar not found",
             },
             { status: 404 }
+        );
+    }
+
+    if (calendar.isDefault) {
+        return NextResponse.json(
+            {
+                error: "cannot delete default calendar",
+            },
+            { status: 400 }
         );
     }
 

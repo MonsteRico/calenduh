@@ -1,6 +1,6 @@
 import { DateTime } from "luxon";
 import { UseQueryOptions, useQuery, useQueryClient } from "react-query";
-import { dbCalendar } from "~/lib/mainSchema";
+import { dbCalendar } from "~/db/schema/main";
 import { Calendar } from "~/lib/types";
 
 export default function useGetCalendars(options?: UseQueryOptions<Calendar[], { error: string }>) {
@@ -13,6 +13,8 @@ export default function useGetCalendars(options?: UseQueryOptions<Calendar[], { 
                 id: dbCalendar.id,
                 name: dbCalendar.name,
                 color: dbCalendar.color,
+                userId: dbCalendar.userId,
+                isDefault: dbCalendar.isDefault,
             } as Calendar;
         });
 

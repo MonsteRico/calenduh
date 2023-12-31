@@ -1,8 +1,8 @@
 import { and, eq, inArray } from "drizzle-orm";
 import { DateTime, Interval } from "luxon";
 import { NextRequest, NextResponse } from "next/server";
-import { db } from "~/lib/db";
-import { calendarEvents } from "~/lib/mainSchema";
+import { db } from "~/db/db";
+import { calendarEvents } from "~/db/schema/main";
 export const dynamic = "force-dynamic"; // defaults to auto
 // GET /api/events/[eventId]
 // get event by id
@@ -14,6 +14,15 @@ export async function GET(request: NextRequest, { params }: { params: { eventId:
             calendar: true,
         },
     });
+
+    if (!event) {
+        return NextResponse.json(
+            {
+                error: "event not found",
+            },
+            { status: 404 }
+        );
+    }
 
     return NextResponse.json(event);
 }
