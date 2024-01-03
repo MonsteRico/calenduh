@@ -68,84 +68,98 @@ export default function SideBar({}) {
 function CalendarItem({ calendar }: { calendar: Calendar }) {
     const { value: enabledCalendarIds, setValue: setEnabledCalendarIds } = useContext(EnabledCalendarIdsContext);
     const enabled = enabledCalendarIds.includes(calendar.id);
-    const [dialogOpen, setDialogOpen] = useState(false);
+    const [editDialogOpen, setEditDialogOpen] = useState(false);
     const [deleteAlertOpen, setDeleteAlertOpen] = useState(false);
-    console.log(calendar);
     return (
-        <div
-            onMouseDown={(e) => {
-                if (!dialogOpen) {
-                    if (enabled) {
-                        setEnabledCalendarIds(enabledCalendarIds.filter((id) => id !== calendar.id));
-                    } else {
-                        setEnabledCalendarIds([...enabledCalendarIds, calendar.id]);
-                    }
-                }
-            }}
-            className="w-full hover:bg-muted rounded p-2 justify-between flex flex-row cursor-pointer  transition-colors duration-300"
-        >
-            <div className="flex flex-row gap-4">
-                <Checkbox
-                    className="my-auto"
-                    style={{
-                        backgroundColor: enabled ? calendar.color : "transparent",
-                        borderColor: calendar.color,
-                        opacity: 1,
-                        cursor: "pointer",
+        <>
+            <div className="w-full hover:bg-muted rounded p-2 justify-between flex flex-row cursor-pointer  transition-colors duration-300">
+                <div
+                    onMouseDown={(e) => {
+                        if (!editDialogOpen && !deleteAlertOpen) {
+                            if (!calendar.isDefault) {
+                                if (enabled) {
+                                    setEnabledCalendarIds(enabledCalendarIds.filter((id) => id !== calendar.id));
+                                } else {
+                                    setEnabledCalendarIds([...enabledCalendarIds, calendar.id]);
+                                }
+                            }
+                        }
                     }}
-                    checked={enabled}
-                    disabled
-                />
-                <h2>{calendar.name}</h2>
-            </div>
-            <DropdownMenu>
-                <DropdownMenuTrigger className="my-auto px-1 rounded z-10 hover:bg-muted-foreground cursor-pointer  transition-colors duration-300">
-                    <FontAwesomeIcon icon={faEllipsis} />
-                </DropdownMenuTrigger>
-                <DropdownMenuContent
-                    onClick={(e) => {
-                        e.stopPropagation();
-                        setDialogOpen(true);
-                    }}
+                    className="flex flex-row gap-4 w-full"
                 >
-                    <DropdownMenuItem className="cursor-pointer">
-                        <EditCalendar setDialogOpen={setDialogOpen} calendar={calendar} />
-                    </DropdownMenuItem>
-                    {!calendar.isDefault && (
-                        <>
-                            <DropdownMenuSeparator />
-                            <DropdownMenuItem
-                                onClick={() => {
-                                    setDeleteAlertOpen(true);
-                                }}
-                                className="text-red-500 hover:text-red-700 cursor-pointer transition-all duration-300"
-                            >
-                                Delete <FontAwesomeIcon icon={faTrash} className="ml-2" />
-                            </DropdownMenuItem>
-                        </>
+                    {!calendar.isDefault ? (
+                        <Checkbox
+                            className="my-auto"
+                            style={{
+                                backgroundColor: enabled ? calendar.color : "transparent",
+                                borderColor: calendar.color,
+                                opacity: 1,
+                                cursor: "pointer",
+                            }}
+                            checked={enabled}
+                            disabled
+                        />
+                    ) : (
+                        <p style={{ color: calendar.color }} className="opacity-75 text-sm my-auto">
+                            Default
+                        </p>
                     )}
-                </DropdownMenuContent>
-            </DropdownMenu>
-            {!calendar.isDefault && (
-                <DeleteCalendarAlert
-                    deleteAlertOpen={deleteAlertOpen}
-                    setDeleteAlertOpen={setDeleteAlertOpen}
-                    setDialogOpen={setDialogOpen}
-                    calendar={calendar}
-                />
-            )}
-        </div>
+                    <h2>{calendar.name}</h2>
+                </div>
+                <DropdownMenu>
+                    <DropdownMenuTrigger className="my-auto px-1 rounded z-10 hover:bg-muted-foreground cursor-pointer  transition-colors duration-300">
+                        <FontAwesomeIcon icon={faEllipsis} />
+                    </DropdownMenuTrigger>
+                    <DropdownMenuContent
+                        onClick={(e) => {
+                            e.stopPropagation();
+                            console.log("clicked too");
+                        }}
+                    >
+                        <DropdownMenuItem
+                            onClick={(e) => {
+                                setEditDialogOpen(true);
+                                e.preventDefault();
+                                e.stopPropagation();
+                            }}
+                            className="cursor-pointer"
+                        >
+                            Edit Calendar
+                        </DropdownMenuItem>
+                        {!calendar.isDefault && (
+                            <>
+                                <DropdownMenuSeparator />
+                                <DropdownMenuItem
+                                    onClick={() => {
+                                        setDeleteAlertOpen(true);
+                                    }}
+                                    className="text-red-500 hover:text-red-700 cursor-pointer transition-all duration-300"
+                                >
+                                    Delete <FontAwesomeIcon icon={faTrash} className="ml-2" />
+                                </DropdownMenuItem>
+                            </>
+                        )}
+                    </DropdownMenuContent>
+                </DropdownMenu>
+                {!calendar.isDefault && (
+                    <DeleteCalendarAlert
+                        deleteAlertOpen={deleteAlertOpen}
+                        setDeleteAlertOpen={setDeleteAlertOpen}
+                        calendar={calendar}
+                    />
+                )}
+            </div>
+            <EditCalendar setOpen={setEditDialogOpen} open={editDialogOpen} calendar={calendar} />
+        </>
     );
 }
 
 function DeleteCalendarAlert({
     calendar,
-    setDialogOpen,
     setDeleteAlertOpen,
     deleteAlertOpen,
 }: {
     calendar: Calendar;
-    setDialogOpen: (open: boolean) => void;
     setDeleteAlertOpen: (open: boolean) => void;
     deleteAlertOpen: boolean;
 }) {
@@ -153,7 +167,11 @@ function DeleteCalendarAlert({
     return (
         <>
             <AlertDialog open={deleteAlertOpen} onOpenChange={setDeleteAlertOpen}>
-                <AlertDialogContent>
+                <AlertDialogContent
+                    onClick={(e) => {
+                        e.stopPropagation();
+                    }}
+                >
                     <AlertDialogHeader>
                         <AlertDialogTitle>Are you absolutely sure?</AlertDialogTitle>
                         <AlertDialogDescription>
@@ -164,7 +182,7 @@ function DeleteCalendarAlert({
                     <AlertDialogFooter>
                         <AlertDialogCancel
                             onClick={() => {
-                                setDialogOpen(false);
+                                setDeleteAlertOpen(false);
                             }}
                         >
                             Cancel
@@ -172,7 +190,7 @@ function DeleteCalendarAlert({
                         <AlertDialogAction
                             onClick={() => {
                                 deleteCalendar.mutate();
-                                setDialogOpen(false);
+                                setDeleteAlertOpen(false);
                             }}
                             className="bg-red-500 hover:bg-red-800 transition-all duration-300"
                         >
@@ -185,10 +203,17 @@ function DeleteCalendarAlert({
     );
 }
 
-function EditCalendar({ calendar, setDialogOpen }: { calendar: Calendar; setDialogOpen: (open: boolean) => void }) {
+function EditCalendar({
+    calendar,
+    setOpen,
+    open,
+}: {
+    calendar: Calendar;
+    setOpen: (open: boolean) => void;
+    open: boolean;
+}) {
     const [editedName, setEditedName] = useState<string>(calendar.name);
     const [color, setColor] = useState<string>(calendar.color);
-    const [open, setOpen] = useState(false);
     const debouncedValue = useDebounce<string>(editedName, 500);
     const queryClient = useQueryClient();
     const updateCalendar = useUpdateCalendar(calendar);
@@ -203,42 +228,30 @@ function EditCalendar({ calendar, setDialogOpen }: { calendar: Calendar; setDial
         if (open == false) {
             setEditedName(calendar.name);
             setColor(calendar.color);
-            setDialogOpen(false);
         }
     }, [open]);
 
     return (
         <Dialog open={open} onOpenChange={setOpen}>
-            <div
-                onMouseDown={(e) => {
-                    e.stopPropagation();
-                }}
-            >
-                <DialogTrigger
-                    className=""
-                    onMouseDown={(e) => {
-                        e.preventDefault();
-                        setOpen(true);
-                    }}
-                >
-                    Edit Calendar
-                </DialogTrigger>
-            </div>
             <DialogContent>
                 <DialogHeader>
                     <DialogTitle>Edit {editedName}</DialogTitle>
                     <DialogDescription className="flex flex-col gap-4">
                         <div className="flex flex-row gap-4">
                             <Label htmlFor="name">Name</Label>
-                            {!calendar.isDefault ? <Input
-                                type="text"
-                                id="name"
-                                placeholder="Calendar Name"
-                                value={editedName}
-                                onChange={(e) => {
-                                    setEditedName(e.target.value);
-                                }}
-                            /> : <Label>Default Calendar</Label>}
+                            {!calendar.isDefault ? (
+                                <Input
+                                    type="text"
+                                    id="name"
+                                    placeholder="Calendar Name"
+                                    value={editedName}
+                                    onChange={(e) => {
+                                        setEditedName(e.target.value);
+                                    }}
+                                />
+                            ) : (
+                                <Label>Default Calendar</Label>
+                            )}
                         </div>
                         <div className="flex flex-row gap-4">
                             <Label htmlFor="color">Color</Label>

@@ -153,7 +153,7 @@ function DaysHours({ day, bottomRow = false }: { day: DateTime<true>; bottomRow?
             <div
                 className={`relative ${dayIsSaturday && "border-r-4"} ${bottomRow && "border-b-4"} ${
                     currentMonth ? "text-primary" : "font-bold text-muted"
-                } ${isToday && "bg-blue-800 bg-opacity-50"}`}
+                } ${isToday && "bg-accent bg-opacity-50"}`}
             >
                 {Array.from({ length: 96 }, (_, i) => {
                     return <FifteenMinBlock key={i} i={i} />;
@@ -166,7 +166,7 @@ function DaysHours({ day, bottomRow = false }: { day: DateTime<true>; bottomRow?
         <div
             className={`relative ${dayIsSaturday && "border-r-4"} ${bottomRow && "border-b-4"} ${
                 currentMonth ? "text-primary" : "font-bold text-muted"
-            } ${isToday && "bg-blue-800 bg-opacity-50"}`}
+            } ${isToday && "bg-calendarAccent bg-opacity-50"}`}
         >
             {Array.from({ length: 96 }, (_, i) => {
                 const interval = Interval.fromDateTimes(
@@ -205,7 +205,7 @@ function FifteenMinBlock({ i, day }: { i: number; day?: DateTime<true> }) {
         return (
             <div
                 className={cn(
-                    "h-6 text-muted-foreground",
+                    "h-6 text-muted-foreground select-none",
                     i % 4 == 0 ? "border-t-4" : i % 2 == 0 ? "border-t-2" : "border-t-1" // remove this to turn off the 15 minute lines
                 )}
                 key={i}
@@ -227,35 +227,36 @@ function FifteenMinBlock({ i, day }: { i: number; day?: DateTime<true> }) {
                 setStartDragTime(myInterval.start);
                 setEndDragTime(myInterval.start.plus({hour:1}));
             }}
-            onMouseDown={(e) => {
-                e.preventDefault();
-                if (!dragging) {
-                    setDragging(true);
-                    setStartDragTime(myInterval.start);
-                    console.log("startting drag");
-                    setEndDragTime(undefined);
-                }
-            }}
-            onMouseUp={(e) => {
-                e.preventDefault();
-                setDragging(false);
-                if (startDragTime?.toISOTime() != myInterval.start.toISOTime()) {
-                    setEndDragTime(myInterval.end);
-                    console.log("ended drag");
-                } else {
-                    setStartDragTime(undefined);
-                    console.log("stayed in same interval");
-                    setEndDragTime(undefined);
-                }
-            }}
-            onMouseLeave={(e) => {
-                if (startDragTime && startDragTime.toISOTime() != myInterval.start.toISOTime() && dragging) {
-                    setEndDragTime(myInterval.end);
-                    console.log("dragging");
-                }
-            }}
+            // STUFF FOR CLICK AND DRAG TO CREATE EVENTS
+            // onMouseDown={(e) => {
+            //     e.preventDefault();
+            //     if (!dragging) {
+            //         setDragging(true);
+            //         setStartDragTime(myInterval.start);
+            //         console.log("startting drag");
+            //         setEndDragTime(undefined);
+            //     }
+            // }}
+            // onMouseUp={(e) => {
+            //     e.preventDefault();
+            //     setDragging(false);
+            //     if (startDragTime?.toISOTime() != myInterval.start.toISOTime()) {
+            //         setEndDragTime(myInterval.end);
+            //         console.log("ended drag");
+            //     } else {
+            //         setStartDragTime(undefined);
+            //         console.log("stayed in same interval");
+            //         setEndDragTime(undefined);
+            //     }
+            // }}
+            // onMouseLeave={(e) => {
+            //     if (startDragTime && startDragTime.toISOTime() != myInterval.start.toISOTime() && dragging) {
+            //         setEndDragTime(myInterval.end);
+            //         console.log("dragging");
+            //     }
+            // }}
             className={cn(
-                "h-6 text-muted-foreground",
+                "h-6 text-muted-foreground select-none",
                 i % 4 == 0 ? "border-t-4" : i % 2 == 0 ? "border-t-2" : "border-t-1" // remove this to turn off the 15 minute lines
             )}
             key={i}

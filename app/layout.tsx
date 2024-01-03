@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { Inter } from "next/font/google";
 import "./globals.css";
+import "./TimePicker.css"
 import { ThemeProvider } from "./providers";
 import { Toaster } from "~/components/ui/sonner";
 import { SessionProvider } from "next-auth/react";

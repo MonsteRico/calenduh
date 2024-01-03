@@ -145,7 +145,7 @@ export default function ViewEvent({
                                 });
                             }}
                             variant={"link"}
-                            className="text-blue-500 my-auto"
+                            className="text-calendarAccent my-auto"
                         >
                             Done
                         </Button>
@@ -160,7 +160,7 @@ export default function ViewEvent({
                                 setEditing(true);
                             }}
                             variant={"link"}
-                            className="text-blue-500 my-auto"
+                            className="text-calendarAccent my-auto"
                         >
                             Edit
                         </Button>
@@ -463,9 +463,9 @@ export default function ViewEvent({
                                         setDaysOfWeekString(daysOfWeek.join(","));
                                     }}
                                     className={cn(
-                                        "w-8 h- rounded-full mr-2 cursor-default text-center my-auto bg-slate-800 border border-blue-500",
+                                        "w-8 h- rounded-full mr-2 cursor-default text-center my-auto bg-slate-800 border border-calendarAccent",
                                         editing && "cursor-pointer hover:bg-opacity-75",
-                                        daysOfWeekString.split(",").includes("7") && "bg-blue-500"
+                                        daysOfWeekString.split(",").includes("7") && "bg-calendarAccent"
                                     )}
                                 >
                                     S
@@ -484,9 +484,9 @@ export default function ViewEvent({
                                         setDaysOfWeekString(daysOfWeek.join(","));
                                     }}
                                     className={cn(
-                                        "w-8 h-7 rounded-full mr-2 cursor-default text-center my-auto bg-slate-800 border border-blue-500",
+                                        "w-8 h-7 rounded-full mr-2 cursor-default text-center my-auto bg-slate-800 border border-calendarAccent",
                                         editing && "cursor-pointer hover:bg-opacity-75",
-                                        daysOfWeekString.split(",").includes("1") && "bg-blue-500"
+                                        daysOfWeekString.split(",").includes("1") && "bg-calendarAccent"
                                     )}
                                 >
                                     M
@@ -505,9 +505,9 @@ export default function ViewEvent({
                                         setDaysOfWeekString(daysOfWeek.join(","));
                                     }}
                                     className={cn(
-                                        "w-8 h-7 rounded-full mr-2 cursor-default text-center my-auto bg-slate-800 border border-blue-500",
+                                        "w-8 h-7 rounded-full mr-2 cursor-default text-center my-auto bg-slate-800 border border-calendarAccent",
                                         editing && "cursor-pointer hover:bg-opacity-75",
-                                        daysOfWeekString.split(",").includes("2") && "bg-blue-500"
+                                        daysOfWeekString.split(",").includes("2") && "bg-calendarAccent"
                                     )}
                                 >
                                     T
@@ -526,9 +526,9 @@ export default function ViewEvent({
                                         setDaysOfWeekString(daysOfWeek.join(","));
                                     }}
                                     className={cn(
-                                        "w-8 h-7 rounded-full mr-2 cursor-default text-center my-auto bg-slate-800 border border-blue-500",
+                                        "w-8 h-7 rounded-full mr-2 cursor-default text-center my-auto bg-slate-800 border border-calendarAccent",
                                         editing && "cursor-pointer hover:bg-opacity-75",
-                                        daysOfWeekString.split(",").includes("3") && "bg-blue-500"
+                                        daysOfWeekString.split(",").includes("3") && "bg-calendarAccent"
                                     )}
                                 >
                                     W
@@ -547,9 +547,9 @@ export default function ViewEvent({
                                         setDaysOfWeekString(daysOfWeek.join(","));
                                     }}
                                     className={cn(
-                                        "w-8 h-7 rounded-full mr-2 cursor-default text-center my-auto bg-slate-800 border border-blue-500",
+                                        "w-8 h-7 rounded-full mr-2 cursor-default text-center my-auto bg-slate-800 border border-calendarAccent",
                                         editing && "cursor-pointer hover:bg-opacity-75",
-                                        daysOfWeekString.split(",").includes("4") && "bg-blue-500"
+                                        daysOfWeekString.split(",").includes("4") && "bg-calendarAccent"
                                     )}
                                 >
                                     R
@@ -568,9 +568,9 @@ export default function ViewEvent({
                                         setDaysOfWeekString(daysOfWeek.join(","));
                                     }}
                                     className={cn(
-                                        "w-8 h-7 rounded-full mr-2 cursor-default text-center my-auto bg-slate-800 border border-blue-500",
+                                        "w-8 h-7 rounded-full mr-2 cursor-default text-center my-auto bg-slate-800 border border-calendarAccent",
                                         editing && "cursor-pointer hover:bg-opacity-75",
-                                        daysOfWeekString.split(",").includes("5") && "bg-blue-500"
+                                        daysOfWeekString.split(",").includes("5") && "bg-calendarAccent"
                                     )}
                                 >
                                     F
@@ -589,9 +589,9 @@ export default function ViewEvent({
                                         setDaysOfWeekString(daysOfWeek.join(","));
                                     }}
                                     className={cn(
-                                        "w-8 h-7 rounded-full mr-2 cursor-default text-center my-auto bg-slate-800 border border-blue-500",
+                                        "w-8 h-7 rounded-full mr-2 cursor-default text-center my-auto bg-slate-800 border border-calendarAccent",
                                         editing && "cursor-pointer hover:bg-opacity-75",
-                                        daysOfWeekString.split(",").includes("6") && "bg-blue-500"
+                                        daysOfWeekString.split(",").includes("6") && "bg-calendarAccent"
                                     )}
                                 >
                                     S

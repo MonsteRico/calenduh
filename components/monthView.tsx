@@ -143,7 +143,7 @@ function Day({ day, bottomRow = false }: { day: DateTime<true>; bottomRow?: bool
                         className={cn(
                             "absolute left-4 top-2",
                             currentMonth ? "font-bold text-primary" : "text-muted-foreground",
-                            isToday && "text-blue-800"
+                            isToday && "text-calendarAccent"
                         )}
                     >
                         {dayNumber}

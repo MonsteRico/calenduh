@@ -18,6 +18,7 @@ import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigge
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faCaretDown } from "@fortawesome/free-solid-svg-icons";
 import useGetCalendars from "~/hooks/useGetCalendars";
+
 import {
     AlertDialog,
     AlertDialogAction,
@@ -36,7 +37,7 @@ import { Input } from "./ui/input";
 import { toast } from "sonner"
 import useCreateEvent from "~/hooks/useCreateEvent";
 import TimePicker from "react-time-picker";
-import { start } from "repl";
+
 
 const genericEvent : CalendarEvent = {
     id: -1,
@@ -74,6 +75,7 @@ export default function CreateEvent({
 }) {
     const today = useToday();
 
+
     const { data: calendars } = useGetCalendars();
     const createEvent = useCreateEvent();
     const [title, setTitle] = useState(defaultEvent.title);
@@ -95,15 +97,21 @@ export default function CreateEvent({
     const [endTime, setEndTime] = useState(defaultEvent.interval.end);
 
     useEffect(() => {
+        if (!startTime || !endTime || !calendars) {
+            return;
+        }
         setStartTimeString(startTime.toLocaleString(DateTime.TIME_24_SIMPLE));
         setEndTimeString(endTime.toLocaleString(DateTime.TIME_24_SIMPLE));
-    }, [startTime, endTime]);
+        const defaultCalendar = calendars.find((calendar) => calendar.isDefault);
+        setMyCalendar(defaultCalendar!);
+    }, [startTime, endTime, calendars]);
 
     useEffect(() => {
-        if (!popoverOpen) {
+        if (!popoverOpen && defaultEvent && calendars) {
             setTitle(defaultEvent.title);
             setEventDate(day?.toJSDate() ?? defaultEvent.interval.start.toJSDate());
-            setMyCalendar(defaultEvent.calendar);
+            const defaultCalendar = calendars.find((calendar) => calendar.isDefault);
+            setMyCalendar(defaultCalendar!);
             setRepeatType(defaultEvent.repeatType);
             setRecurringEndDay(defaultEvent.recurringEndDay?.toJSDate());
             setDaysOfWeekString(defaultEvent.daysOfWeek);
@@ -384,8 +392,8 @@ export default function CreateEvent({
                                         setDaysOfWeekString(daysOfWeek.join(","));
                                     }}
                                     className={cn(
-                                        "w-8 h-7 rounded-full mr-2 text-center my-auto bg-slate-800 border border-blue-500 cursor-pointer hover:bg-opacity-75",
-                                        daysOfWeekString.split(",").includes("7") && "bg-blue-500"
+                                        "w-8 h-7 rounded-full mr-2 text-center my-auto bg-slate-800 border border-calendarAccent cursor-pointer hover:bg-opacity-75",
+                                        daysOfWeekString.split(",").includes("7") && "bg-calendarAccent"
                                     )}
                                 >
                                     S
@@ -401,8 +409,8 @@ export default function CreateEvent({
                                         setDaysOfWeekString(daysOfWeek.join(","));
                                     }}
                                     className={cn(
-                                        "w-8 h-7 rounded-full mr-2 text-center my-auto bg-slate-800 border border-blue-500 cursor-pointer hover:bg-opacity-75",
-                                        daysOfWeekString.split(",").includes("1") && "bg-blue-500"
+                                        "w-8 h-7 rounded-full mr-2 text-center my-auto bg-slate-800 border border-calendarAccent cursor-pointer hover:bg-opacity-75",
+                                        daysOfWeekString.split(",").includes("1") && "bg-calendarAccent"
                                     )}
                                 >
                                     M
@@ -418,8 +426,8 @@ export default function CreateEvent({
                                         setDaysOfWeekString(daysOfWeek.join(","));
                                     }}
                                     className={cn(
-                                        "w-8 h-7 rounded-full mr-2 text-center my-auto bg-slate-800 border border-blue-500 cursor-pointer hover:bg-opacity-75",
-                                        daysOfWeekString.split(",").includes("2") && "bg-blue-500"
+                                        "w-8 h-7 rounded-full mr-2 text-center my-auto bg-slate-800 border border-calendarAccent cursor-pointer hover:bg-opacity-75",
+                                        daysOfWeekString.split(",").includes("2") && "bg-calendarAccent"
                                     )}
                                 >
                                     T
@@ -435,8 +443,8 @@ export default function CreateEvent({
                                         setDaysOfWeekString(daysOfWeek.join(","));
                                     }}
                                     className={cn(
-                                        "w-8 h-7 rounded-full mr-2 text-center my-auto bg-slate-800 border border-blue-500 cursor-pointer hover:bg-opacity-75",
-                                        daysOfWeekString.split(",").includes("3") && "bg-blue-500"
+                                        "w-8 h-7 rounded-full mr-2 text-center my-auto bg-slate-800 border border-calendarAccent cursor-pointer hover:bg-opacity-75",
+                                        daysOfWeekString.split(",").includes("3") && "bg-calendarAccent"
                                     )}
                                 >
                                     W
@@ -452,8 +460,8 @@ export default function CreateEvent({
                                         setDaysOfWeekString(daysOfWeek.join(","));
                                     }}
                                     className={cn(
-                                        "w-8 h-7 rounded-full mr-2 text-center my-auto bg-slate-800 border border-blue-500 cursor-pointer hover:bg-opacity-75",
-                                        daysOfWeekString.split(",").includes("4") && "bg-blue-500"
+                                        "w-8 h-7 rounded-full mr-2 text-center my-auto bg-slate-800 border border-calendarAccent cursor-pointer hover:bg-opacity-75",
+                                        daysOfWeekString.split(",").includes("4") && "bg-calendarAccent"
                                     )}
                                 >
                                     R
@@ -469,8 +477,8 @@ export default function CreateEvent({
                                         setDaysOfWeekString(daysOfWeek.join(","));
                                     }}
                                     className={cn(
-                                        "w-8 h-7 rounded-full mr-2 text-center my-auto bg-slate-800 border border-blue-500 cursor-pointer hover:bg-opacity-75",
-                                        daysOfWeekString.split(",").includes("5") && "bg-blue-500"
+                                        "w-8 h-7 rounded-full mr-2 text-center my-auto bg-slate-800 border border-calendarAccent cursor-pointer hover:bg-opacity-75",
+                                        daysOfWeekString.split(",").includes("5") && "bg-calendarAccent"
                                     )}
                                 >
                                     F
@@ -486,8 +494,8 @@ export default function CreateEvent({
                                         setDaysOfWeekString(daysOfWeek.join(","));
                                     }}
                                     className={cn(
-                                        "w-8 h-7 rounded-full mr-2 text-center my-auto bg-slate-800 border border-blue-500 cursor-pointer hover:bg-opacity-75",
-                                        daysOfWeekString.split(",").includes("6") && "bg-blue-500"
+                                        "w-8 h-7 rounded-full mr-2 text-center my-auto bg-slate-800 border border-calendarAccent cursor-pointer hover:bg-opacity-75",
+                                        daysOfWeekString.split(",").includes("6") && "bg-calendarAccent"
                                     )}
                                 >
                                     S
