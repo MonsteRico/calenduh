@@ -12,6 +12,7 @@ import SideBar from "./sideBar";
 import { Popover, PopoverTrigger } from "./ui/popover";
 import CreateEvent from "./addEvent";
 import UserButton from "./userButton";
+import { DrawerPopover, DrawerPopoverTrigger } from "./responsiveDrawerPopover";
 
 export default function TopBar() {
     const today = useToday();
@@ -65,12 +66,12 @@ function AddEventButton() {
     const [isOpen, setIsOpen] = useState(false);
 
     return (
-        <Popover open={isOpen} onOpenChange={setIsOpen}>
-            <PopoverTrigger>
+        <DrawerPopover open={isOpen} onOpenChange={setIsOpen}>
+            <DrawerPopoverTrigger>
                 <Button variant="default">Add Event</Button>
-            </PopoverTrigger>
+            </DrawerPopoverTrigger>
             <CreateEvent popoverOpen={isOpen} />
-        </Popover>
+        </DrawerPopover>
     );
 }
 

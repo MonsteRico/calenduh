@@ -12,6 +12,8 @@ import CreateEvent from "./addEvent";
 import { useDrop } from "react-dnd";
 import { toast } from "sonner"
 import useMoveEvent from "~/hooks/useMoveEvent";
+import { useMediaQuery } from "~/hooks/useMediaQuery";
+import { DrawerPopover, DrawerPopoverTrigger } from "./responsiveDrawerPopover";
 
 export default function MonthView() {
     const today = useToday();
@@ -111,6 +113,7 @@ function Day({ day, bottomRow = false }: { day: DateTime<true>; bottomRow?: bool
     const [myEvents, setMyEvents] = useState<CalendarEvent[]>([]);
 
     const [createPopoverOpen, setCreatePopoverOpen] = useState(false);
+const isDesktop = useMediaQuery("(min-width: 768px)");
 
     useEffect(() => {
         if (events) {
@@ -118,8 +121,8 @@ function Day({ day, bottomRow = false }: { day: DateTime<true>; bottomRow?: bool
         }
     }, [events, enabledCalendarIds]);
     return (
-        <Popover open={createPopoverOpen} onOpenChange={setCreatePopoverOpen}>
-            <PopoverTrigger
+        <DrawerPopover open={createPopoverOpen} onOpenChange={setCreatePopoverOpen}>
+            <DrawerPopoverTrigger
                 onClick={(e) => {
                     e.preventDefault();
                     e.stopPropagation();
@@ -136,7 +139,7 @@ function Day({ day, bottomRow = false }: { day: DateTime<true>; bottomRow?: bool
                         "relative h-32 border-l-4 border-t-4 border-primary-foreground text-2xl",
                         dayIsSaturday && "border-r-4",
                         bottomRow && "border-b-4",
-                        isOver && canDrop && "bg-primary-foreground",
+                        isOver && canDrop && "bg-primary-foreground"
                     )}
                 >
                     <h2
@@ -158,8 +161,8 @@ function Day({ day, bottomRow = false }: { day: DateTime<true>; bottomRow?: bool
                         )}
                     </div>
                 </div>
-            </PopoverTrigger>
+            </DrawerPopoverTrigger>
             <CreateEvent day={day} popoverOpen={createPopoverOpen} />
-        </Popover>
+        </DrawerPopover>
     );
 }

@@ -37,6 +37,7 @@ import { Input } from "./ui/input";
 import { toast } from "sonner"
 import useCreateEvent from "~/hooks/useCreateEvent";
 import TimePicker from "react-time-picker";
+import { DrawerPopoverContent } from "./responsiveDrawerPopover";
 
 
 const genericEvent : CalendarEvent = {
@@ -129,7 +130,7 @@ export default function CreateEvent({
 
     return (
         <>
-            <PopoverContent>
+            <DrawerPopoverContent>
                 {
                     // Title
                 }
@@ -574,7 +575,7 @@ export default function CreateEvent({
                 >
                     Create Event
                 </Button>
-            </PopoverContent>
+            </DrawerPopoverContent>
         </>
     );
 }

@@ -36,6 +36,8 @@ import { Input } from "./ui/input";
 import ViewEvent from "./viewEvent";
 import CreateEvent from "./addEvent";
 import { useDrag } from "react-dnd";
+import { useMediaQuery } from "~/hooks/useMediaQuery";
+import { DrawerPopover, DrawerPopoverTrigger } from "./responsiveDrawerPopover";
 
 export function Event({
     event,
@@ -237,7 +239,7 @@ export function NewEvent({
     const today = useToday();
     const { value: enabledCalendarIds } = useContext(EnabledCalendarIdsContext);
     const [popoverOpen, setPopoverOpen] = useState(!dragging);
-
+const isDesktop = useMediaQuery("(min-width: 768px)");
     useEffect(() => {
         setPopoverOpen(!dragging);
     }, [dragging]);
@@ -257,9 +259,12 @@ export function NewEvent({
     const backgroundColor = Color(backgroundColorString);
     const borderColor = backgroundColor.darken(0.35);
 
+    
+
+
     return (
-        <Popover open={popoverOpen} onOpenChange={setPopoverOpen}>
-            <PopoverTrigger
+        <DrawerPopover open={popoverOpen} onOpenChange={setPopoverOpen}>
+            <DrawerPopoverTrigger
                 className="absolute w-full overflow-ellipsis cursor-pointer flex"
                 style={{
                     top: `${top}rem`,
@@ -274,8 +279,8 @@ export function NewEvent({
                 <h4 className={cn("py-2 text-center text-xs", backgroundColor.isDark() ? "text-white" : "text-black")}>
                     {event.title}, {event.numConflicts}
                 </h4>
-            </PopoverTrigger>
+            </DrawerPopoverTrigger>
             <CreateEvent onCreated={onCreated} defaultEvent={event} day={dayItsOn} popoverOpen={popoverOpen} />
-        </Popover>
+        </DrawerPopover>
     );
 }

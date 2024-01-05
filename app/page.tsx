@@ -14,6 +14,7 @@ import { useToday } from "~/hooks/useToday";
 import { DndProvider } from 'react-dnd'
 import { HTML5Backend } from 'react-dnd-html5-backend'
 import { SessionProvider } from "next-auth/react";
+import DayView from "~/components/dayView";
 export default function Home() {
     const today = useToday();
     const [dayBeingViewed, setDayBeingViewed] = useState<DateTime<true>>(today);
@@ -84,7 +85,7 @@ export default function Home() {
                                     <WeekView />
                                 </TabsContent>
                                 <TabsContent value="day">
-                                    <h1>Day</h1>
+                                    <DayView />
                                 </TabsContent>
                             </main>
                         </Tabs>

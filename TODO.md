@@ -29,5 +29,7 @@ TODO
     -   importing from iCal does not automatically add new events. either a way to subscribe to other peoples calendars in this app or to iCal format is useful
         -   maybe it has to pull the iCal periodically to see if there are any new events to add?
 -   stuff to let it work offline? (react query persistent cache)
+
+
 -   allow you to click and drag existing events around and drag edges to change duration/start and end
 -   click and drag to create event is commented out for now, maybe reenable it?
