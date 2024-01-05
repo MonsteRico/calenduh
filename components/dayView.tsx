@@ -95,7 +95,7 @@ function DayOverview({ day }: { day: DateTime<true> }) {
                 <h2 className="text-8xl mt-auto">{day.day}</h2>
                 <h2 className="text-3xl">{day.toLocaleString(DateTime.DATE_HUGE)}</h2>
             </div>
-            <Calendar fixedWeeks disableNavigation today={day.toJSDate()} month={day.toJSDate()} selected={day.toJSDate()} />
+            <Calendar fixedWeeks disableNavigation month={day.toJSDate()} selected={day.toJSDate()} />
         </div>
         <div className="mt-4">
             lol i gotta style this //TODO

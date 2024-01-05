@@ -7,12 +7,12 @@ import MonthView from "~/components/monthView";
 import TopBar from "~/components/topBar";
 import { Tabs, TabsContent } from "~/components/ui/tabs";
 import WeekView from "~/components/weekView";
-import { DayBeingViewedContext, EnabledCalendarIdsContext } from "~/hooks/contexts";
+import { CurrentViewContext, DayBeingViewedContext, EnabledCalendarIdsContext } from "~/hooks/contexts";
 import useGetCalendars from "~/hooks/useGetCalendars";
 import { fetchEvents } from "~/hooks/useGetEvents";
 import { useToday } from "~/hooks/useToday";
-import { DndProvider } from 'react-dnd'
-import { HTML5Backend } from 'react-dnd-html5-backend'
+import { DndProvider } from "react-dnd";
+import { HTML5Backend } from "react-dnd-html5-backend";
 import { SessionProvider } from "next-auth/react";
 import DayView from "~/components/dayView";
 export default function Home() {
@@ -20,7 +20,7 @@ export default function Home() {
     const [dayBeingViewed, setDayBeingViewed] = useState<DateTime<true>>(today);
     const [enabledCalendarIds, setEnabledCalendarIds] = useState<number[]>([]);
     const [previousMonthBeingViewed, setPreviousMonthBeingViewed] = useState(dayBeingViewed.month);
-
+    const [currentView, setCurrentView] = useState<"month" | "week" | "day">("month");
     const { data: calendars, isLoading: calendarsLoading } = useGetCalendars({});
 
     useEffect(() => {
@@ -34,7 +34,6 @@ export default function Home() {
         if (dayBeingViewed.month == previousMonthBeingViewed) {
             return;
         }
-
 
         // prefetch the previous month's events
         const previousMonth = dayBeingViewed.minus({ month: 1 });
@@ -57,10 +56,8 @@ export default function Home() {
         Promise.all([...previousMonthPromises, ...nextMonthPromises]).catch((error) => {
             console.error("Error prefetching events:", error);
         });
-        
+
         setPreviousMonthBeingViewed(dayBeingViewed.month);
-
-
     }, [dayBeingViewed, queryClient, previousMonthBeingViewed]);
 
     if (calendarsLoading) {
@@ -71,26 +68,31 @@ export default function Home() {
     return (
         <DndProvider backend={HTML5Backend}>
             <SessionProvider>
-                <DayBeingViewedContext.Provider value={{ value: dayBeingViewed, setValue: setDayBeingViewed }}>
-                    <EnabledCalendarIdsContext.Provider
-                        value={{ value: enabledCalendarIds, setValue: setEnabledCalendarIds }}
-                    >
-                        <Tabs defaultValue="month">
-                            <TopBar />
-                            <main>
-                                <TabsContent value="month">
-                                    <MonthView />
-                                </TabsContent>
-                                <TabsContent value="week">
-                                    <WeekView />
-                                </TabsContent>
-                                <TabsContent value="day">
-                                    <DayView />
-                                </TabsContent>
-                            </main>
-                        </Tabs>
-                    </EnabledCalendarIdsContext.Provider>
-                </DayBeingViewedContext.Provider>
+                <CurrentViewContext.Provider value={{ value: currentView, setValue: setCurrentView }}>
+                    <DayBeingViewedContext.Provider value={{ value: dayBeingViewed, setValue: setDayBeingViewed }}>
+                        <EnabledCalendarIdsContext.Provider
+                            value={{ value: enabledCalendarIds, setValue: setEnabledCalendarIds }}
+                        >
+                            <Tabs onValueChange={(newView) => {
+                                setCurrentView(newView as "month" | "week" | "day");
+                                console.log(newView)
+                            }} defaultValue="month">
+                                <TopBar />
+                                <main>
+                                    <TabsContent value="month">
+                                        <MonthView />
+                                    </TabsContent>
+                                    <TabsContent value="week">
+                                        <WeekView />
+                                    </TabsContent>
+                                    <TabsContent value="day">
+                                        <DayView />
+                                    </TabsContent>
+                                </main>
+                            </Tabs>
+                        </EnabledCalendarIdsContext.Provider>
+                    </DayBeingViewedContext.Provider>
+                </CurrentViewContext.Provider>
             </SessionProvider>
         </DndProvider>
     );
