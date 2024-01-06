@@ -2,7 +2,7 @@ import { DateTime, Interval } from "luxon";
 import React, { use, useContext, useEffect, useMemo, useState } from "react";
 import { useToday } from "~/hooks/useToday";
 
-import { DayBeingViewedContext, DraggingContext, EnabledCalendarIdsContext } from "~/hooks/contexts";
+import { CurrentViewContext, DayBeingViewedContext, DraggingContext, EnabledCalendarIdsContext } from "~/hooks/contexts";
 import { cn, hexToRgb } from "~/lib/utils";
 import { CalendarEvent } from "~/lib/types";
 import { useQuery } from "react-query";
@@ -15,7 +15,6 @@ import { useMediaQuery } from "~/hooks/useMediaQuery";
 export default function DayView() {
     const today = useToday();
     const { value: dayBeingViewed, setValue: setDayBeingViewed } = useContext(DayBeingViewedContext);
-
     const startOfWeek = dayBeingViewed.startOf("week").minus({ day: 1 });
 
     const fifteenMinChunks = Array.from({ length: 96 }, (_, i) => startOfWeek.plus({ minutes: i * 15 }));
@@ -71,6 +70,7 @@ export default function DayView() {
 
 function DayOverview({ day }: { day: DateTime<true> }) {
     const { value: enabledCalendarIds } = useContext(EnabledCalendarIdsContext);
+    const { value: dayBeingViewed, setValue: setDayBeingViewed } = useContext(DayBeingViewedContext);
 
     const { data: events, isLoading } = useGetEvents(day);
     const [myEvents, setMyEvents] = useState<CalendarEvent[]>([]);
@@ -88,30 +88,42 @@ function DayOverview({ day }: { day: DateTime<true> }) {
         return <div>Loading...</div>;
     }
 
-
-    return <div className="flex flex-col mx-4">
-        <div className="flex flex-row justify-between">
-            <div className="flex flex-col h-full">
-                <h2 className="text-8xl mt-auto">{day.day}</h2>
-                <h2 className="text-3xl">{day.toLocaleString(DateTime.DATE_HUGE)}</h2>
+    return (
+        <div className="flex flex-col mx-4">
+            <div className="flex flex-row justify-between">
+                <div className="flex flex-col h-full">
+                    <h2 className="text-8xl mt-auto">{day.day}</h2>
+                    <h2 className="text-3xl">{day.toLocaleString(DateTime.DATE_HUGE)}</h2>
+                </div>
+                <Calendar
+                    fixedWeeks
+                    disableNavigation
+                    month={day.toJSDate()}
+                    selected={day.toJSDate()}
+                    mode="single"
+                    onSelect={(newDay) => {
+                        if (newDay) {
+                            setDayBeingViewed(DateTime.fromJSDate(newDay));
+                        }
+                    }}
+                />
             </div>
-            <Calendar fixedWeeks disableNavigation month={day.toJSDate()} selected={day.toJSDate()} />
+            <div className="mt-4">
+                lol i gotta style this //TODO
+                {myEvents.map((event, i) => {
+                    return (
+                        <div key={i}>
+                            <h3>{event.title}</h3>
+                            <p>
+                                {event.interval.start.toLocaleString(DateTime.TIME_SIMPLE)} -{" "}
+                                {event.interval.end.toLocaleString(DateTime.TIME_SIMPLE)}
+                            </p>
+                        </div>
+                    );
+                })}
+            </div>
         </div>
-        <div className="mt-4">
-            lol i gotta style this //TODO
-            {myEvents.map((event, i) => {
-                return (
-                    <div key={i}>
-                        <h3>{event.title}</h3>
-                        <p>
-                            {event.interval.start.toLocaleString(DateTime.TIME_SIMPLE)} -{" "}
-                            {event.interval.end.toLocaleString(DateTime.TIME_SIMPLE)}
-                        </p>
-                    </div>
-                );
-            })}
-        </div>
-    </div>;
+    );
 }
 
 function DayHeader({ day }: { day: DateTime<true> }) {

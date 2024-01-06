@@ -46,7 +46,7 @@ module.exports = {
                     foreground: "hsl(var(--card-foreground))",
                 },
                 calendarAccent: {
-                    DEFAULT: "hsl(var(--calendar-accent))",
+                    DEFAULT: "var(--calendar-accent)",
                 }
             },
             borderRadius: {
