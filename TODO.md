@@ -9,6 +9,7 @@ TODO
 
 -   user preferences
 
+    -   add user preferences to the database, move accent color there too
     -   start on today or start on last day viewed
     -   default calendar for new events (instead of normal default calendar)
     -   keep track of the last view you were on and automatically load into that view
