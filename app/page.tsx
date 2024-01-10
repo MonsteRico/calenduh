@@ -13,8 +13,9 @@ import { fetchEvents } from "~/hooks/events/useGetEvents";
 import { useToday } from "~/hooks/useToday";
 import { DndProvider } from "react-dnd";
 import { HTML5Backend } from "react-dnd-html5-backend";
-import { SessionProvider } from "next-auth/react";
+import { SessionProvider, useSession } from "next-auth/react";
 import DayView from "~/components/dayView";
+import { redirect } from "next/navigation";
 export default function Home() {
     const today = useToday();
     const [dayBeingViewed, setDayBeingViewed] = useState<DateTime<true>>(today);
@@ -22,7 +23,6 @@ export default function Home() {
     const [previousMonthBeingViewed, setPreviousMonthBeingViewed] = useState(dayBeingViewed.month);
     const [currentView, setCurrentView] = useState<"month" | "week" | "day">("month");
     const { data: calendars, isLoading: calendarsLoading } = useGetCalendars({});
-
     useEffect(() => {
         if (calendars) {
             setEnabledCalendarIds(calendars.map((calendar) => calendar.id));
@@ -64,6 +64,7 @@ export default function Home() {
         // TODO better loading state for whole app
         return <h1>Loading</h1>;
     }
+
 
     return (
         <DndProvider backend={HTML5Backend}>

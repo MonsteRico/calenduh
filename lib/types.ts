@@ -28,3 +28,10 @@ export type Calendar = {
     user?: User;
     events?: CalendarEvent[];
 };
+
+export type UserPreferences = {
+    accentColor: string;
+    startOnToday: boolean;
+    startOnPreviousView: boolean;
+    defaultCalendarId: number;
+};

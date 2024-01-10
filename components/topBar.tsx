@@ -28,17 +28,15 @@ import { signOut, useSession } from "next-auth/react";
 import { CircleColorPicker } from "./circleColorPicker";
 import useUpdateAccentColor from "~/hooks/userPreferences/useUpdateAccentColor";
 import { useUser } from "~/hooks/useUser";
+import useGetUserPreferences from "~/hooks/userPreferences/useGetUserPreferences";
 
 export default function TopBar() {
-    useEffect(() => {
-        // get the accent color from local storage, if it exists
-        const storedColor = localStorage.getItem("accentColor");
-        if (storedColor) {
-            document.documentElement.style.setProperty("--calendar-accent", storedColor);
-        } else {
-            localStorage.setItem("accentColor", "#FAC805");
-        }
-    }, []);
+    // const { data: userPreferences } = useGetUserPreferences();
+
+    // useEffect(() => {
+    //     if (!userPreferences) return;
+    //     document.documentElement.style.setProperty("--calendar-accent", userPreferences.accentColor);
+    // }, [userPreferences]);
 
     return (
         <div className="sticky top-0 z-10 mx-5 flex flex-row justify-between bg-background py-4">
@@ -224,27 +222,23 @@ function ThemeSettings() {
     const [accentColor, setAccentColor] = useState("");
     const [open, setOpen] = useState(false);
     const updateAccentColor = useUpdateAccentColor();
-    const user = useUser();
+    const session = useSession();
+    const { data: userPreferences } = useGetUserPreferences();
+
     useEffect(() => {
-        // get the accent color from local storage, if it exists
-        const storedColor = localStorage.getItem("accentColor");
-        if (storedColor) {
-            setAccentColor(storedColor);
-        } else {
-            setAccentColor("#FAC805");
-            localStorage.setItem("accentColor", "#FAC805");
-        }
-    }, []);
+        if (!userPreferences) return;
+        setAccentColor(userPreferences.accentColor);
+    }, [userPreferences]);
+
     useEffect(() => {
-        if (!accentColor) return;
-        if (accentColor == localStorage.getItem("accentColor")) return;
+        if (!accentColor || !userPreferences) return;
+        if (accentColor == userPreferences.accentColor) return;
 
         // set the accent color in database
-        updateAccentColor.mutate({newColor: accentColor});
+        updateAccentColor.mutate({ newColor: accentColor });
         // update css variables
         document.documentElement.style.setProperty("--calendar-accent", accentColor);
-    }, [accentColor, updateAccentColor]);
-
+    }, [accentColor]);
 
     return (
         <div className="flex flex-row gap-8">

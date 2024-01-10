@@ -4,19 +4,24 @@ import { NextRequest, NextResponse } from "next/server";
 import { db } from "~/db/db";
 import { users } from "~/db/schema/auth";
 import { calendarEvents, calendars } from "~/db/schema/main";
+import getServerAuthSession from "~/lib/getServerAuthSession";
 export const dynamic = "force-dynamic"; // defaults to auto
 
+// PATCH /api/mes/[userId]
+export async function PATCH(request: NextRequest) {
+    const session = await getServerAuthSession();
+    const userId = session?.user?.id;
 
-// PATCH /api/users/[userId]
-export async function PATCH(request: NextRequest, { params }: { params: { userId: string } }) {
-    const userId = params.userId;
+    if (!userId) {
+        return NextResponse.json(
+            {
+                error: "no user found",
+            },
+            { status: 404 }
+        );
+    }
     const body = await request.json();
-    const {
-        accentColor,
-        startOnToday,
-        startOnPreviousView,
-        defaultCalendarId,
-    } = body as {
+    const { accentColor, startOnToday, startOnPreviousView, defaultCalendarId } = body as {
         accentColor?: string;
         startOnToday?: boolean;
         startOnPreviousView?: boolean;
@@ -41,12 +46,15 @@ export async function PATCH(request: NextRequest, { params }: { params: { userId
 
     if (defaultCalendarId) {
         await db.update(calendars).set({ isDefault: false }).where(eq(calendars.id, user.defaultCalendarId));
-        await db.update(users).set({ defaultCalendarId: parseInt(defaultCalendarId) }).where(eq(users.id, userId));
-        await db.update(calendars).set({ isDefault: true }).where(eq(calendars.id, parseInt(defaultCalendarId)));
+        await db
+            .update(users)
+            .set({ defaultCalendarId: parseInt(defaultCalendarId) })
+            .where(eq(users.id, userId));
+        await db
+            .update(calendars)
+            .set({ isDefault: true })
+            .where(eq(calendars.id, parseInt(defaultCalendarId)));
     }
-
-   
 
     return NextResponse.json({});
 }
-

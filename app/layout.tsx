@@ -22,6 +22,8 @@ export default async function RootLayout({ children }: { children: React.ReactNo
         // redirect to /api/auth/signin
         redirect("/api/auth/signin");
     }
+
+
     return (
         <html suppressHydrationWarning lang="en">
             <body className={inter.className}>
