@@ -1,4 +1,4 @@
-import { datetime, index, int, mysqlTable, text, timestamp, uniqueIndex, varchar } from "drizzle-orm/mysql-core";
+import { boolean, datetime, index, int, mysqlTable, text, timestamp, uniqueIndex, varchar } from "drizzle-orm/mysql-core";
 import { calendarEvents, calendars } from "./main";
 import { relations } from "drizzle-orm";
 
@@ -55,15 +55,23 @@ export const users = mysqlTable(
         image: varchar("image", { length: 191 }),
         created_at: timestamp("created_at").notNull().defaultNow(),
         updated_at: timestamp("updated_at").notNull().defaultNow().onUpdateNow(),
+        accent_color: varchar("accent_color", { length: 191 }).notNull().default("#cfb991"),
+        startOnToday: boolean("start_on_today").notNull().default(true), // start on today or last day viewed
+        startOnPreviousView: boolean("start_on_previous_view").notNull().default(false), // start on the last view (day, week, month, year) or on month
+        defaultCalendarId: int("default_calendar_id").notNull().default(-1),
     },
     (user) => ({
         emailIndex: uniqueIndex("users__email__idx").on(user.email),
     })
 );
 
-export const userRelations = relations(users, ({ many }) => ({
+export const userRelations = relations(users, ({ many, one }) => ({
     events: many(calendarEvents),
     calendars: many(calendars),
+    defaultCalendar: one(calendars, {
+        fields: [users.defaultCalendarId],
+        references: [calendars.id],
+    }),
 }));
 
 export const verificationTokens = mysqlTable(

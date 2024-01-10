@@ -26,7 +26,7 @@ TODO
 -   export as iCal? import from iCal?
 -   subscribe to iCal?
 
-    -   importing from iCal does not automatically add new events. either a way to subscribe to other peoples calendars in this app or to iCal format is useful
+    -   importing from iCal does not automatically add new events in some other apps. either a way to subscribe to other peoples calendars in this app or to iCal format is useful
         -   maybe it has to pull the iCal periodically to see if there are any new events to add?
 
 -   allow you to click and drag existing events around and drag edges to change duration/start and end
