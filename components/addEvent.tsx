@@ -6,18 +6,18 @@ import { DayBeingViewedContext, EnabledCalendarIdsContext } from "~/hooks/contex
 import { capitalize, cn, hexToRgb } from "~/lib/utils";
 import { CalendarEvent } from "~/lib/types";
 import { useQuery } from "react-query";
-import useGetEvents from "~/hooks/useGetEvents";
+import useGetEvents from "~/hooks/events/useGetEvents";
 import Color from "color";
-import useGetCalendar from "~/hooks/useGetCalendar";
+import useGetCalendar from "~/hooks/calendars/useGetCalendar";
 import { Popover, PopoverContent, PopoverTrigger } from "./ui/popover";
-import useUpdateEvent from "~/hooks/useUpdateEvent";
-import useDeleteEvent from "~/hooks/useDeleteEvent";
+import useUpdateEvent from "~/hooks/events/useUpdateEvent";
+import useDeleteEvent from "~/hooks/events/useDeleteEvent";
 import { Button } from "./ui/button";
 import { Label } from "./ui/label";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "./ui/dropdown-menu";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faCaretDown } from "@fortawesome/free-solid-svg-icons";
-import useGetCalendars from "~/hooks/useGetCalendars";
+import useGetCalendars from "~/hooks/calendars/useGetCalendars";
 
 import {
     AlertDialog,
@@ -31,16 +31,15 @@ import {
 } from "./ui/alert-dialog";
 import { useDebounce } from "~/hooks/useDebounce";
 import { DatePicker } from "./ui/date-picker";
-import useGetEvent from "~/hooks/useGetEvent";
+import useGetEvent from "~/hooks/events/useGetEvent";
 import { Switch } from "./ui/switch";
 import { Input } from "./ui/input";
-import { toast } from "sonner"
-import useCreateEvent from "~/hooks/useCreateEvent";
+import { toast } from "sonner";
+import useCreateEvent from "~/hooks/events/useCreateEvent";
 import TimePicker from "react-time-picker";
 import { DrawerPopoverContent } from "./responsiveDrawerPopover";
 
-
-const genericEvent : CalendarEvent = {
+const genericEvent: CalendarEvent = {
     id: -1,
     title: "New Event",
     interval: Interval.fromDateTimes(
@@ -75,7 +74,6 @@ export default function CreateEvent({
     onCreated?: () => void;
 }) {
     const today = useToday();
-
 
     const { data: calendars } = useGetCalendars();
     const createEvent = useCreateEvent();

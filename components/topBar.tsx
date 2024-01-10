@@ -26,6 +26,8 @@ import { DateTime } from "luxon";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "./ui/dropdown-menu";
 import { signOut, useSession } from "next-auth/react";
 import { CircleColorPicker } from "./circleColorPicker";
+import useUpdateAccentColor from "~/hooks/userPreferences/useUpdateAccentColor";
+import { useUser } from "~/hooks/useUser";
 
 export default function TopBar() {
     useEffect(() => {
@@ -221,6 +223,8 @@ function UserPopover() {
 function ThemeSettings() {
     const [accentColor, setAccentColor] = useState("");
     const [open, setOpen] = useState(false);
+    const updateAccentColor = useUpdateAccentColor();
+    const user = useUser();
     useEffect(() => {
         // get the accent color from local storage, if it exists
         const storedColor = localStorage.getItem("accentColor");
@@ -235,11 +239,11 @@ function ThemeSettings() {
         if (!accentColor) return;
         if (accentColor == localStorage.getItem("accentColor")) return;
 
-        // set the accent color in local storage
-        localStorage.setItem("accentColor", accentColor);
+        // set the accent color in database
+        updateAccentColor.mutate({newColor: accentColor});
         // update css variables
         document.documentElement.style.setProperty("--calendar-accent", accentColor);
-    }, [accentColor]);
+    }, [accentColor, updateAccentColor]);
 
 
     return (

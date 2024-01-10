@@ -6,7 +6,7 @@ import { DayBeingViewedContext, DraggingContext, EnabledCalendarIdsContext } fro
 import { cn, hexToRgb } from "~/lib/utils";
 import { CalendarEvent } from "~/lib/types";
 import { useQuery } from "react-query";
-import useGetEvents from "~/hooks/useGetEvents";
+import useGetEvents from "~/hooks/events/useGetEvents";
 import Color from "color";
 import { AllDayEvent, Event, NewEvent } from "./event";
 
@@ -225,7 +225,7 @@ function FifteenMinBlock({ i, day }: { i: number; day?: DateTime<true> }) {
                 e.stopPropagation();
                 console.log("double click");
                 setStartDragTime(myInterval.start);
-                setEndDragTime(myInterval.start.plus({hour:1}));
+                setEndDragTime(myInterval.start.plus({ hour: 1 }));
             }}
             // STUFF FOR CLICK AND DRAG TO CREATE EVENTS
             // onMouseDown={(e) => {

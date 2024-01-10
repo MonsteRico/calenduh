@@ -6,18 +6,18 @@ import { DayBeingViewedContext, EnabledCalendarIdsContext } from "~/hooks/contex
 import { capitalize, cn, hexToRgb } from "~/lib/utils";
 import { CalendarEvent } from "~/lib/types";
 import { useQuery } from "react-query";
-import useGetEvents from "~/hooks/useGetEvents";
+import useGetEvents from "~/hooks/events/useGetEvents";
 import Color from "color";
-import useGetCalendar from "~/hooks/useGetCalendar";
+import useGetCalendar from "~/hooks/calendars/useGetCalendar";
 import { Popover, PopoverContent, PopoverTrigger } from "./ui/popover";
-import useUpdateEvent from "~/hooks/useUpdateEvent";
-import useDeleteEvent from "~/hooks/useDeleteEvent";
+import useUpdateEvent from "~/hooks/events/useUpdateEvent";
+import useDeleteEvent from "~/hooks/events/useDeleteEvent";
 import { Button } from "./ui/button";
 import { Label } from "./ui/label";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "./ui/dropdown-menu";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faCaretDown } from "@fortawesome/free-solid-svg-icons";
-import useGetCalendars from "~/hooks/useGetCalendars";
+import useGetCalendars from "~/hooks/calendars/useGetCalendars";
 import {
     AlertDialog,
     AlertDialogAction,
@@ -30,7 +30,7 @@ import {
 } from "./ui/alert-dialog";
 import { useDebounce } from "~/hooks/useDebounce";
 import { DatePicker } from "./ui/date-picker";
-import useGetEvent from "~/hooks/useGetEvent";
+import useGetEvent from "~/hooks/events/useGetEvent";
 import { Switch } from "./ui/switch";
 import { Input } from "./ui/input";
 import ViewEvent from "./viewEvent";
@@ -239,7 +239,7 @@ export function NewEvent({
     const today = useToday();
     const { value: enabledCalendarIds } = useContext(EnabledCalendarIdsContext);
     const [popoverOpen, setPopoverOpen] = useState(!dragging);
-const isDesktop = useMediaQuery("(min-width: 768px)");
+    const isDesktop = useMediaQuery("(min-width: 768px)");
     useEffect(() => {
         setPopoverOpen(!dragging);
     }, [dragging]);
@@ -258,9 +258,6 @@ const isDesktop = useMediaQuery("(min-width: 768px)");
     const backgroundColorString = rgb ? `rgba(${rgb.r}, ${rgb.g}, ${rgb.b})` : calendar.color;
     const backgroundColor = Color(backgroundColorString);
     const borderColor = backgroundColor.darken(0.35);
-
-    
-
 
     return (
         <DrawerPopover open={popoverOpen} onOpenChange={setPopoverOpen}>

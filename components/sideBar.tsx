@@ -1,7 +1,7 @@
 import { Sheet, SheetContent, SheetDescription, SheetHeader, SheetTitle, SheetTrigger } from "~/components/ui/sheet";
 import { faBars, faEllipsis, faTrash } from "@fortawesome/free-solid-svg-icons";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import useGetCalendars from "~/hooks/useGetCalendars";
+import useGetCalendars from "~/hooks/calendars/useGetCalendars";
 import { Calendar } from "~/lib/types";
 import { useContext, useEffect, useRef, useState } from "react";
 import { EnabledCalendarIdsContext } from "~/hooks/contexts";
@@ -18,10 +18,10 @@ import { Label } from "./ui/label";
 import { Input } from "./ui/input";
 import { useMutation, useQueryClient } from "react-query";
 import { useDebounce } from "~/hooks/useDebounce";
-import useUpdateCalendar from "~/hooks/useUpdateCalendar";
+import useUpdateCalendar from "~/hooks/calendars/useUpdateCalendar";
 import { Button } from "./ui/button";
-import useDeleteCalendar from "~/hooks/useDeleteCalendar";
-import useCreateCalendar from "~/hooks/useCreateCalendar";
+import useDeleteCalendar from "~/hooks/calendars/useDeleteCalendar";
+import useCreateCalendar from "~/hooks/calendars/useCreateCalendar";
 import {
     DropdownMenu,
     DropdownMenuContent,
@@ -343,4 +343,3 @@ function AddCalendar() {
         </Dialog>
     );
 }
-

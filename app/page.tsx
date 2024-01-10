@@ -8,8 +8,8 @@ import TopBar from "~/components/topBar";
 import { Tabs, TabsContent } from "~/components/ui/tabs";
 import WeekView from "~/components/weekView";
 import { CurrentViewContext, DayBeingViewedContext, EnabledCalendarIdsContext } from "~/hooks/contexts";
-import useGetCalendars from "~/hooks/useGetCalendars";
-import { fetchEvents } from "~/hooks/useGetEvents";
+import useGetCalendars from "~/hooks/calendars/useGetCalendars";
+import { fetchEvents } from "~/hooks/events/useGetEvents";
 import { useToday } from "~/hooks/useToday";
 import { DndProvider } from "react-dnd";
 import { HTML5Backend } from "react-dnd-html5-backend";
@@ -73,10 +73,13 @@ export default function Home() {
                         <EnabledCalendarIdsContext.Provider
                             value={{ value: enabledCalendarIds, setValue: setEnabledCalendarIds }}
                         >
-                            <Tabs onValueChange={(newView) => {
-                                setCurrentView(newView as "month" | "week" | "day");
-                                console.log(newView)
-                            }} defaultValue="month">
+                            <Tabs
+                                onValueChange={(newView) => {
+                                    setCurrentView(newView as "month" | "week" | "day");
+                                    console.log(newView);
+                                }}
+                                defaultValue="month"
+                            >
                                 <TopBar />
                                 <main>
                                     <TabsContent value="month">

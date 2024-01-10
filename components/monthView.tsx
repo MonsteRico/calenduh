@@ -3,15 +3,15 @@ import React, { useContext, useEffect, useState } from "react";
 import { useToday } from "~/hooks/useToday";
 
 import { DayBeingViewedContext, EnabledCalendarIdsContext } from "~/hooks/contexts";
-import useGetEvents from "~/hooks/useGetEvents";
+import useGetEvents from "~/hooks/events/useGetEvents";
 import { CalendarEvent } from "~/lib/types";
 import { cn } from "~/lib/utils";
 import { MonthEvent } from "./event";
 import { Popover, PopoverTrigger } from "./ui/popover";
 import CreateEvent from "./addEvent";
 import { useDrop } from "react-dnd";
-import { toast } from "sonner"
-import useMoveEvent from "~/hooks/useMoveEvent";
+import { toast } from "sonner";
+import useMoveEvent from "~/hooks/events/useMoveEvent";
 import { useMediaQuery } from "~/hooks/useMediaQuery";
 import { DrawerPopover, DrawerPopoverTrigger } from "./responsiveDrawerPopover";
 
@@ -69,37 +69,35 @@ export default function MonthView() {
 
 function Day({ day, bottomRow = false }: { day: DateTime<true>; bottomRow?: boolean }) {
     const moveEvent = useMoveEvent();
-  const [{ isOver, canDrop }, drop] = useDrop(() => ({
-      // The type (or types) to accept - strings or symbols
-      accept: "MonthEvent",
-      // Props to collect
-      canDrop: (item: { event: CalendarEvent; day: DateTime<true> }, monitor) => {
-          return !day.hasSame(item.day, "day");
-      },
-      collect: (monitor) => ({
-          isOver: monitor.isOver(),
-          canDrop: monitor.canDrop(),
-      }),
-      drop(item: { event: CalendarEvent; day: DateTime<true> }, monitor) {
-          const didDrop = monitor.didDrop();
-          if (didDrop) {
-              return;
-          }
-          console.log("dropped", item, day);
-          if (item.event.repeatType != "none") {
-            toast.info("Cannot move repeating events yet")
-            return;
-          }
-          moveEvent.mutate({
-              event: item.event,
-              newDay: day,
-              newStartTime: item.event.interval.start,
+    const [{ isOver, canDrop }, drop] = useDrop(() => ({
+        // The type (or types) to accept - strings or symbols
+        accept: "MonthEvent",
+        // Props to collect
+        canDrop: (item: { event: CalendarEvent; day: DateTime<true> }, monitor) => {
+            return !day.hasSame(item.day, "day");
+        },
+        collect: (monitor) => ({
+            isOver: monitor.isOver(),
+            canDrop: monitor.canDrop(),
+        }),
+        drop(item: { event: CalendarEvent; day: DateTime<true> }, monitor) {
+            const didDrop = monitor.didDrop();
+            if (didDrop) {
+                return;
+            }
+            console.log("dropped", item, day);
+            if (item.event.repeatType != "none") {
+                toast.info("Cannot move repeating events yet");
+                return;
+            }
+            moveEvent.mutate({
+                event: item.event,
+                newDay: day,
+                newStartTime: item.event.interval.start,
                 newEndTime: item.event.interval.end,
-          });
-      },
-  }));
-
-
+            });
+        },
+    }));
 
     const today = useToday();
     const dayNumber = day.day;
@@ -113,7 +111,7 @@ function Day({ day, bottomRow = false }: { day: DateTime<true>; bottomRow?: bool
     const [myEvents, setMyEvents] = useState<CalendarEvent[]>([]);
 
     const [createPopoverOpen, setCreatePopoverOpen] = useState(false);
-const isDesktop = useMediaQuery("(min-width: 768px)");
+    const isDesktop = useMediaQuery("(min-width: 768px)");
 
     useEffect(() => {
         if (events) {

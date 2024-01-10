@@ -2,11 +2,16 @@ import { DateTime, Interval } from "luxon";
 import React, { use, useContext, useEffect, useMemo, useState } from "react";
 import { useToday } from "~/hooks/useToday";
 
-import { CurrentViewContext, DayBeingViewedContext, DraggingContext, EnabledCalendarIdsContext } from "~/hooks/contexts";
+import {
+    CurrentViewContext,
+    DayBeingViewedContext,
+    DraggingContext,
+    EnabledCalendarIdsContext,
+} from "~/hooks/contexts";
 import { cn, hexToRgb } from "~/lib/utils";
 import { CalendarEvent } from "~/lib/types";
 import { useQuery } from "react-query";
-import useGetEvents from "~/hooks/useGetEvents";
+import useGetEvents from "~/hooks/events/useGetEvents";
 import Color from "color";
 import { AllDayEvent, Event, NewEvent } from "./event";
 import { Calendar } from "./ui/calendar";
@@ -24,7 +29,6 @@ export default function DayView() {
     const [dragging, setDragging] = useState(false);
 
     const isDesktop = useMediaQuery("(min-width: 768px)");
-
 
     return (
         <DraggingContext.Provider
