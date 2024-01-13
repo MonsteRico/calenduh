@@ -3,10 +3,22 @@ import { DateTime, Interval } from "luxon";
 import { NextRequest, NextResponse } from "next/server";
 import { db } from "~/db/db";
 import { calendarEvents } from "~/db/schema/main";
+import getServerAuthSession from "~/lib/getServerAuthSession";
 export const dynamic = "force-dynamic"; // defaults to auto
 // GET /api/events/[eventId]
 // get event by id
 export async function GET(request: NextRequest, { params }: { params: { eventId: string } }) {
+    const session = await getServerAuthSession();
+    const userId = session?.user?.id;
+    if (!userId) {
+        return NextResponse.json(
+            {
+                error: "no user found",
+            },
+            { status: 404 }
+        );
+    }
+
     const eventId = parseInt(params.eventId);
     const event = await db.query.calendarEvents.findFirst({
         where: (calendarEvents, { eq }) => eq(calendarEvents.id, eventId),
@@ -30,6 +42,19 @@ export async function GET(request: NextRequest, { params }: { params: { eventId:
 // PATCH /api/events/[eventId]
 // update event by id, takes title, interval, allDay, repeatType, daysOfWeek, and calendarId as body
 export async function PATCH(request: NextRequest, { params }: { params: { eventId: string } }) {
+
+        const session = await getServerAuthSession();
+        const userId = session?.user?.id;
+        if (!userId) {
+            return NextResponse.json(
+                {
+                    error: "no user found",
+                },
+                { status: 404 }
+            );
+        }
+
+
     const eventId = parseInt(params.eventId);
     const body = await request.json();
     const {

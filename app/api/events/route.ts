@@ -9,6 +9,17 @@ export const dynamic = "force-dynamic"; // defaults to auto
 // GET /api/events?month=12&day=15&year=2023
 // get all events for the month/day/year passed in
 export async function GET(request: NextRequest) {
+    const session = await getServerAuthSession();
+    const userId = session?.user?.id;
+    if (!userId) {
+        return NextResponse.json(
+            {
+                error: "no user found",
+            },
+            { status: 404 }
+        );
+    }
+
     const searchParams = request.nextUrl.searchParams;
 
     const month = searchParams.get("month");
@@ -23,19 +34,27 @@ export async function GET(request: NextRequest) {
         );
     }
 
+    const calendars = await db.query.calendars.findMany({
+        where: (calendars, { eq }) => eq(calendars.userId, userId),
+    });
+
+    const calendarIds = calendars.map((calendar) => calendar.id);
+
     const thisDay = DateTime.fromObject({
         month: parseInt(month),
         day: parseInt(day),
         year: parseInt(year),
     }) as DateTime<true>;
 
+    // get all events that are not recurring, are on this day, and are on one of the user's calendars
     const events = await db.query.calendarEvents.findMany({
-        where: (events, { eq }) =>
+        where: (events, { eq, inArray}) =>
             and(
                 eq(events.startMonth, thisDay.month),
                 eq(events.startDay, thisDay.day),
                 eq(events.startYear, thisDay.year),
-                eq(events.repeatType, "none")
+                eq(events.repeatType, "none"),
+                inArray(events.calendarId, calendarIds),
             ),
         with: {
             calendar: true,
@@ -43,7 +62,7 @@ export async function GET(request: NextRequest) {
     });
 
     const recurringEvents = await db.query.calendarEvents.findMany({
-        where: (events, { ne, lte }) => and(ne(events.repeatType, "none")),
+        where: (events, { ne, inArray }) => and(ne(events.repeatType, "none"), inArray(events.calendarId, calendarIds)),
         with: {
             calendar: true,
         },

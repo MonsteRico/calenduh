@@ -20,7 +20,6 @@ import { User } from "next-auth";
 import { dbUser } from "~/db/schema/auth";
 
 export default function ActualPage({ user }: { user: dbUser }) {
-    console.log(user);
     const today = useToday();
     const lastDayViewed =
         (DateTime.fromISO(localStorage.getItem("lastDayViewed") as string) as DateTime<true>) || today;
@@ -90,7 +89,6 @@ export default function ActualPage({ user }: { user: dbUser }) {
                             <Tabs
                                 onValueChange={(newView) => {
                                     setCurrentView(newView as "month" | "week" | "day");
-                                    console.log(newView);
                                 }}
                                 defaultValue={currentView}
                             >

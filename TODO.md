@@ -2,9 +2,7 @@ TODO
 
 -   users
 
-    -   lock all things behind logged in status
     -   subscribable calendars
-    -   change every GET to first filter based on calendars the user has attached to them
 
 -   mobile friendlyfy
 

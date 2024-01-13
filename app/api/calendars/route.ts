@@ -13,7 +13,6 @@ export const dynamic = "force-dynamic"; // defaults to auto
 export async function GET(request: NextRequest) {
     const session = await getServerAuthSession();
     const userId = session?.user?.id;
-    console.log(session)
     if (!userId) {
         return NextResponse.json(
             {

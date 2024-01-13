@@ -25,7 +25,6 @@ export function DrizzleAdapter(db: PlanetScaleDatabase): Adapter {
                 isDefault: true,
             })
             const [newCalendar] = await db.select().from(calendars).where(eq(calendars.userId, newId)).limit(1);
-            console.log(newCalendar)
             await db.update(users).set({ defaultCalendarId: newCalendar.id }).where(eq(users.id, newId));
             const rows = await db.select().from(users).where(eq(users.email, userData.email)).limit(1);
             const row = rows[0];
