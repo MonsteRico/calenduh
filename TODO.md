@@ -3,17 +3,8 @@ TODO
 -   users
 
     -   lock all things behind logged in status
-    -   create a custom sign in page
     -   subscribable calendars
     -   change every GET to first filter based on calendars the user has attached to them
-
--   user preferences
-
-    -   add user preferences to the database, move accent color there too
-    -   start on today or start on last day viewed
-    -   default calendar for new events (instead of normal default calendar)
-    -   keep track of the last view you were on and automatically load into that view
-        -   similarly, keep track of the last _day_ you were viewing and automatically pull that day up
 
 -   mobile friendlyfy
 

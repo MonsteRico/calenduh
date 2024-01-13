@@ -17,13 +17,6 @@ export const metadata: Metadata = {
 };
 
 export default async function RootLayout({ children }: { children: React.ReactNode }) {
-    const session = await getServerAuthSession();
-    if (!session || !session.user) {
-        // redirect to /api/auth/signin
-        redirect("/api/auth/signin");
-    }
-
-
     return (
         <html suppressHydrationWarning lang="en">
             <body className={inter.className}>
