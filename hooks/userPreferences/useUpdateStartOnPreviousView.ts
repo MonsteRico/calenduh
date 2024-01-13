@@ -4,13 +4,9 @@ import { useMutation, useQueryClient } from "react-query";
 import { Calendar, CalendarEvent } from "~/lib/types";
 
 export default function useUpdateStartOnPreviousView() {
-    const session = useSession();
-    const user = session.data?.user;
     const queryClient = useQueryClient();
 
-    if (!user) {
-        throw new Error("No user");
-    }
+
 
     return useMutation({
         mutationFn: async ({ startOnPreviousView }: { startOnPreviousView: boolean }) => {
@@ -23,11 +19,11 @@ export default function useUpdateStartOnPreviousView() {
             return res.json();
         },
         onMutate: async ({ startOnPreviousView }) => {
-            await queryClient.cancelQueries(["preferences", user.id]);
+            await queryClient.cancelQueries(["preferences"]);
 
-            const previousPreferences = queryClient.getQueryData(["preferences", user.id]);
+            const previousPreferences = queryClient.getQueryData(["preferences"]);
 
-            queryClient.setQueryData(["preferences", user.id], (old: any) => {
+            queryClient.setQueryData(["preferences"], (old: any) => {
                 return {
                     ...old,
                     startOnPreviousView,
@@ -37,10 +33,10 @@ export default function useUpdateStartOnPreviousView() {
             return { previousPreferences };
         },
         onError: (err, variables, context) => {
-            queryClient.setQueryData(["preferences", user.id], context?.previousPreferences);
+            queryClient.setQueryData(["preferences"], context?.previousPreferences);
         },
         onSettled: () => {
-            queryClient.invalidateQueries(["preferences", user.id]);
+            queryClient.invalidateQueries(["preferences"]);
         },
     });
 }

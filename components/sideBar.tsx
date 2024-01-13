@@ -55,7 +55,7 @@ export default function SideBar({}) {
                     <SheetTitle>Calendars</SheetTitle>
                     <SheetDescription>All your calendars and stuff and things.</SheetDescription>
                     <div className="gap-2 flex flex-col">
-                        {calendars?.map((calendar) => (
+                        {calendars?.sort((a, b) => (a.isDefault === b.isDefault ? 0 : a.isDefault ? -1 : 1)).map((calendar) => (
                             <CalendarItem key={calendar.id} calendar={calendar} />
                         ))}
                         <AddCalendar />

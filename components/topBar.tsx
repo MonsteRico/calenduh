@@ -11,6 +11,7 @@ import {
     faAngleLeft,
     faAngleRight,
     faArrowsRotate,
+    faCaretDown,
     faChevronLeft,
     faChevronRight,
     faPlus,
@@ -28,15 +29,22 @@ import { signOut, useSession } from "next-auth/react";
 import { CircleColorPicker } from "./circleColorPicker";
 import useUpdateAccentColor from "~/hooks/userPreferences/useUpdateAccentColor";
 import { useUser } from "~/hooks/useUser";
-import useGetUserPreferences from "~/hooks/userPreferences/useGetUserPreferences";
+import { Switch } from "./ui/switch";
+import { Label } from "./ui/label";
+import useUpdateStartOnToday from "~/hooks/userPreferences/useUpdateStartOnToday";
+import useUpdateStartOnPreviousView from "~/hooks/userPreferences/useUpdateStartOnPreviousView";
+import useGetCalendars from "~/hooks/calendars/useGetCalendars";
+import type { Calendar as CalendarType } from "~/lib/types";
+import { dbCalendar } from "~/db/schema/main";
+import useUpdateDefaultCalendar from "~/hooks/userPreferences/useUpdateDefaultCalendar";
 
 export default function TopBar() {
-    // const { data: userPreferences } = useGetUserPreferences();
+    const user = useUser();
 
-    // useEffect(() => {
-    //     if (!userPreferences) return;
-    //     document.documentElement.style.setProperty("--calendar-accent", userPreferences.accentColor);
-    // }, [userPreferences]);
+    useEffect(() => {
+        if (!user) return;
+        document.documentElement.style.setProperty("--calendar-accent", user.accent_color);
+    }, [user]);
 
     return (
         <div className="sticky top-0 z-10 mx-5 flex flex-row justify-between bg-background py-4">
@@ -90,6 +98,12 @@ function DaySwitcher() {
 
     const [calendarDate, setCalendarDate] = useState(dayBeingViewed.toJSDate());
 
+    useEffect(() => {
+        setCalendarDate(dayBeingViewed.toJSDate());
+    }, [dayBeingViewed]);
+
+    const [open, setOpen] = useState(false);
+
     return (
         <div className="flex flex-col">
             <div className="flex flex-row w-48 justify-between my-auto">
@@ -101,7 +115,7 @@ function DaySwitcher() {
                 >
                     <FontAwesomeIcon icon={faAngleLeft} />
                 </div>
-                <Popover>
+                <Popover open={open} onOpenChange={setOpen}>
                     <PopoverTrigger asChild>
                         <h2 className="cursor-pointer text-muted-foreground hover:text-muted-foreground text-white transition duration-300 text-center">
                             <h2 className="col-span-3 text-center">
@@ -118,9 +132,20 @@ function DaySwitcher() {
                                 if (!newDate) return;
                                 setDayBeingViewed(DateTime.fromJSDate(newDate) as DateTime<true>);
                                 setCalendarDate(newDate);
+                                setOpen(false);
                             }}
                             initialFocus
                         />
+                        <Button
+                            variant="ghost"
+                            className="w-full"
+                            onClick={() => {
+                                setDayBeingViewed(today);
+                                setOpen(false);
+                            }}
+                        >
+                            Today
+                        </Button>
                     </PopoverContent>
                 </Popover>
 
@@ -177,8 +202,23 @@ function RefreshButton() {
 
 function UserPopover() {
     const { data: session } = useSession();
+    const [startOnToday, setStartOnToday] = useState<boolean>();
+    const [startOnPreviousView, setStartOnPreviousView] = useState<boolean>();
+    const updateStartOnToday = useUpdateStartOnToday();
+    const updateStartOnPreviousView = useUpdateStartOnPreviousView();
+    const updateDefaultCalendar = useUpdateDefaultCalendar();
+        const { data: calendars } = useGetCalendars();
+    const [myCalendar, setMyCalendar] = useState<CalendarType>();
+    useEffect(() => {
+        if (!session || !calendars) return;
+        setStartOnToday(session.user.startOnToday);
+        setStartOnPreviousView(session.user.startOnPreviousView);
+        const defaultCalendar = calendars.find((calendar) => calendar.id == session.user.defaultCalendarId);
+        if (!defaultCalendar) return;
+        setMyCalendar(defaultCalendar);
+    }, [session]);
 
-    if (!session) {
+    if (!session || !calendars) {
         return null;
     }
 
@@ -203,6 +243,64 @@ function UserPopover() {
                     </div>
                     <hr />
                     <ThemeSettings />
+                    <hr />
+                    <div className="flex flex-row justify-between">
+                        <Label className="my-auto">Open on Today?</Label>
+                        <Switch
+                            checked={startOnToday}
+                            onCheckedChange={() => {
+                                setStartOnToday(!startOnToday);
+                                updateStartOnToday.mutate({ startOnToday: !startOnToday });
+                            }}
+                        />
+                    </div>
+                    <hr />
+                    <div className="flex flex-row justify-between">
+                        <Label className="my-auto">Open on Previous View?</Label>
+                        <Switch
+                            checked={startOnPreviousView}
+                            onCheckedChange={() => {
+                                setStartOnPreviousView(!startOnPreviousView);
+                                updateStartOnPreviousView.mutate({ startOnPreviousView: !startOnPreviousView });
+                            }}
+                        />
+                    </div>
+                    <hr />
+                    <div className="flex flex-row justify-between">
+                        <Label className="my-auto">Calendar</Label>
+                        <DropdownMenu>
+                            <DropdownMenuTrigger className="text-sm flex flex-row text-muted-foreground">
+                                <div
+                                    style={{ backgroundColor: myCalendar?.color }}
+                                    className="w-3 h-3 rounded-full my-auto"
+                                ></div>
+                                <h3 className="text-ellipsis px-2 overflow-hidden">{myCalendar?.name}</h3>
+                                <FontAwesomeIcon icon={faCaretDown} className="my-auto" />
+                            </DropdownMenuTrigger>
+                            <DropdownMenuContent>
+                                {calendars.map((calendar) => {
+                                    if (calendar.isDefault) return null;
+                                    return (
+                                        <DropdownMenuItem
+                                            onClick={() => {
+                                                setMyCalendar(calendar);
+                                                updateDefaultCalendar.mutate({ newDefaultCalendar: calendar });
+                                            }}
+                                            key={calendar.id}
+                                            className="flex flex-row"
+                                        >
+                                            <div
+                                                style={{ backgroundColor: calendar.color }}
+                                                className="w-3 h-3 rounded-full my-auto"
+                                            ></div>
+                                            <h3 className="text-ellipsis px-2 overflow-hidden">{calendar.name}</h3>
+                                        </DropdownMenuItem>
+                                    );
+                                })}
+                            </DropdownMenuContent>
+                        </DropdownMenu>
+                    </div>
+                    <hr />
                     <Button
                         variant="default"
                         className="text-lg"
@@ -222,18 +320,15 @@ function ThemeSettings() {
     const [accentColor, setAccentColor] = useState("");
     const [open, setOpen] = useState(false);
     const updateAccentColor = useUpdateAccentColor();
-    const session = useSession();
-    const { data: userPreferences } = useGetUserPreferences();
+    const user = useUser();
+    useEffect(() => {
+        if (!user) return;
+        setAccentColor(user.accent_color);
+    }, [user]);
 
     useEffect(() => {
-        if (!userPreferences) return;
-        setAccentColor(userPreferences.accentColor);
-    }, [userPreferences]);
-
-    useEffect(() => {
-        if (!accentColor || !userPreferences) return;
-        if (accentColor == userPreferences.accentColor) return;
-
+        if (!accentColor || !user) return;
+        if (accentColor == user.accent_color) return;
         // set the accent color in database
         updateAccentColor.mutate({ newColor: accentColor });
         // update css variables

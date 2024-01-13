@@ -28,9 +28,9 @@ export default async function RootLayout({ children }: { children: React.ReactNo
         <html suppressHydrationWarning lang="en">
             <body className={inter.className}>
                 <Toaster richColors />
-                    <ThemeProvider attribute="class" defaultTheme="system" enableSystem disableTransitionOnChange>
-                        {children}
-                    </ThemeProvider>
+                <ThemeProvider attribute="class" defaultTheme="system" enableSystem disableTransitionOnChange>
+                    {children}
+                </ThemeProvider>
             </body>
         </html>
     );

@@ -4,13 +4,7 @@ import { useMutation, useQueryClient } from "react-query";
 import { Calendar, CalendarEvent } from "~/lib/types";
 
 export default function useUpdateAccentColor() {
-    const session = useSession();
-    const user = session.data?.user;
-        const queryClient = useQueryClient();
-
-    if (!user) {
-        throw new Error("No user");
-    }
+    const queryClient = useQueryClient();
 
 
     return useMutation({
@@ -24,11 +18,11 @@ export default function useUpdateAccentColor() {
             return res.json();
         },
         onMutate: async ({ newColor }) => {
-            await queryClient.cancelQueries(["preferences", user.id]);
+            await queryClient.cancelQueries(["preferences"]);
 
-            const previousPreferences = queryClient.getQueryData(["preferences", user.id]);
+            const previousPreferences = queryClient.getQueryData(["preferences"]);
 
-            queryClient.setQueryData(["preferences", user.id], (old: any) => {
+            queryClient.setQueryData(["preferences"], (old: any) => {
                 return {
                     ...old,
                     accentColor: newColor,
@@ -38,10 +32,10 @@ export default function useUpdateAccentColor() {
             return { previousPreferences };
         },
         onError: (err, variables, context) => {
-            queryClient.setQueryData(["preferences", user.id], context?.previousPreferences);
+            queryClient.setQueryData(["preferences"], context?.previousPreferences);
         },
         onSettled: () => {
-            queryClient.invalidateQueries(["preferences", user.id]);
+            queryClient.invalidateQueries(["preferences"]);
         },
     });
 }

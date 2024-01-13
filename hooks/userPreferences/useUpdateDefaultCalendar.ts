@@ -4,13 +4,8 @@ import { useMutation, useQueryClient } from "react-query";
 import { Calendar, CalendarEvent } from "~/lib/types";
 
 export default function useUpdateDefaultCalendar() {
-    const session = useSession();
-    const user = session.data?.user;
     const queryClient = useQueryClient();
 
-    if (!user) {
-        throw new Error("No user");
-    }
 
     return useMutation({
         mutationFn: async ({ newDefaultCalendar }: { newDefaultCalendar: Calendar }) => {
@@ -23,24 +18,45 @@ export default function useUpdateDefaultCalendar() {
             return res.json();
         },
         onMutate: async ({ newDefaultCalendar }) => {
-            await queryClient.cancelQueries(["preferences", user.id]);
+            await queryClient.cancelQueries(["preferences"]);
+            await queryClient.cancelQueries(["calendars"]);
+            const previousPreferences = queryClient.getQueryData(["preferences"]);
 
-            const previousPreferences = queryClient.getQueryData(["preferences", user.id]);
-
-            queryClient.setQueryData(["preferences", user.id], (old: any) => {
+            queryClient.setQueryData(["preferences"], (old: any) => {
                 return {
                     ...old,
                     defaultCalendarId: newDefaultCalendar.id,
                 };
             });
 
-            return { previousPreferences };
+            const previousCalendars = queryClient.getQueryData(["calendars"]);
+
+            queryClient.setQueryData(["calendars"], (old: any) => {
+                return old.map((calendar: Calendar) => {
+                    if (calendar.id === newDefaultCalendar.id) {
+                        return {
+                            ...calendar,
+                            isDefault: true,
+                        };
+                    } else {
+                        return {
+                            ...calendar,
+                            isDefault: false,
+                        };
+                    }
+                });
+            });
+
+
+            return { previousPreferences, previousCalendars };
         },
         onError: (err, variables, context) => {
-            queryClient.setQueryData(["preferences", user.id], context?.previousPreferences);
+            queryClient.setQueryData(["preferences"], context?.previousPreferences);
+            queryClient.setQueryData(["calendars"], context?.previousCalendars);
         },
         onSettled: () => {
-            queryClient.invalidateQueries(["preferences", user.id]);
+            queryClient.invalidateQueries(["preferences"]);
+            queryClient.invalidateQueries(["calendars"]);
         },
     });
 }

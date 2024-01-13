@@ -65,6 +65,8 @@ export const users = mysqlTable(
     })
 );
 
+
+
 export const userRelations = relations(users, ({ many, one }) => ({
     events: many(calendarEvents),
     calendars: many(calendars),
@@ -73,6 +75,8 @@ export const userRelations = relations(users, ({ many, one }) => ({
         references: [calendars.id],
     }),
 }));
+
+export type dbUser = typeof users.$inferSelect;
 
 export const verificationTokens = mysqlTable(
     "verification_tokens",

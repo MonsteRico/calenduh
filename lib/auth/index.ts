@@ -2,14 +2,18 @@ import DiscordProvider from "next-auth/providers/discord";
 import { eq } from "drizzle-orm";
 import { DrizzleAdapter } from "~/lib/auth/drizzleAdapter";
 import { db } from "~/db/db";
-import { users } from "~/db/schema/auth";
-import type { NextAuthOptions } from "next-auth";
+import { dbUser, users } from "~/db/schema/auth";
+import type { NextAuthOptions, Session } from "next-auth";
+
+declare module "next-auth" {
+
+}
 
 export const authOptions: NextAuthOptions = {
     // @ts-expect-error
     adapter: DrizzleAdapter(db),
     session: {
-        strategy: "jwt",
+        strategy: "database",
     },
     secret: process.env.NEXTAUTH_SECRET,
     providers: [
@@ -19,36 +23,10 @@ export const authOptions: NextAuthOptions = {
         }),
     ],
     callbacks: {
-        async session({ token, session, user }) {
-            if (token) {
-                session.user.id = token.id;
-                session.user.name = token.name;
-                session.user.email = token.email;
-                session.user.image = token.picture;
-            }
-                
+        // @ts-expect-error
+        async session({ session, user } : {session: Session, user: dbUser}) {
+            session.user = user;
             return session;
-        },
-        async jwt({ token, user }) {
-            const [dbUser] = await db
-                .select()
-                .from(users)
-                .where(eq(users.email, token.email || ""))
-                .limit(1);
-
-            if (!dbUser) {
-                if (user) {
-                    token.id = user?.id;
-                }
-                return token;
-            }
-
-            return {
-                id: dbUser.id,
-                name: dbUser.name,
-                email: dbUser.email,
-                picture: dbUser.image,
-            };
         },
     },
 };
