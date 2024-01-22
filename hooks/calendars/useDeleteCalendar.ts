@@ -5,9 +5,8 @@ export default function useDeleteCalendar(calendar: Calendar) {
     const queryClient = useQueryClient();
     return useMutation({
         mutationFn: async () => {
-
             const res = await fetch(`/api/calendars/${calendar.id}`, {
-                method: "DELETE"
+                method: "DELETE",
             });
             return res.json();
         },

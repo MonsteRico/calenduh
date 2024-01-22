@@ -1,15 +1,15 @@
 import { createId } from "@paralleldrive/cuid2";
-import { and, eq } from "drizzle-orm";
-import { accounts, sessions, users, verificationTokens } from "~/db/schema/auth";
-import type { Adapter } from "next-auth/adapters";
-import type { PlanetScaleDatabase } from "drizzle-orm/planetscale-serverless";
-import { calendarEvents, calendars } from "~/db/schema/main";
 import Color from "color";
+import { and, eq } from "drizzle-orm";
+import type { PlanetScaleDatabase } from "drizzle-orm/planetscale-serverless";
+import type { Adapter } from "next-auth/adapters";
+import { accounts, sessions, users, verificationTokens } from "~/db/schema/auth";
+import { calendarEvents, calendars } from "~/db/schema/main";
 
 export function DrizzleAdapter(db: PlanetScaleDatabase): Adapter {
     return {
         async createUser(userData) {
-            const newId = createId()
+            const newId = createId();
             await db.insert(users).values({
                 id: newId,
                 email: userData.email,
@@ -17,18 +17,22 @@ export function DrizzleAdapter(db: PlanetScaleDatabase): Adapter {
                 name: userData.name,
                 image: userData.image,
             });
-            const newColor = Color.rgb(Math.floor(Math.random() * 255), Math.floor(Math.random() * 255), Math.floor(Math.random() * 255)).hex()
-            const subscribeCode = createId()
+            const newColor = Color.rgb(
+                Math.floor(Math.random() * 255),
+                Math.floor(Math.random() * 255),
+                Math.floor(Math.random() * 255),
+            ).hex();
+            const subscribeCode = createId();
             await db.insert(calendars).values({
                 name: "Default Calendar",
                 color: newColor,
                 userId: newId,
                 isDefault: true,
                 subscribeCode,
-            })
+            });
             const [newCalendar] = await db.select().from(calendars).where(eq(calendars.userId, newId)).limit(1);
             await db.update(users).set({ defaultCalendarId: newCalendar.id }).where(eq(users.id, newId));
-            const rows = (await db.select().from(users).where(eq(users.email, userData.email)).limit(1));
+            const rows = await db.select().from(users).where(eq(users.email, userData.email)).limit(1);
             const row = rows[0];
             if (!row) throw new Error("User not found");
             return row;

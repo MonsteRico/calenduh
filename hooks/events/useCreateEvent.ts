@@ -98,7 +98,7 @@ export default function useCreateEvent() {
                                 year: newEventData.eventDay.year,
                                 hour: newEventData.endTime.hour,
                                 minute: newEventData.endTime.minute,
-                            })
+                            }),
                         ) as Interval<true>,
                         allDay: newEventData.allDay,
                         calendarId: newEventData.calendarId,
@@ -122,7 +122,7 @@ export default function useCreateEvent() {
         onError: (_err, _newCalendar, context) => {
             queryClient.setQueryData(
                 ["events", context?.day?.month, context?.day?.day, context?.day?.year],
-                context?.previousEvents
+                context?.previousEvents,
             );
         },
         onSettled: (data, _error, _variables, context) => {

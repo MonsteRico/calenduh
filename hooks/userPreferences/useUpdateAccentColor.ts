@@ -1,11 +1,7 @@
-import { DateTime, Interval } from "luxon";
-import { useSession } from "next-auth/react";
 import { useMutation, useQueryClient } from "react-query";
-import { Calendar, CalendarEvent } from "~/lib/types";
 
 export default function useUpdateAccentColor() {
     const queryClient = useQueryClient();
-
 
     return useMutation({
         mutationFn: async ({ newColor }: { newColor: string }) => {

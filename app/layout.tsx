@@ -1,14 +1,9 @@
 import type { Metadata } from "next";
 import { Inter } from "next/font/google";
-import "./globals.css";
-import "./TimePicker.css"
-import { ThemeProvider } from "./providers";
 import { Toaster } from "~/components/ui/sonner";
-import { SessionProvider } from "next-auth/react";
-import { getServerSession } from "next-auth";
-import { authOptions } from "~/lib/auth";
-import { redirect } from 'next/navigation'
-import getServerAuthSession from "~/lib/getServerAuthSession";
+import "./TimePicker.css";
+import "./globals.css";
+import { ThemeProvider } from "./providers";
 const inter = Inter({ subsets: ["latin"] });
 
 export const metadata: Metadata = {

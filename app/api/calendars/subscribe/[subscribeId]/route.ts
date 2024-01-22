@@ -1,13 +1,10 @@
-import { and, eq, inArray } from "drizzle-orm";
-import { DateTime } from "luxon";
 import { redirect } from "next/navigation";
 import { NextRequest, NextResponse } from "next/server";
 import { db } from "~/db/db";
-import { calendarEvents, calendars, usersSubscribedCalendars } from "~/db/schema/main";
+import { usersSubscribedCalendars } from "~/db/schema/main";
 import getServerAuthSession from "~/lib/getServerAuthSession";
 
 export const dynamic = "force-dynamic"; // defaults to auto
-
 
 // GET /api/calendars/subscribe/[subscribeId]
 export async function GET(request: NextRequest, { params }: { params: { subscribeId: string } }) {
@@ -18,7 +15,7 @@ export async function GET(request: NextRequest, { params }: { params: { subscrib
             {
                 error: "no user found",
             },
-            { status: 404 }
+            { status: 404 },
         );
     }
 
@@ -33,7 +30,7 @@ export async function GET(request: NextRequest, { params }: { params: { subscrib
             {
                 error: "calendar not found",
             },
-            { status: 404 }
+            { status: 404 },
         );
     }
 
@@ -42,7 +39,7 @@ export async function GET(request: NextRequest, { params }: { params: { subscrib
             {
                 error: "you can't subscribe to your own calendar",
             },
-            { status: 400 }
+            { status: 400 },
         );
     }
 
@@ -51,15 +48,14 @@ export async function GET(request: NextRequest, { params }: { params: { subscrib
             {
                 error: "you can't subscribe to someones default calendar",
             },
-            { status: 400 }
+            { status: 400 },
         );
     }
 
     await db.insert(usersSubscribedCalendars).values({
         userId: userId,
-        calendarId: calendar.id
+        calendarId: calendar.id,
     });
 
     redirect("/?subscribedTo=" + calendar.id);
-
 }

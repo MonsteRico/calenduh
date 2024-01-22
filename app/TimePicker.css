@@ -83,7 +83,7 @@
 }
 
 .react-time-picker__inputGroup__amPm option {
-    color:hsl(var(--primary)) !important;
+    color: hsl(var(--primary)) !important;
 }
 
 .react-time-picker__button {
@@ -99,7 +99,7 @@
 .react-time-picker__button:enabled:hover .react-time-picker__button__icon,
 .react-time-picker__button:enabled:focus .react-time-picker__button__icon {
     stroke: hsl(var(--primary)) !important;
-    opacity:0.5
+    opacity: 0.5;
 }
 
 .react-time-picker__button:disabled .react-time-picker__button__icon {
@@ -107,7 +107,7 @@
 }
 
 .react-time-picker__button svg {
-        stroke: hsl(var(--primary)) !important;
+    stroke: hsl(var(--primary)) !important;
     display: inherit;
 }
 

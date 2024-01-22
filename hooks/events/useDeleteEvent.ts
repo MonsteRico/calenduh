@@ -1,17 +1,17 @@
 import { DateTime } from "luxon";
 import { useMutation, useQueryClient } from "react-query";
-import { Calendar, CalendarEvent } from "~/lib/types";
+import { CalendarEvent } from "~/lib/types";
 
 export default function useDeleteEvent(event: CalendarEvent) {
     const queryClient = useQueryClient();
     return useMutation({
-        mutationFn: async ({date}:{date?:DateTime}) => {
+        mutationFn: async ({ date }: { date?: DateTime }) => {
             if (date) {
                 const res = await fetch(
                     `/api/events/${event.id}?day=${date.day}&month=${date.month}&year=${date.year}`,
                     {
                         method: "DELETE",
-                    }
+                    },
                 );
                 return res.json();
             } else {
@@ -22,7 +22,7 @@ export default function useDeleteEvent(event: CalendarEvent) {
             }
         },
         // When mutate is called:
-        onMutate: async ({date}) => {
+        onMutate: async ({ date }) => {
             // Cancel any outgoing refetches (so they don't overwrite our optimistic update)
             await queryClient.cancelQueries("events");
             const day = date ?? event.interval.start;
@@ -50,7 +50,7 @@ export default function useDeleteEvent(event: CalendarEvent) {
         onError: (_err, _newCalendar, context) => {
             queryClient.setQueryData(
                 ["events", context?.day?.month, context?.day?.day, context?.day?.year],
-                context?.previousEvents
+                context?.previousEvents,
             );
             queryClient.setQueryData(["events", event.id], context?.previousEvent);
         },

@@ -1,41 +1,31 @@
-import { DateTime, Interval } from "luxon";
-import React, { use, useContext, useEffect, useState } from "react";
-import { useToday } from "~/hooks/useToday";
-import "react-time-picker/dist/TimePicker.css";
-import "react-clock/dist/Clock.css";
-import { DayBeingViewedContext, EnabledCalendarIdsContext } from "~/hooks/contexts";
-import { capitalize, cn, hexToRgb } from "~/lib/utils";
-import { CalendarEvent } from "~/lib/types";
-import { useQuery } from "react-query";
-import useGetEvents from "~/hooks/events/useGetEvents";
-import Color from "color";
-import useGetCalendar from "~/hooks/calendars/useGetCalendar";
-import { Popover, PopoverContent, PopoverTrigger } from "./ui/popover";
-import useUpdateEvent from "~/hooks/events/useUpdateEvent";
-import useDeleteEvent from "~/hooks/events/useDeleteEvent";
-import { Button } from "./ui/button";
-import { Label } from "./ui/label";
-import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "./ui/dropdown-menu";
-import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faCaretDown } from "@fortawesome/free-solid-svg-icons";
+import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
+import { DateTime } from "luxon";
+import { useEffect, useState } from "react";
+import "react-clock/dist/Clock.css";
+import TimePicker from "react-time-picker";
+import "react-time-picker/dist/TimePicker.css";
+import { toast } from "sonner";
 import useGetCalendars from "~/hooks/calendars/useGetCalendars";
+import useDeleteEvent from "~/hooks/events/useDeleteEvent";
+import useGetEvent from "~/hooks/events/useGetEvent";
+import useUpdateEvent from "~/hooks/events/useUpdateEvent";
+import { CalendarEvent } from "~/lib/types";
+import { capitalize, cn } from "~/lib/utils";
 import {
     AlertDialog,
     AlertDialogAction,
-    AlertDialogCancel,
     AlertDialogContent,
-    AlertDialogDescription,
     AlertDialogFooter,
     AlertDialogHeader,
-    AlertDialogTitle,
+    AlertDialogTitle
 } from "./ui/alert-dialog";
-import { useDebounce } from "~/hooks/useDebounce";
+import { Button } from "./ui/button";
 import { DatePicker } from "./ui/date-picker";
-import useGetEvent from "~/hooks/events/useGetEvent";
+import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "./ui/dropdown-menu";
+import { Label } from "./ui/label";
+import { PopoverContent } from "./ui/popover";
 import { Switch } from "./ui/switch";
-import { Input } from "./ui/input";
-import { toast } from "sonner";
-import TimePicker from "react-time-picker";
 export default function ViewEvent({
     event,
     dayItsOn,
@@ -56,7 +46,7 @@ export default function ViewEvent({
     const [myCalendar, setMyCalendar] = useState(event.calendar);
     const [repeatType, setRepeatType] = useState(event.repeatType);
     const [recurringEndDay, setRecurringEndDay] = useState<Date | undefined>(
-        event.recurringEndDay ? event.recurringEndDay.toJSDate() : undefined
+        event.recurringEndDay ? event.recurringEndDay.toJSDate() : undefined,
     );
     const [daysOfWeekString, setDaysOfWeekString] = useState(event.daysOfWeek);
     const [allDay, setAllDay] = useState(event.allDay);
@@ -216,7 +206,7 @@ export default function ViewEvent({
                                         startTime.set({
                                             hour: parseInt(time.split(":")[0]),
                                             minute: parseInt(time.split(":")[1]),
-                                        })
+                                        }),
                                     );
                                 }}
                                 onInvalidChange={() => {
@@ -250,7 +240,7 @@ export default function ViewEvent({
                                         endTime.set({
                                             hour: parseInt(time.split(":")[0]),
                                             minute: parseInt(time.split(":")[1]),
-                                        })
+                                        }),
                                     );
                                 }}
                                 onInvalidChange={() => {
@@ -299,26 +289,28 @@ export default function ViewEvent({
                             <FontAwesomeIcon icon={faCaretDown} className="my-auto" />
                         </DropdownMenuTrigger>
                         <DropdownMenuContent>
-                            {calendars.filter((calendar) => !calendar.subscribed).map((calendar) => {
-                                return (
-                                    <DropdownMenuItem
-                                        onClick={() => {
-                                            setMyCalendar(calendar);
-                                            updateEvent.mutate({
-                                                calendarId: calendar.id,
-                                            });
-                                        }}
-                                        key={calendar.id}
-                                        className="flex flex-row"
-                                    >
-                                        <div
-                                            style={{ backgroundColor: calendar.color }}
-                                            className="w-3 h-3 rounded-full my-auto"
-                                        ></div>
-                                        <h3 className="text-ellipsis px-2 overflow-hidden">{calendar.name}</h3>
-                                    </DropdownMenuItem>
-                                );
-                            })}
+                            {calendars
+                                .filter((calendar) => !calendar.subscribed)
+                                .map((calendar) => {
+                                    return (
+                                        <DropdownMenuItem
+                                            onClick={() => {
+                                                setMyCalendar(calendar);
+                                                updateEvent.mutate({
+                                                    calendarId: calendar.id,
+                                                });
+                                            }}
+                                            key={calendar.id}
+                                            className="flex flex-row"
+                                        >
+                                            <div
+                                                style={{ backgroundColor: calendar.color }}
+                                                className="w-3 h-3 rounded-full my-auto"
+                                            ></div>
+                                            <h3 className="text-ellipsis px-2 overflow-hidden">{calendar.name}</h3>
+                                        </DropdownMenuItem>
+                                    );
+                                })}
                         </DropdownMenuContent>
                     </DropdownMenu>
                 </div>
@@ -465,7 +457,7 @@ export default function ViewEvent({
                                     className={cn(
                                         "w-8 h- rounded-full mr-2 cursor-default text-center my-auto bg-slate-800 border border-calendarAccent",
                                         editing && "cursor-pointer hover:bg-opacity-75",
-                                        daysOfWeekString.split(",").includes("7") && "bg-calendarAccent"
+                                        daysOfWeekString.split(",").includes("7") && "bg-calendarAccent",
                                     )}
                                 >
                                     S
@@ -486,7 +478,7 @@ export default function ViewEvent({
                                     className={cn(
                                         "w-8 h-7 rounded-full mr-2 cursor-default text-center my-auto bg-slate-800 border border-calendarAccent",
                                         editing && "cursor-pointer hover:bg-opacity-75",
-                                        daysOfWeekString.split(",").includes("1") && "bg-calendarAccent"
+                                        daysOfWeekString.split(",").includes("1") && "bg-calendarAccent",
                                     )}
                                 >
                                     M
@@ -507,7 +499,7 @@ export default function ViewEvent({
                                     className={cn(
                                         "w-8 h-7 rounded-full mr-2 cursor-default text-center my-auto bg-slate-800 border border-calendarAccent",
                                         editing && "cursor-pointer hover:bg-opacity-75",
-                                        daysOfWeekString.split(",").includes("2") && "bg-calendarAccent"
+                                        daysOfWeekString.split(",").includes("2") && "bg-calendarAccent",
                                     )}
                                 >
                                     T
@@ -528,7 +520,7 @@ export default function ViewEvent({
                                     className={cn(
                                         "w-8 h-7 rounded-full mr-2 cursor-default text-center my-auto bg-slate-800 border border-calendarAccent",
                                         editing && "cursor-pointer hover:bg-opacity-75",
-                                        daysOfWeekString.split(",").includes("3") && "bg-calendarAccent"
+                                        daysOfWeekString.split(",").includes("3") && "bg-calendarAccent",
                                     )}
                                 >
                                     W
@@ -549,7 +541,7 @@ export default function ViewEvent({
                                     className={cn(
                                         "w-8 h-7 rounded-full mr-2 cursor-default text-center my-auto bg-slate-800 border border-calendarAccent",
                                         editing && "cursor-pointer hover:bg-opacity-75",
-                                        daysOfWeekString.split(",").includes("4") && "bg-calendarAccent"
+                                        daysOfWeekString.split(",").includes("4") && "bg-calendarAccent",
                                     )}
                                 >
                                     R
@@ -570,7 +562,7 @@ export default function ViewEvent({
                                     className={cn(
                                         "w-8 h-7 rounded-full mr-2 cursor-default text-center my-auto bg-slate-800 border border-calendarAccent",
                                         editing && "cursor-pointer hover:bg-opacity-75",
-                                        daysOfWeekString.split(",").includes("5") && "bg-calendarAccent"
+                                        daysOfWeekString.split(",").includes("5") && "bg-calendarAccent",
                                     )}
                                 >
                                     F
@@ -591,7 +583,7 @@ export default function ViewEvent({
                                     className={cn(
                                         "w-8 h-7 rounded-full mr-2 cursor-default text-center my-auto bg-slate-800 border border-calendarAccent",
                                         editing && "cursor-pointer hover:bg-opacity-75",
-                                        daysOfWeekString.split(",").includes("6") && "bg-calendarAccent"
+                                        daysOfWeekString.split(",").includes("6") && "bg-calendarAccent",
                                     )}
                                 >
                                     S

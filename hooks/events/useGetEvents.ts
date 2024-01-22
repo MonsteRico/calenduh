@@ -1,7 +1,7 @@
-import { DateTime, Interval } from "luxon";
+import { DateTime } from "luxon";
 import { useQuery } from "react-query";
-import eventsConverter from "~/lib/eventsConverter";
 import { dbCalendar, dbCalendarEvent } from "~/db/schema/main";
+import eventsConverter from "~/lib/eventsConverter";
 import { CalendarEvent } from "~/lib/types";
 
 export default function useGetEvents(day: DateTime) {
@@ -13,7 +13,7 @@ export default function useGetEvents(day: DateTime) {
         {
             refetchInterval: 1000 * 30,
             refetchIntervalInBackground: true,
-        }
+        },
     );
 }
 

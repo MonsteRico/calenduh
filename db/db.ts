@@ -7,5 +7,5 @@ const connection = connect({
     url: process.env.DATABASE_URL as string,
 });
 
-export const db = drizzle(connection, { schema: {...authSchema, ...schema} });
+export const db = drizzle(connection, { schema: { ...authSchema, ...schema } });
 export type DbClient = typeof db;

@@ -1,6 +1,6 @@
-import { DateTime, Interval } from "luxon";
+import { DateTime } from "luxon";
 import { useMutation, useQueryClient } from "react-query";
-import { Calendar, CalendarEvent } from "~/lib/types";
+import { CalendarEvent } from "~/lib/types";
 
 export default function useUpdateEvent(event: CalendarEvent) {
     const queryClient = useQueryClient();
@@ -155,13 +155,13 @@ export default function useUpdateEvent(event: CalendarEvent) {
         onError: (_err, _newCalendar, context) => {
             queryClient.setQueryData(
                 ["events", context?.day?.month, context?.day?.day, context?.day?.year],
-                context?.previousEvents
+                context?.previousEvents,
             );
             queryClient.setQueryData(["events", event.id], context?.previousEvent);
             if (context?.newDay) {
                 queryClient.setQueryData(
                     ["events", context?.newDay?.month, context?.newDay?.day, context?.newDay?.year],
-                    context?.previousEventsForNewDay
+                    context?.previousEventsForNewDay,
                 );
             }
         },

@@ -1,24 +1,22 @@
 "use client";
 
 import { DateTime } from "luxon";
+import { SessionProvider } from "next-auth/react";
 import { useEffect, useState } from "react";
+import { DndProvider } from "react-dnd";
+import { HTML5Backend } from "react-dnd-html5-backend";
 import { useQueryClient } from "react-query";
+import DayView from "~/components/dayView";
 import MonthView from "~/components/monthView";
+import { SubscribedMessage } from "~/components/subscribedMessage";
 import TopBar from "~/components/topBar";
 import { Tabs, TabsContent } from "~/components/ui/tabs";
 import WeekView from "~/components/weekView";
-import { CurrentViewContext, DayBeingViewedContext, EnabledCalendarIdsContext } from "~/hooks/contexts";
+import { dbUser } from "~/db/schema/auth";
 import useGetCalendars from "~/hooks/calendars/useGetCalendars";
+import { CurrentViewContext, DayBeingViewedContext, EnabledCalendarIdsContext } from "~/hooks/contexts";
 import { fetchEvents } from "~/hooks/events/useGetEvents";
 import { useToday } from "~/hooks/useToday";
-import { DndProvider } from "react-dnd";
-import { HTML5Backend } from "react-dnd-html5-backend";
-import { SessionProvider, useSession } from "next-auth/react";
-import DayView from "~/components/dayView";
-import { redirect, useSearchParams } from "next/navigation";
-import { User } from "next-auth";
-import { dbUser } from "~/db/schema/auth";
-import {SubscribedMessage} from "~/components/subscribedMessage";
 
 export default function ActualPage({ user }: { user: dbUser }) {
     console.log(user);
@@ -30,7 +28,7 @@ export default function ActualPage({ user }: { user: dbUser }) {
     const [enabledCalendarIds, setEnabledCalendarIds] = useState<number[]>([]);
     const [previousMonthBeingViewed, setPreviousMonthBeingViewed] = useState(dayBeingViewed.month);
     const [currentView, setCurrentView] = useState<"month" | "week" | "day">(
-        user.startOnPreviousView ? lastViewOn : "month"
+        user.startOnPreviousView ? lastViewOn : "month",
     );
     const { data: calendars, isLoading: calendarsLoading } = useGetCalendars({});
     useEffect(() => {

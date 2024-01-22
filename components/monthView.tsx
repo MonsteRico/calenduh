@@ -1,18 +1,17 @@
 import { DateTime } from "luxon";
-import React, { useContext, useEffect, useState } from "react";
+import { useContext, useEffect, useState } from "react";
 import { useToday } from "~/hooks/useToday";
 
-import { DayBeingViewedContext, EnabledCalendarIdsContext } from "~/hooks/contexts";
-import useGetEvents from "~/hooks/events/useGetEvents";
-import { CalendarEvent } from "~/lib/types";
-import { cn } from "~/lib/utils";
-import { MonthEvent } from "./event";
-import { Popover, PopoverTrigger } from "./ui/popover";
-import CreateEvent from "./addEvent";
 import { useDrop } from "react-dnd";
 import { toast } from "sonner";
+import { DayBeingViewedContext, EnabledCalendarIdsContext } from "~/hooks/contexts";
+import useGetEvents from "~/hooks/events/useGetEvents";
 import useMoveEvent from "~/hooks/events/useMoveEvent";
 import { useMediaQuery } from "~/hooks/useMediaQuery";
+import { CalendarEvent } from "~/lib/types";
+import { cn } from "~/lib/utils";
+import CreateEvent from "./addEvent";
+import { MonthEvent } from "./event";
 import { DrawerPopover, DrawerPopoverTrigger } from "./responsiveDrawerPopover";
 
 export default function MonthView() {
@@ -29,21 +28,21 @@ export default function MonthView() {
         dayBeingViewed
             .minus({ month: 1 })
             .startOf("day")
-            .set({ day: i + 1 })
+            .set({ day: i + 1 }),
     )
         .slice(-daysBeforeFirst)
         .concat(
             Array.from({ length: dayBeingViewed.daysInMonth }, (_, i) =>
-                dayBeingViewed.startOf("day").set({ day: i + 1 })
-            )
+                dayBeingViewed.startOf("day").set({ day: i + 1 }),
+            ),
         )
         .concat(
             Array.from({ length: daysInNextMonth }, (_, i) =>
                 dayBeingViewed
                     .plus({ month: 1 })
                     .startOf("day")
-                    .set({ day: i + 1 })
-            ).slice(0, daysAfterLast)
+                    .set({ day: i + 1 }),
+            ).slice(0, daysAfterLast),
         )
         .slice(0, 42);
 
@@ -137,14 +136,14 @@ function Day({ day, bottomRow = false }: { day: DateTime<true>; bottomRow?: bool
                         "relative h-32 border-l-4 border-t-4 border-primary-foreground text-2xl",
                         dayIsSaturday && "border-r-4",
                         bottomRow && "border-b-4",
-                        isOver && canDrop && "bg-primary-foreground"
+                        isOver && canDrop && "bg-primary-foreground",
                     )}
                 >
                     <h2
                         className={cn(
                             "absolute left-4 top-2",
                             currentMonth ? "font-bold text-primary" : "text-muted-foreground",
-                            isToday && "text-calendarAccent"
+                            isToday && "text-calendarAccent",
                         )}
                     >
                         {dayNumber}

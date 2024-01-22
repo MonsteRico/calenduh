@@ -2,9 +2,11 @@ TODO
 
 -   users
 
-    -   subscribable calendars
-one, whats the best way to subscribe to them in your opinion
-two, should other people who are subscribed be able to add events to it? should that be an optional thing to enable?
+        -   subscribable calendars
+
+    one, whats the best way to subscribe to them in your opinion
+    two, should other people who are subscribed be able to add events to it? should that be an optional thing to enable?
+
 -   mobile friendlyfy
 
     -   PWA stuff

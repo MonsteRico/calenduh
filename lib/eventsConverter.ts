@@ -3,7 +3,7 @@ import { dbCalendar, dbCalendarEvent } from "../db/schema/main";
 import { CalendarEvent } from "./types";
 
 export default function eventsConverter(
-    dbCalendarEvents: (dbCalendarEvent & { calendar: dbCalendar })[]
+    dbCalendarEvents: (dbCalendarEvent & { calendar: dbCalendar })[],
 ): CalendarEvent[] {
     return dbCalendarEvents.map((dbEvent) => {
         const startDate = DateTime.fromObject({

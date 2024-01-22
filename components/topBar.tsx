@@ -1,42 +1,38 @@
 "use client";
-import { TabsList, TabsTrigger } from "~/components/ui/tabs";
-import { ThemeToggle } from "~/components/themeToggle";
-import { useToday } from "~/hooks/useToday";
-import { useContext, useEffect, useState } from "react";
-import { CurrentViewContext, DayBeingViewedContext, EnabledCalendarIdsContext } from "~/hooks/contexts";
-import { Button } from "./ui/button";
-import { useIsFetching, useQueryClient } from "react-query";
-import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import {
     faAngleLeft,
     faAngleRight,
     faArrowsRotate,
     faCaretDown,
-    faChevronLeft,
-    faChevronRight,
     faPlus,
-    faUser,
+    faUser
 } from "@fortawesome/free-solid-svg-icons";
-import SideBar from "./sideBar";
-import { Popover, PopoverContent, PopoverTrigger } from "./ui/popover";
-import CreateEvent from "./addEvent";
-import UserButton from "./userButton";
-import { DrawerPopover, DrawerPopoverContent, DrawerPopoverTrigger } from "./responsiveDrawerPopover";
-import { Calendar } from "./ui/calendar";
+import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { DateTime } from "luxon";
-import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "./ui/dropdown-menu";
 import { signOut, useSession } from "next-auth/react";
-import { CircleColorPicker } from "./circleColorPicker";
-import useUpdateAccentColor from "~/hooks/userPreferences/useUpdateAccentColor";
-import { useUser } from "~/hooks/useUser";
-import { Switch } from "./ui/switch";
-import { Label } from "./ui/label";
-import useUpdateStartOnToday from "~/hooks/userPreferences/useUpdateStartOnToday";
-import useUpdateStartOnPreviousView from "~/hooks/userPreferences/useUpdateStartOnPreviousView";
+import { useContext, useEffect, useState } from "react";
+import { useIsFetching, useQueryClient } from "react-query";
+import { ThemeToggle } from "~/components/themeToggle";
+import { TabsList, TabsTrigger } from "~/components/ui/tabs";
 import useGetCalendars from "~/hooks/calendars/useGetCalendars";
-import type { Calendar as CalendarType } from "~/lib/types";
-import { dbCalendar } from "~/db/schema/main";
+import { CurrentViewContext, DayBeingViewedContext } from "~/hooks/contexts";
+import { useToday } from "~/hooks/useToday";
+import { useUser } from "~/hooks/useUser";
+import useUpdateAccentColor from "~/hooks/userPreferences/useUpdateAccentColor";
 import useUpdateDefaultCalendar from "~/hooks/userPreferences/useUpdateDefaultCalendar";
+import useUpdateStartOnPreviousView from "~/hooks/userPreferences/useUpdateStartOnPreviousView";
+import useUpdateStartOnToday from "~/hooks/userPreferences/useUpdateStartOnToday";
+import type { Calendar as CalendarType } from "~/lib/types";
+import CreateEvent from "./addEvent";
+import { CircleColorPicker } from "./circleColorPicker";
+import { DrawerPopover, DrawerPopoverContent, DrawerPopoverTrigger } from "./responsiveDrawerPopover";
+import SideBar from "./sideBar";
+import { Button } from "./ui/button";
+import { Calendar } from "./ui/calendar";
+import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "./ui/dropdown-menu";
+import { Label } from "./ui/label";
+import { Popover, PopoverContent, PopoverTrigger } from "./ui/popover";
+import { Switch } from "./ui/switch";
 
 export default function TopBar() {
     const user = useUser();
@@ -207,7 +203,7 @@ function UserPopover() {
     const updateStartOnToday = useUpdateStartOnToday();
     const updateStartOnPreviousView = useUpdateStartOnPreviousView();
     const updateDefaultCalendar = useUpdateDefaultCalendar();
-        const { data: calendars } = useGetCalendars();
+    const { data: calendars } = useGetCalendars();
     const [myCalendar, setMyCalendar] = useState<CalendarType>();
     useEffect(() => {
         if (!session || !calendars) return;
@@ -278,25 +274,27 @@ function UserPopover() {
                                 <FontAwesomeIcon icon={faCaretDown} className="my-auto" />
                             </DropdownMenuTrigger>
                             <DropdownMenuContent>
-                                {calendars.filter((calendar) => !calendar.subscribed).map((calendar) => {
-                                    if (calendar.isDefault) return null;
-                                    return (
-                                        <DropdownMenuItem
-                                            onClick={() => {
-                                                setMyCalendar(calendar);
-                                                updateDefaultCalendar.mutate({ newDefaultCalendar: calendar });
-                                            }}
-                                            key={calendar.id}
-                                            className="flex flex-row"
-                                        >
-                                            <div
-                                                style={{ backgroundColor: calendar.color }}
-                                                className="w-3 h-3 rounded-full my-auto"
-                                            ></div>
-                                            <h3 className="text-ellipsis px-2 overflow-hidden">{calendar.name}</h3>
-                                        </DropdownMenuItem>
-                                    );
-                                })}
+                                {calendars
+                                    .filter((calendar) => !calendar.subscribed)
+                                    .map((calendar) => {
+                                        if (calendar.isDefault) return null;
+                                        return (
+                                            <DropdownMenuItem
+                                                onClick={() => {
+                                                    setMyCalendar(calendar);
+                                                    updateDefaultCalendar.mutate({ newDefaultCalendar: calendar });
+                                                }}
+                                                key={calendar.id}
+                                                className="flex flex-row"
+                                            >
+                                                <div
+                                                    style={{ backgroundColor: calendar.color }}
+                                                    className="w-3 h-3 rounded-full my-auto"
+                                                ></div>
+                                                <h3 className="text-ellipsis px-2 overflow-hidden">{calendar.name}</h3>
+                                            </DropdownMenuItem>
+                                        );
+                                    })}
                             </DropdownMenuContent>
                         </DropdownMenu>
                     </div>

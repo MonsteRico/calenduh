@@ -1,8 +1,6 @@
 "use client";
 
-import { useSearchParams } from "next/navigation";
-import { useRouter } from "next/navigation";
-import React from "react";
+import { useRouter, useSearchParams } from "next/navigation";
 import { toast } from "sonner";
 import useGetCalendar from "~/hooks/calendars/useGetCalendar";
 
@@ -15,7 +13,7 @@ export function SubscribedMessage() {
             toast.success(`Subscribed to ${calendar.name}`);
         },
         onError: (error) => {
-           // toast.error(`Error subscribing to calendar: ${error}`);
+            // toast.error(`Error subscribing to calendar: ${error}`);
         },
         onSettled: () => {
             if (subscribedCalendarId) router.replace("/");

@@ -10,8 +10,7 @@ import { Calendar } from "~/components/ui/calendar";
 import { Popover, PopoverContent, PopoverTrigger } from "~/components/ui/popover";
 import { DateTime } from "luxon";
 
-export function DatePicker({ date, setDate}: { date: Date | undefined; setDate: (date: Date | undefined) => void}) {
-
+export function DatePicker({ date, setDate }: { date: Date | undefined; setDate: (date: Date | undefined) => void }) {
     return (
         <Popover>
             <PopoverTrigger asChild>

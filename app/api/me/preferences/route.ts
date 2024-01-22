@@ -1,10 +1,7 @@
-import { and, eq } from "drizzle-orm";
-import { DateTime } from "luxon";
-import { getServerSession } from "next-auth";
-import { NextRequest, NextResponse } from "next/server";
+import { eq } from "drizzle-orm";
+import { NextResponse } from "next/server";
 import { db } from "~/db/db";
 import { users } from "~/db/schema/auth";
-import { calendarEvents } from "~/db/schema/main";
 import getServerAuthSession from "~/lib/getServerAuthSession";
 export const dynamic = "force-dynamic"; // defaults to auto
 // GET /api/mes/[userId]/userPreferences
@@ -18,7 +15,7 @@ export async function GET() {
             {
                 error: "no user found",
             },
-            { status: 404 }
+            { status: 404 },
         );
     }
 

@@ -1,43 +1,18 @@
-import { DateTime, Interval } from "luxon";
-import React, { use, useContext, useEffect, useState } from "react";
+import { DateTime } from "luxon";
+import { useContext, useEffect, useState } from "react";
 import { useToday } from "~/hooks/useToday";
 
-import { DayBeingViewedContext, EnabledCalendarIdsContext } from "~/hooks/contexts";
-import { capitalize, cn, hexToRgb } from "~/lib/utils";
-import { CalendarEvent } from "~/lib/types";
-import { useQuery } from "react-query";
-import useGetEvents from "~/hooks/events/useGetEvents";
 import Color from "color";
-import useGetCalendar from "~/hooks/calendars/useGetCalendar";
-import { Popover, PopoverContent, PopoverTrigger } from "./ui/popover";
-import useUpdateEvent from "~/hooks/events/useUpdateEvent";
-import useDeleteEvent from "~/hooks/events/useDeleteEvent";
-import { Button } from "./ui/button";
-import { Label } from "./ui/label";
-import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "./ui/dropdown-menu";
-import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { faCaretDown } from "@fortawesome/free-solid-svg-icons";
-import useGetCalendars from "~/hooks/calendars/useGetCalendars";
-import {
-    AlertDialog,
-    AlertDialogAction,
-    AlertDialogCancel,
-    AlertDialogContent,
-    AlertDialogDescription,
-    AlertDialogFooter,
-    AlertDialogHeader,
-    AlertDialogTitle,
-} from "./ui/alert-dialog";
-import { useDebounce } from "~/hooks/useDebounce";
-import { DatePicker } from "./ui/date-picker";
-import useGetEvent from "~/hooks/events/useGetEvent";
-import { Switch } from "./ui/switch";
-import { Input } from "./ui/input";
-import ViewEvent from "./viewEvent";
-import CreateEvent from "./addEvent";
 import { useDrag } from "react-dnd";
+import useGetCalendar from "~/hooks/calendars/useGetCalendar";
+import { EnabledCalendarIdsContext } from "~/hooks/contexts";
 import { useMediaQuery } from "~/hooks/useMediaQuery";
+import { CalendarEvent } from "~/lib/types";
+import { cn, hexToRgb } from "~/lib/utils";
+import CreateEvent from "./addEvent";
 import { DrawerPopover, DrawerPopoverTrigger } from "./responsiveDrawerPopover";
+import { Popover, PopoverTrigger } from "./ui/popover";
+import ViewEvent from "./viewEvent";
 
 export function Event({
     event,

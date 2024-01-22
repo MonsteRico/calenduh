@@ -1,11 +1,8 @@
-import { DateTime, Interval } from "luxon";
-import { useSession } from "next-auth/react";
 import { useMutation, useQueryClient } from "react-query";
-import { Calendar, CalendarEvent } from "~/lib/types";
+import { Calendar } from "~/lib/types";
 
 export default function useUpdateDefaultCalendar() {
     const queryClient = useQueryClient();
-
 
     return useMutation({
         mutationFn: async ({ newDefaultCalendar }: { newDefaultCalendar: Calendar }) => {
@@ -46,7 +43,6 @@ export default function useUpdateDefaultCalendar() {
                     }
                 });
             });
-
 
             return { previousPreferences, previousCalendars };
         },

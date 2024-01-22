@@ -1,50 +1,29 @@
 import { DateTime, Interval } from "luxon";
-import React, { use, useContext, useEffect, useMemo, useState } from "react";
+import { useEffect, useState } from "react";
 import { useToday } from "~/hooks/useToday";
 
-import { DayBeingViewedContext, EnabledCalendarIdsContext } from "~/hooks/contexts";
-import { capitalize, cn, hexToRgb } from "~/lib/utils";
-import { CalendarEvent } from "~/lib/types";
-import { useQuery } from "react-query";
-import useGetEvents from "~/hooks/events/useGetEvents";
-import Color from "color";
-import useGetCalendar from "~/hooks/calendars/useGetCalendar";
-import { Popover, PopoverContent, PopoverTrigger } from "./ui/popover";
-import useUpdateEvent from "~/hooks/events/useUpdateEvent";
-import useDeleteEvent from "~/hooks/events/useDeleteEvent";
-import { Button } from "./ui/button";
-import { Label } from "./ui/label";
-import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "./ui/dropdown-menu";
-import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faCaretDown } from "@fortawesome/free-solid-svg-icons";
+import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import useGetCalendars from "~/hooks/calendars/useGetCalendars";
+import { CalendarEvent } from "~/lib/types";
+import { capitalize, cn } from "~/lib/utils";
+import { Button } from "./ui/button";
+import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "./ui/dropdown-menu";
+import { Label } from "./ui/label";
 
-import {
-    AlertDialog,
-    AlertDialogAction,
-    AlertDialogCancel,
-    AlertDialogContent,
-    AlertDialogDescription,
-    AlertDialogFooter,
-    AlertDialogHeader,
-    AlertDialogTitle,
-} from "./ui/alert-dialog";
-import { useDebounce } from "~/hooks/useDebounce";
-import { DatePicker } from "./ui/date-picker";
-import useGetEvent from "~/hooks/events/useGetEvent";
-import { Switch } from "./ui/switch";
-import { Input } from "./ui/input";
+import TimePicker from "react-time-picker";
 import { toast } from "sonner";
 import useCreateEvent from "~/hooks/events/useCreateEvent";
-import TimePicker from "react-time-picker";
 import { DrawerPopoverContent } from "./responsiveDrawerPopover";
+import { DatePicker } from "./ui/date-picker";
+import { Switch } from "./ui/switch";
 
 const genericEvent: CalendarEvent = {
     id: -1,
     title: "New Event",
     interval: Interval.fromDateTimes(
         DateTime.local().set({ hour: DateTime.now().hour, minute: 0 }),
-        DateTime.local().set({ hour: DateTime.now().hour, minute: 0 }).plus({ hour: 1 })
+        DateTime.local().set({ hour: DateTime.now().hour, minute: 0 }).plus({ hour: 1 }),
     ) as Interval<true>,
     allDay: false,
     calendar: {
@@ -83,15 +62,15 @@ export default function CreateEvent({
     const [myCalendar, setMyCalendar] = useState(defaultEvent.calendar);
     const [repeatType, setRepeatType] = useState(defaultEvent.repeatType);
     const [recurringEndDay, setRecurringEndDay] = useState<Date | undefined>(
-        defaultEvent.recurringEndDay ? defaultEvent.recurringEndDay.toJSDate() : undefined
+        defaultEvent.recurringEndDay ? defaultEvent.recurringEndDay.toJSDate() : undefined,
     );
     const [daysOfWeekString, setDaysOfWeekString] = useState(defaultEvent.daysOfWeek);
     const [allDay, setAllDay] = useState(defaultEvent.allDay);
     const [startTimeString, setStartTimeString] = useState(
-        defaultEvent.interval.start.toLocaleString(DateTime.TIME_24_SIMPLE)
+        defaultEvent.interval.start.toLocaleString(DateTime.TIME_24_SIMPLE),
     );
     const [endTimeString, setEndTimeString] = useState(
-        defaultEvent.interval.end.toLocaleString(DateTime.TIME_24_SIMPLE)
+        defaultEvent.interval.end.toLocaleString(DateTime.TIME_24_SIMPLE),
     );
     const [startTime, setStartTime] = useState(defaultEvent.interval.start);
     const [endTime, setEndTime] = useState(defaultEvent.interval.end);
@@ -176,7 +155,7 @@ export default function CreateEvent({
                                         startTime.set({
                                             hour: parseInt(time.split(":")[0]),
                                             minute: parseInt(time.split(":")[1]),
-                                        })
+                                        }),
                                     );
                                 }}
                                 onInvalidChange={() => {
@@ -210,7 +189,7 @@ export default function CreateEvent({
                                         endTime.set({
                                             hour: parseInt(time.split(":")[0]),
                                             minute: parseInt(time.split(":")[1]),
-                                        })
+                                        }),
                                     );
                                 }}
                                 onInvalidChange={() => {
@@ -256,23 +235,25 @@ export default function CreateEvent({
                             <FontAwesomeIcon icon={faCaretDown} className="my-auto" />
                         </DropdownMenuTrigger>
                         <DropdownMenuContent>
-                            {calendars.filter((calendar) => !calendar.subscribed).map((calendar) => {
-                                return (
-                                    <DropdownMenuItem
-                                        onClick={() => {
-                                            setMyCalendar(calendar);
-                                        }}
-                                        key={calendar.id}
-                                        className="flex flex-row"
-                                    >
-                                        <div
-                                            style={{ backgroundColor: calendar.color }}
-                                            className="w-3 h-3 rounded-full my-auto"
-                                        ></div>
-                                        <h3 className="text-ellipsis px-2 overflow-hidden">{calendar.name}</h3>
-                                    </DropdownMenuItem>
-                                );
-                            })}
+                            {calendars
+                                .filter((calendar) => !calendar.subscribed)
+                                .map((calendar) => {
+                                    return (
+                                        <DropdownMenuItem
+                                            onClick={() => {
+                                                setMyCalendar(calendar);
+                                            }}
+                                            key={calendar.id}
+                                            className="flex flex-row"
+                                        >
+                                            <div
+                                                style={{ backgroundColor: calendar.color }}
+                                                className="w-3 h-3 rounded-full my-auto"
+                                            ></div>
+                                            <h3 className="text-ellipsis px-2 overflow-hidden">{calendar.name}</h3>
+                                        </DropdownMenuItem>
+                                    );
+                                })}
                         </DropdownMenuContent>
                     </DropdownMenu>
                 </div>
@@ -393,7 +374,7 @@ export default function CreateEvent({
                                     }}
                                     className={cn(
                                         "w-8 h-7 rounded-full mr-2 text-center my-auto bg-slate-800 border border-calendarAccent cursor-pointer hover:bg-opacity-75",
-                                        daysOfWeekString.split(",").includes("7") && "bg-calendarAccent"
+                                        daysOfWeekString.split(",").includes("7") && "bg-calendarAccent",
                                     )}
                                 >
                                     S
@@ -410,7 +391,7 @@ export default function CreateEvent({
                                     }}
                                     className={cn(
                                         "w-8 h-7 rounded-full mr-2 text-center my-auto bg-slate-800 border border-calendarAccent cursor-pointer hover:bg-opacity-75",
-                                        daysOfWeekString.split(",").includes("1") && "bg-calendarAccent"
+                                        daysOfWeekString.split(",").includes("1") && "bg-calendarAccent",
                                     )}
                                 >
                                     M
@@ -427,7 +408,7 @@ export default function CreateEvent({
                                     }}
                                     className={cn(
                                         "w-8 h-7 rounded-full mr-2 text-center my-auto bg-slate-800 border border-calendarAccent cursor-pointer hover:bg-opacity-75",
-                                        daysOfWeekString.split(",").includes("2") && "bg-calendarAccent"
+                                        daysOfWeekString.split(",").includes("2") && "bg-calendarAccent",
                                     )}
                                 >
                                     T
@@ -444,7 +425,7 @@ export default function CreateEvent({
                                     }}
                                     className={cn(
                                         "w-8 h-7 rounded-full mr-2 text-center my-auto bg-slate-800 border border-calendarAccent cursor-pointer hover:bg-opacity-75",
-                                        daysOfWeekString.split(",").includes("3") && "bg-calendarAccent"
+                                        daysOfWeekString.split(",").includes("3") && "bg-calendarAccent",
                                     )}
                                 >
                                     W
@@ -461,7 +442,7 @@ export default function CreateEvent({
                                     }}
                                     className={cn(
                                         "w-8 h-7 rounded-full mr-2 text-center my-auto bg-slate-800 border border-calendarAccent cursor-pointer hover:bg-opacity-75",
-                                        daysOfWeekString.split(",").includes("4") && "bg-calendarAccent"
+                                        daysOfWeekString.split(",").includes("4") && "bg-calendarAccent",
                                     )}
                                 >
                                     R
@@ -478,7 +459,7 @@ export default function CreateEvent({
                                     }}
                                     className={cn(
                                         "w-8 h-7 rounded-full mr-2 text-center my-auto bg-slate-800 border border-calendarAccent cursor-pointer hover:bg-opacity-75",
-                                        daysOfWeekString.split(",").includes("5") && "bg-calendarAccent"
+                                        daysOfWeekString.split(",").includes("5") && "bg-calendarAccent",
                                     )}
                                 >
                                     F
@@ -495,7 +476,7 @@ export default function CreateEvent({
                                     }}
                                     className={cn(
                                         "w-8 h-7 rounded-full mr-2 text-center my-auto bg-slate-800 border border-calendarAccent cursor-pointer hover:bg-opacity-75",
-                                        daysOfWeekString.split(",").includes("6") && "bg-calendarAccent"
+                                        daysOfWeekString.split(",").includes("6") && "bg-calendarAccent",
                                     )}
                                 >
                                     S
@@ -569,7 +550,6 @@ export default function CreateEvent({
                             startTime,
                         });
 
-                        
                         onCreated?.();
                     }}
                     className="w-full"

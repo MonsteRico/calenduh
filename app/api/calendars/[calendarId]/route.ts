@@ -1,5 +1,4 @@
-import { and, eq, inArray } from "drizzle-orm";
-import { DateTime } from "luxon";
+import { eq } from "drizzle-orm";
 import { NextRequest, NextResponse } from "next/server";
 import { db } from "~/db/db";
 import { calendarEvents, calendars } from "~/db/schema/main";
@@ -10,24 +9,26 @@ export const dynamic = "force-dynamic"; // defaults to auto
 // GET /api/calendars/[calendarId]
 // get a calendar by id
 export async function GET(request: NextRequest, { params }: { params: { calendarId: string } }) {
-        const session = await getServerAuthSession();
-        const userId = session?.user?.id;
-        if (!userId) {
-            return NextResponse.json(
-                {
-                    error: "no user found",
-                },
-                { status: 404 }
-            );
-        }
-
+    const session = await getServerAuthSession();
+    const userId = session?.user?.id;
+    if (!userId) {
+        return NextResponse.json(
+            {
+                error: "no user found",
+            },
+            { status: 404 },
+        );
+    }
 
     const calendarId = parseInt(params.calendarId);
 
     if (calendarId === 0 || isNaN(calendarId)) {
-        return NextResponse.json({
-            error: "calendar not found",
-        }, { status: 404 })
+        return NextResponse.json(
+            {
+                error: "calendar not found",
+            },
+            { status: 404 },
+        );
     }
 
     const calendar = await db.query.calendars.findFirst({
@@ -39,7 +40,7 @@ export async function GET(request: NextRequest, { params }: { params: { calendar
             {
                 error: "calendar not found",
             },
-            { status: 404 }
+            { status: 404 },
         );
     }
 
@@ -56,11 +57,9 @@ export async function PATCH(request: NextRequest, { params }: { params: { calend
             {
                 error: "no user found",
             },
-            { status: 404 }
+            { status: 404 },
         );
     }
-
-
 
     const calendarId = parseInt(params.calendarId);
 
@@ -73,7 +72,7 @@ export async function PATCH(request: NextRequest, { params }: { params: { calend
             {
                 error: "calendar not found",
             },
-            { status: 404 }
+            { status: 404 },
         );
     }
 
@@ -107,7 +106,7 @@ export async function DELETE(request: NextRequest, { params }: { params: { calen
             {
                 error: "calendar not found",
             },
-            { status: 404 }
+            { status: 404 },
         );
     }
 
@@ -116,7 +115,7 @@ export async function DELETE(request: NextRequest, { params }: { params: { calen
             {
                 error: "cannot delete default calendar",
             },
-            { status: 400 }
+            { status: 400 },
         );
     }
 

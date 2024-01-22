@@ -1,21 +1,18 @@
 import { DateTime, Interval } from "luxon";
-import React, { use, useContext, useEffect, useMemo, useState } from "react";
+import { useContext, useEffect, useMemo, useState } from "react";
 import { useToday } from "~/hooks/useToday";
 
 import {
-    CurrentViewContext,
     DayBeingViewedContext,
     DraggingContext,
-    EnabledCalendarIdsContext,
+    EnabledCalendarIdsContext
 } from "~/hooks/contexts";
-import { cn, hexToRgb } from "~/lib/utils";
-import { CalendarEvent } from "~/lib/types";
-import { useQuery } from "react-query";
 import useGetEvents from "~/hooks/events/useGetEvents";
-import Color from "color";
+import { useMediaQuery } from "~/hooks/useMediaQuery";
+import { CalendarEvent } from "~/lib/types";
+import { cn } from "~/lib/utils";
 import { AllDayEvent, Event, NewEvent } from "./event";
 import { Calendar } from "./ui/calendar";
-import { useMediaQuery } from "~/hooks/useMediaQuery";
 
 export default function DayView() {
     const today = useToday();
@@ -84,7 +81,7 @@ function DayOverview({ day }: { day: DateTime<true> }) {
             setMyEvents(
                 events
                     .filter((event) => enabledCalendarIds.includes(event.calendar.id))
-                    .filter((event) => !event.allDay)
+                    .filter((event) => !event.allDay),
             );
         }
     }, [events, enabledCalendarIds]);
@@ -144,7 +141,9 @@ function DayHeader({ day }: { day: DateTime<true> }) {
     useEffect(() => {
         if (events) {
             setAllDayEvents(
-                events.filter((event) => enabledCalendarIds.includes(event.calendar.id)).filter((event) => event.allDay)
+                events
+                    .filter((event) => enabledCalendarIds.includes(event.calendar.id))
+                    .filter((event) => event.allDay),
             );
         }
     }, [events, enabledCalendarIds]);
@@ -179,7 +178,7 @@ function DaysHours({ day, bottomRow = false }: { day: DateTime<true>; bottomRow?
             setMyEvents(
                 events
                     .filter((event) => enabledCalendarIds.includes(event.calendar.id))
-                    .filter((event) => !event.allDay)
+                    .filter((event) => !event.allDay),
             );
         }
     }, [events, enabledCalendarIds]);
@@ -189,7 +188,7 @@ function DaysHours({ day, bottomRow = false }: { day: DateTime<true>; bottomRow?
             title: "New Event Dragged",
             interval: Interval.fromDateTimes(
                 startDragTime ?? day.startOf("day"),
-                endDragTime ?? day.startOf("day")
+                endDragTime ?? day.startOf("day"),
             ) as Interval<true>,
             allDay: false,
             calendar: {
@@ -232,7 +231,7 @@ function DaysHours({ day, bottomRow = false }: { day: DateTime<true>; bottomRow?
             {Array.from({ length: 96 }, (_, i) => {
                 const interval = Interval.fromDateTimes(
                     day.startOf("day").plus({ minutes: i * 15 }),
-                    day.startOf("day").plus({ minutes: (i + 1) * 15 })
+                    day.startOf("day").plus({ minutes: (i + 1) * 15 }),
                 );
                 return <FifteenMinBlock day={day} key={i} i={i} />;
             })}
@@ -267,7 +266,7 @@ function FifteenMinBlock({ i, day }: { i: number; day?: DateTime<true> }) {
             <div
                 className={cn(
                     "h-6 text-muted-foreground select-none",
-                    i % 4 == 0 ? "border-t-4" : i % 2 == 0 ? "border-t-2" : "border-t-1" // remove this to turn off the 15 minute lines
+                    i % 4 == 0 ? "border-t-4" : i % 2 == 0 ? "border-t-2" : "border-t-1", // remove this to turn off the 15 minute lines
                 )}
                 key={i}
             ></div>
@@ -276,7 +275,7 @@ function FifteenMinBlock({ i, day }: { i: number; day?: DateTime<true> }) {
 
     const myInterval = Interval.fromDateTimes(
         day.startOf("day").plus({ minutes: i * 15 }),
-        day.startOf("day").plus({ minutes: (i + 1) * 15 })
+        day.startOf("day").plus({ minutes: (i + 1) * 15 }),
     ) as Interval<true>;
 
     return (
@@ -317,7 +316,7 @@ function FifteenMinBlock({ i, day }: { i: number; day?: DateTime<true> }) {
             // }}
             className={cn(
                 "h-6 text-muted-foreground select-none",
-                i % 4 == 0 ? "border-t-4" : i % 2 == 0 ? "border-t-2" : "border-t-1" // remove this to turn off the 15 minute lines
+                i % 4 == 0 ? "border-t-4" : i % 2 == 0 ? "border-t-2" : "border-t-1", // remove this to turn off the 15 minute lines
             )}
             key={i}
         ></div>

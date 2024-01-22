@@ -1,34 +1,8 @@
-import { Sheet, SheetContent, SheetDescription, SheetHeader, SheetTitle, SheetTrigger } from "~/components/ui/sheet";
 import { faBars, faEllipsis, faTrash } from "@fortawesome/free-solid-svg-icons";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import useGetCalendars from "~/hooks/calendars/useGetCalendars";
-import { Calendar } from "~/lib/types";
-import { useContext, useEffect, useRef, useState } from "react";
-import { EnabledCalendarIdsContext } from "~/hooks/contexts";
-import { Checkbox } from "./ui/checkbox";
-import {
-    Dialog,
-    DialogContent,
-    DialogDescription,
-    DialogHeader,
-    DialogTitle,
-    DialogTrigger,
-} from "~/components/ui/dialog";
-import { Label } from "./ui/label";
-import { Input } from "./ui/input";
-import { useMutation, useQueryClient } from "react-query";
-import { useDebounce } from "~/hooks/useDebounce";
-import useUpdateCalendar from "~/hooks/calendars/useUpdateCalendar";
-import { Button } from "./ui/button";
-import useDeleteCalendar from "~/hooks/calendars/useDeleteCalendar";
-import useCreateCalendar from "~/hooks/calendars/useCreateCalendar";
-import {
-    DropdownMenu,
-    DropdownMenuContent,
-    DropdownMenuItem,
-    DropdownMenuSeparator,
-    DropdownMenuTrigger,
-} from "./ui/dropdown-menu";
+import { useContext, useEffect, useState } from "react";
+import { useQueryClient } from "react-query";
+import { toast } from "sonner";
 import {
     AlertDialog,
     AlertDialogAction,
@@ -37,11 +11,36 @@ import {
     AlertDialogDescription,
     AlertDialogFooter,
     AlertDialogHeader,
-    AlertDialogTitle,
-    AlertDialogTrigger,
+    AlertDialogTitle
 } from "~/components/ui/alert-dialog";
+import {
+    Dialog,
+    DialogContent,
+    DialogDescription,
+    DialogHeader,
+    DialogTitle,
+    DialogTrigger,
+} from "~/components/ui/dialog";
+import { Sheet, SheetContent, SheetDescription, SheetHeader, SheetTitle, SheetTrigger } from "~/components/ui/sheet";
+import useCreateCalendar from "~/hooks/calendars/useCreateCalendar";
+import useDeleteCalendar from "~/hooks/calendars/useDeleteCalendar";
+import useGetCalendars from "~/hooks/calendars/useGetCalendars";
+import useUpdateCalendar from "~/hooks/calendars/useUpdateCalendar";
+import { EnabledCalendarIdsContext } from "~/hooks/contexts";
+import { useDebounce } from "~/hooks/useDebounce";
+import { Calendar } from "~/lib/types";
 import { CircleColorPicker } from "./circleColorPicker";
-import { toast } from "sonner";
+import { Button } from "./ui/button";
+import { Checkbox } from "./ui/checkbox";
+import {
+    DropdownMenu,
+    DropdownMenuContent,
+    DropdownMenuItem,
+    DropdownMenuSeparator,
+    DropdownMenuTrigger,
+} from "./ui/dropdown-menu";
+import { Input } from "./ui/input";
+import { Label } from "./ui/label";
 
 export default function SideBar({}) {
     const { data: calendars } = useGetCalendars();
@@ -59,16 +58,12 @@ export default function SideBar({}) {
                         {calendars
                             ?.filter((calendar) => !calendar.subscribed)
                             .sort((a, b) => (a.isDefault === b.isDefault ? 0 : a.isDefault ? -1 : 1))
-                            .map((calendar) => (
-                                <CalendarItem key={calendar.id} calendar={calendar} />
-                            ))}
+                            .map((calendar) => <CalendarItem key={calendar.id} calendar={calendar} />)}
                         <h2>Subscribed Calendars</h2>
                         {calendars
                             ?.filter((calendar) => calendar.subscribed)
                             .sort((a, b) => (a.isDefault === b.isDefault ? 0 : a.isDefault ? -1 : 1))
-                            .map((calendar) => (
-                                <CalendarItem key={calendar.id} calendar={calendar} />
-                            ))}
+                            .map((calendar) => <CalendarItem key={calendar.id} calendar={calendar} />)}
                         <AddCalendar />
                     </div>
                 </SheetHeader>
@@ -141,11 +136,11 @@ function CalendarItem({ calendar }: { calendar: Calendar }) {
                             </DropdownMenuItem>{" "}
                             {!calendar.isDefault && (
                                 <>
-                                <DropdownMenuSeparator />
+                                    <DropdownMenuSeparator />
                                     <DropdownMenuItem
                                         onClick={(e) => {
                                             navigator.clipboard.writeText(
-                                                `${window.location.origin}/api/calendars/subscribe/${calendar.subscribeCode}`
+                                                `${window.location.origin}/api/calendars/subscribe/${calendar.subscribeCode}`,
                                             );
                                             toast.success("Copied subscribe link to clipboard");
                                             e.preventDefault();

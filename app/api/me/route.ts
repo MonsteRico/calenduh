@@ -1,9 +1,8 @@
-import { and, eq, inArray } from "drizzle-orm";
-import { DateTime, Interval } from "luxon";
+import { eq } from "drizzle-orm";
 import { NextRequest, NextResponse } from "next/server";
 import { db } from "~/db/db";
 import { users } from "~/db/schema/auth";
-import { calendarEvents, calendars } from "~/db/schema/main";
+import { calendars } from "~/db/schema/main";
 import getServerAuthSession from "~/lib/getServerAuthSession";
 export const dynamic = "force-dynamic"; // defaults to auto
 
@@ -17,7 +16,7 @@ export async function PATCH(request: NextRequest) {
             {
                 error: "no user found",
             },
-            { status: 404 }
+            { status: 404 },
         );
     }
     const body = await request.json();

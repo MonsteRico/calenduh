@@ -1,12 +1,9 @@
-import { signIn, useSession } from 'next-auth/react';
-import React from 'react'
-import { Button } from './ui/button';
-import { signOut } from "next-auth/react";
+import { signIn, signOut, useSession } from "next-auth/react";
+import { Button } from "./ui/button";
 
 function SignIn() {
-  return <Button onClick={() => signIn()}>Sign in</Button>;
+    return <Button onClick={() => signIn()}>Sign in</Button>;
 }
-
 
 function SignOut() {
     return <Button onClick={() => signOut()}>Sign out</Button>;

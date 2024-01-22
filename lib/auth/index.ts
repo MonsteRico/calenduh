@@ -1,13 +1,10 @@
-import DiscordProvider from "next-auth/providers/discord";
-import { eq } from "drizzle-orm";
-import { DrizzleAdapter } from "~/lib/auth/drizzleAdapter";
-import { db } from "~/db/db";
-import { dbUser, users } from "~/db/schema/auth";
 import type { NextAuthOptions, Session } from "next-auth";
+import DiscordProvider from "next-auth/providers/discord";
+import { db } from "~/db/db";
+import { dbUser } from "~/db/schema/auth";
+import { DrizzleAdapter } from "~/lib/auth/drizzleAdapter";
 
-declare module "next-auth" {
-
-}
+declare module "next-auth" {}
 
 export const authOptions: NextAuthOptions = {
     // @ts-expect-error
@@ -24,12 +21,12 @@ export const authOptions: NextAuthOptions = {
     ],
     callbacks: {
         // @ts-expect-error
-        async session({ session, user } : {session: Session, user: dbUser}) {
+        async session({ session, user }: { session: Session; user: dbUser }) {
             session.user = user;
             return session;
         },
     },
     pages: {
         signIn: "/signin",
-    }
+    },
 };

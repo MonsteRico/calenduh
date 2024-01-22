@@ -29,7 +29,6 @@ export type Calendar = {
     subscribed?: boolean;
     user?: User;
     events?: CalendarEvent[];
-
 };
 
 export type UserPreferences = {

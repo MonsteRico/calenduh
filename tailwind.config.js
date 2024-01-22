@@ -47,7 +47,7 @@ module.exports = {
                 },
                 calendarAccent: {
                     DEFAULT: "var(--calendar-accent)",
-                }
+                },
             },
             borderRadius: {
                 lg: "var(--radius)",

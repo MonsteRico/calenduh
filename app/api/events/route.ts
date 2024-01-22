@@ -1,6 +1,5 @@
 import { and } from "drizzle-orm";
 import { DateTime } from "luxon";
-import { getServerSession } from "next-auth";
 import { NextRequest, NextResponse } from "next/server";
 import { db } from "~/db/db";
 import { calendarEvents } from "~/db/schema/main";
@@ -16,7 +15,7 @@ export async function GET(request: NextRequest) {
             {
                 error: "no user found",
             },
-            { status: 404 }
+            { status: 404 },
         );
     }
 
@@ -30,7 +29,7 @@ export async function GET(request: NextRequest) {
             {
                 error: "month, day, and year are required query parameters",
             },
-            { status: 400 }
+            { status: 400 },
         );
     }
 
@@ -44,7 +43,6 @@ export async function GET(request: NextRequest) {
             calendar: true,
         },
     });
-
 
     const calendarIds = calendars.map((calendar) => calendar.id);
 
@@ -60,7 +58,7 @@ export async function GET(request: NextRequest) {
 
     // get all events that are not recurring, are on this day, and are on one of the user's calendars
     const events = await db.query.calendarEvents.findMany({
-        where: (events, { eq, inArray}) =>
+        where: (events, { eq, inArray }) =>
             and(
                 eq(events.startMonth, thisDay.month),
                 eq(events.startDay, thisDay.day),
@@ -141,7 +139,7 @@ export async function POST(request: NextRequest) {
             {
                 error: "no user found",
             },
-            { status: 404 }
+            { status: 404 },
         );
     }
     let fixedEndTime = body.endTime;
