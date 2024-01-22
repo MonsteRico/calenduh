@@ -138,6 +138,7 @@ function DaysHours({ day, bottomRow = false }: { day: DateTime<true>; bottomRow?
                 color: "#000000",
                 isDefault: true,
                 userId: "",
+                subscribeCode: "",
             },
             repeatType: "none",
             recurringEndDay: undefined,
