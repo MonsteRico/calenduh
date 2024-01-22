@@ -41,6 +41,7 @@ import {
     AlertDialogTrigger,
 } from "~/components/ui/alert-dialog";
 import { CircleColorPicker } from "./circleColorPicker";
+import { toast } from "sonner";
 
 export default function SideBar({}) {
     const { data: calendars } = useGetCalendars();
@@ -55,9 +56,19 @@ export default function SideBar({}) {
                     <SheetTitle>Calendars</SheetTitle>
                     <SheetDescription>All your calendars and stuff and things.</SheetDescription>
                     <div className="gap-2 flex flex-col">
-                        {calendars?.sort((a, b) => (a.isDefault === b.isDefault ? 0 : a.isDefault ? -1 : 1)).map((calendar) => (
-                            <CalendarItem key={calendar.id} calendar={calendar} />
-                        ))}
+                        {calendars
+                            ?.filter((calendar) => !calendar.subscribed)
+                            .sort((a, b) => (a.isDefault === b.isDefault ? 0 : a.isDefault ? -1 : 1))
+                            .map((calendar) => (
+                                <CalendarItem key={calendar.id} calendar={calendar} />
+                            ))}
+                        <h2>Subscribed Calendars</h2>
+                        {calendars
+                            ?.filter((calendar) => calendar.subscribed)
+                            .sort((a, b) => (a.isDefault === b.isDefault ? 0 : a.isDefault ? -1 : 1))
+                            .map((calendar) => (
+                                <CalendarItem key={calendar.id} calendar={calendar} />
+                            ))}
                         <AddCalendar />
                     </div>
                 </SheetHeader>
@@ -106,42 +117,59 @@ function CalendarItem({ calendar }: { calendar: Calendar }) {
                         </p>
                     )}
                     <h2>{calendar.name}</h2>
-                </div>
-                <DropdownMenu>
-                    <DropdownMenuTrigger className="my-auto px-1 rounded z-10 hover:bg-muted-foreground cursor-pointer  transition-colors duration-300">
-                        <FontAwesomeIcon icon={faEllipsis} />
-                    </DropdownMenuTrigger>
-                    <DropdownMenuContent
-                        onClick={(e) => {
-                            e.stopPropagation();
-                            console.log("clicked too");
-                        }}
-                    >
-                        <DropdownMenuItem
+                </div>{" "}
+                {!calendar.subscribed && (
+                    <DropdownMenu>
+                        <DropdownMenuTrigger className="my-auto px-1 rounded z-10 hover:bg-muted-foreground cursor-pointer  transition-colors duration-300">
+                            <FontAwesomeIcon icon={faEllipsis} />
+                        </DropdownMenuTrigger>
+                        <DropdownMenuContent
                             onClick={(e) => {
-                                setEditDialogOpen(true);
-                                e.preventDefault();
                                 e.stopPropagation();
+                                console.log("clicked too");
                             }}
-                            className="cursor-pointer"
                         >
-                            Edit Calendar
-                        </DropdownMenuItem>
-                        {!calendar.isDefault && (
-                            <>
+                            <DropdownMenuItem
+                                onClick={(e) => {
+                                    setEditDialogOpen(true);
+                                    e.preventDefault();
+                                    e.stopPropagation();
+                                }}
+                                className="cursor-pointer"
+                            >
+                                Edit Calendar
+                            </DropdownMenuItem>{" "}
+                            {!calendar.isDefault && (
+                                <>
                                 <DropdownMenuSeparator />
-                                <DropdownMenuItem
-                                    onClick={() => {
-                                        setDeleteAlertOpen(true);
-                                    }}
-                                    className="text-red-500 hover:text-red-700 cursor-pointer transition-all duration-300"
-                                >
-                                    Delete <FontAwesomeIcon icon={faTrash} className="ml-2" />
-                                </DropdownMenuItem>
-                            </>
-                        )}
-                    </DropdownMenuContent>
-                </DropdownMenu>
+                                    <DropdownMenuItem
+                                        onClick={(e) => {
+                                            navigator.clipboard.writeText(
+                                                `${window.location.origin}/api/calendars/subscribe/${calendar.subscribeCode}`
+                                            );
+                                            toast.success("Copied subscribe link to clipboard");
+                                            e.preventDefault();
+                                            e.stopPropagation();
+                                        }}
+                                        className="cursor-pointer"
+                                    >
+                                        Copy Subscribe Link
+                                    </DropdownMenuItem>
+
+                                    <DropdownMenuSeparator />
+                                    <DropdownMenuItem
+                                        onClick={() => {
+                                            setDeleteAlertOpen(true);
+                                        }}
+                                        className="text-red-500 hover:text-red-700 cursor-pointer transition-all duration-300"
+                                    >
+                                        Delete <FontAwesomeIcon icon={faTrash} className="ml-2" />
+                                    </DropdownMenuItem>
+                                </>
+                            )}
+                        </DropdownMenuContent>
+                    </DropdownMenu>
+                )}
                 {!calendar.isDefault && (
                     <DeleteCalendarAlert
                         deleteAlertOpen={deleteAlertOpen}

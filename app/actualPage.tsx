@@ -15,11 +15,13 @@ import { DndProvider } from "react-dnd";
 import { HTML5Backend } from "react-dnd-html5-backend";
 import { SessionProvider, useSession } from "next-auth/react";
 import DayView from "~/components/dayView";
-import { redirect } from "next/navigation";
+import { redirect, useSearchParams } from "next/navigation";
 import { User } from "next-auth";
 import { dbUser } from "~/db/schema/auth";
+import {SubscribedMessage} from "~/components/subscribedMessage";
 
 export default function ActualPage({ user }: { user: dbUser }) {
+    console.log(user);
     const today = useToday();
     const lastDayViewed =
         (DateTime.fromISO(localStorage.getItem("lastDayViewed") as string) as DateTime<true>) || today;
@@ -38,6 +40,7 @@ export default function ActualPage({ user }: { user: dbUser }) {
     }, [calendars]);
 
     const queryClient = useQueryClient();
+
     useEffect(() => {
         localStorage.setItem("lastDayViewed", dayBeingViewed.toISODate());
         if (dayBeingViewed.month == previousMonthBeingViewed) {
@@ -86,6 +89,7 @@ export default function ActualPage({ user }: { user: dbUser }) {
                         <EnabledCalendarIdsContext.Provider
                             value={{ value: enabledCalendarIds, setValue: setEnabledCalendarIds }}
                         >
+                            <SubscribedMessage />
                             <Tabs
                                 onValueChange={(newView) => {
                                     setCurrentView(newView as "month" | "week" | "day");

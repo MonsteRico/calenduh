@@ -38,7 +38,19 @@ export async function GET(request: NextRequest) {
         where: (calendars, { eq }) => eq(calendars.userId, userId),
     });
 
+    const subscribedCalendars = await db.query.usersSubscribedCalendars.findMany({
+        where: (subscribedCalendars, { eq }) => eq(subscribedCalendars.userId, userId),
+        with: {
+            calendar: true,
+        },
+    });
+
+
     const calendarIds = calendars.map((calendar) => calendar.id);
+
+    subscribedCalendars.forEach((subscribedCalendar) => {
+        calendarIds.push(subscribedCalendar.calendarId);
+    });
 
     const thisDay = DateTime.fromObject({
         month: parseInt(month),

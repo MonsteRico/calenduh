@@ -1,4 +1,4 @@
-import { boolean, datetime, index, int, mysqlEnum, mysqlTable, serial, text, timestamp, uniqueIndex, varchar } from "drizzle-orm/mysql-core";
+import { boolean, datetime, index, int, mysqlEnum, mysqlTable, primaryKey, serial, text, timestamp, uniqueIndex, varchar } from "drizzle-orm/mysql-core";
 import { relations } from "drizzle-orm";
 import { users } from "./auth";
 
@@ -8,6 +8,7 @@ export const calendars = mysqlTable("calendars", {
     color: varchar("color", { length: 7 }).notNull().default("#000000"),
     userId: varchar("userId", { length: 255 }).notNull(),
     isDefault: boolean("is_default").notNull().default(false),
+    subscribeCode: varchar("subscribe_code", {length:255}).notNull().unique(),
 });
 
 export const calendarsRelations = relations(calendars, ({ many, one }) => ({
@@ -16,7 +17,30 @@ export const calendarsRelations = relations(calendars, ({ many, one }) => ({
         fields: [calendars.userId],
         references: [users.id],
     }),
+    subscribedUsers: many(usersSubscribedCalendars)
 }));
+
+
+export const usersSubscribedCalendars = mysqlTable("users_subscribed_calendars", {
+    userId: varchar("userId", { length: 255 }).notNull(),
+    calendarId: int("calendar_id").notNull()
+}, 
+(t) => ({
+    pk: primaryKey({columns:[t.userId, t.calendarId]}),
+}));
+
+export const usersSubscribedCalendarsRelations = relations(usersSubscribedCalendars, ({ one }) => ({
+    user: one(users, {
+        fields: [usersSubscribedCalendars.userId],
+        references: [users.id],
+    }),
+    calendar: one(calendars, {
+        fields: [usersSubscribedCalendars.calendarId],
+        references: [calendars.id],
+    }),
+}));
+
+
 
 export const calendarEvents = mysqlTable("calendar_events", {
     id: serial("id").primaryKey(),

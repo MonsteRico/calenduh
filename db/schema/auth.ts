@@ -1,5 +1,5 @@
 import { boolean, datetime, index, int, mysqlTable, text, timestamp, uniqueIndex, varchar } from "drizzle-orm/mysql-core";
-import { calendarEvents, calendars } from "./main";
+import { calendarEvents, calendars, usersSubscribedCalendars } from "./main";
 import { relations } from "drizzle-orm";
 
 export const accounts = mysqlTable(
@@ -74,6 +74,7 @@ export const userRelations = relations(users, ({ many, one }) => ({
         fields: [users.defaultCalendarId],
         references: [calendars.id],
     }),
+    subscribedCalendars: many(usersSubscribedCalendars)
 }));
 
 export type dbUser = typeof users.$inferSelect;

@@ -1,3 +1,4 @@
+import { createId } from "@paralleldrive/cuid2";
 import { and, eq, inArray } from "drizzle-orm";
 import { DateTime } from "luxon";
 import { getServerSession } from "next-auth";
@@ -27,7 +28,22 @@ export async function GET(request: NextRequest) {
         ),
     });
 
-    return NextResponse.json(calendars);
+    // get all of the users subscribed calendars
+    const usersSubscribedCalendars = await db.query.usersSubscribedCalendars.findMany({
+        where: (usersSubscribedCalendars, { eq }) => eq(usersSubscribedCalendars.userId, userId
+        ),
+    });
+
+    const subscribedCalendarIds = usersSubscribedCalendars.map((calendar) => calendar.calendarId)
+
+    subscribedCalendarIds.push(-1)
+
+    const subscribedCalendars = await db.query.calendars.findMany({
+        where: (calendars, {inArray}) => inArray(calendars.id, subscribedCalendarIds)
+    })
+
+
+    return NextResponse.json({myCalendars: calendars, subscribedCalendars: subscribedCalendars});
 }
 
 // POST /api/calendars
@@ -47,10 +63,13 @@ export async function POST(request: NextRequest) {
         );
     }
 
+    const subscribeCode = createId()
+
     const calendar = await db.insert(calendars).values({
         name: body.name,
         color: body.color,
         userId: userId,
+        subscribeCode,
     });
 
     return NextResponse.json(calendar);

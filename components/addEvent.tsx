@@ -53,6 +53,7 @@ const genericEvent: CalendarEvent = {
         color: "",
         userId: "",
         isDefault: false,
+        subscribeCode: "",
     },
     repeatType: "none" as "none" | "daily" | "weekly" | "monthly" | "yearly",
     recurringEndDay: undefined,
@@ -255,7 +256,7 @@ export default function CreateEvent({
                             <FontAwesomeIcon icon={faCaretDown} className="my-auto" />
                         </DropdownMenuTrigger>
                         <DropdownMenuContent>
-                            {calendars.map((calendar) => {
+                            {calendars.filter((calendar) => !calendar.subscribed).map((calendar) => {
                                 return (
                                     <DropdownMenuItem
                                         onClick={() => {
@@ -567,6 +568,8 @@ export default function CreateEvent({
                             }) as DateTime<true>,
                             startTime,
                         });
+
+                        
                         onCreated?.();
                     }}
                     className="w-full"

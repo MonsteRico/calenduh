@@ -24,6 +24,12 @@ export async function GET(request: NextRequest, { params }: { params: { calendar
 
     const calendarId = parseInt(params.calendarId);
 
+    if (calendarId === 0 || isNaN(calendarId)) {
+        return NextResponse.json({
+            error: "calendar not found",
+        }, { status: 404 })
+    }
+
     const calendar = await db.query.calendars.findFirst({
         where: (calendars, { eq }) => eq(calendars.id, calendarId),
     });

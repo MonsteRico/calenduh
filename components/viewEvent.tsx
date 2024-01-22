@@ -299,7 +299,7 @@ export default function ViewEvent({
                             <FontAwesomeIcon icon={faCaretDown} className="my-auto" />
                         </DropdownMenuTrigger>
                         <DropdownMenuContent>
-                            {calendars.map((calendar) => {
+                            {calendars.filter((calendar) => !calendar.subscribed).map((calendar) => {
                                 return (
                                     <DropdownMenuItem
                                         onClick={() => {

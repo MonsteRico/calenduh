@@ -278,7 +278,7 @@ function UserPopover() {
                                 <FontAwesomeIcon icon={faCaretDown} className="my-auto" />
                             </DropdownMenuTrigger>
                             <DropdownMenuContent>
-                                {calendars.map((calendar) => {
+                                {calendars.filter((calendar) => !calendar.subscribed).map((calendar) => {
                                     if (calendar.isDefault) return null;
                                     return (
                                         <DropdownMenuItem

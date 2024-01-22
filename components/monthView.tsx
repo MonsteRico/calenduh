@@ -160,7 +160,7 @@ function Day({ day, bottomRow = false }: { day: DateTime<true>; bottomRow?: bool
                     </div>
                 </div>
             </DrawerPopoverTrigger>
-            <CreateEvent day={day} popoverOpen={createPopoverOpen} />
+            <CreateEvent day={day} popoverOpen={createPopoverOpen} onCreated={() => setCreatePopoverOpen(false)} />
         </DrawerPopover>
     );
 }

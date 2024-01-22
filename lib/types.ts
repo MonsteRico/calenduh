@@ -25,8 +25,11 @@ export type Calendar = {
     color: string;
     userId: string;
     isDefault: boolean;
+    subscribeCode: string;
+    subscribed?: boolean;
     user?: User;
     events?: CalendarEvent[];
+
 };
 
 export type UserPreferences = {
