@@ -3,11 +3,7 @@ import * as React from "react";
 import { useMediaQuery } from "~/hooks/useMediaQuery";
 
 import { PopoverTriggerProps } from "@radix-ui/react-popover";
-import {
-    Drawer,
-    DrawerContent,
-    DrawerTrigger
-} from "~/components/ui/drawer";
+import { Drawer, DrawerContent, DrawerTrigger } from "~/components/ui/drawer";
 import { Popover, PopoverContent, PopoverTrigger } from "./ui/popover";
 
 export function DrawerPopover({
@@ -36,15 +32,26 @@ export function DrawerPopover({
     );
 }
 
-export function DrawerPopoverTrigger({ children, ...props }: { children: React.ReactNode } & PopoverTriggerProps) {
+export const DrawerPopoverTrigger = React.forwardRef(function DrawerPopoverTrigger(
+    { children, ...props }: { children: React.ReactNode } & PopoverTriggerProps,
+    ref: React.ForwardedRef<HTMLButtonElement>
+) {
     const isDesktop = useMediaQuery("(min-width: 768px)");
 
     if (isDesktop) {
-        return <PopoverTrigger {...props}>{children}</PopoverTrigger>;
+        return (
+            <PopoverTrigger ref={ref} {...props}>
+                {children}
+            </PopoverTrigger>
+        );
     }
 
-    return <DrawerTrigger {...props}>{children}</DrawerTrigger>;
-}
+    return (
+        <DrawerTrigger ref={ref} {...props}>
+            {children}
+        </DrawerTrigger>
+    );
+});
 
 export function DrawerPopoverContent({ children }: { children: React.ReactNode }) {
     const isDesktop = useMediaQuery("(min-width: 768px)");

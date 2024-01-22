@@ -98,8 +98,8 @@ export function Event({
     const borderColor = backgroundColor.darken(0.35);
 
     return (
-        <Popover open={popoverOpen} onOpenChange={setPopoverOpen}>
-            <PopoverTrigger
+        <DrawerPopover open={popoverOpen} onOpenChange={setPopoverOpen}>
+            <DrawerPopoverTrigger
                 className="absolute w-full overflow-ellipsis cursor-pointer flex"
                 style={{
                     top: `${top}rem`,
@@ -115,9 +115,9 @@ export function Event({
                 <h4 className={cn("p-2 text-center text-xs", backgroundColor.isDark() ? "text-white" : "text-black")}>
                     {event.title}, {event.numConflicts}
                 </h4>
-            </PopoverTrigger>
+            </DrawerPopoverTrigger>
             <ViewEvent event={event} dayItsOn={dayItsOn} popoverOpen={popoverOpen} />
-        </Popover>
+        </DrawerPopover>
     );
 }
 
@@ -136,8 +136,8 @@ export function AllDayEvent({ event, dayItsOn }: { event: CalendarEvent; dayItsO
     const borderColor = backgroundColor.darken(0.35);
 
     return (
-        <Popover open={popoverOpen} onOpenChange={setPopoverOpen}>
-            <PopoverTrigger>
+        <DrawerPopover open={popoverOpen} onOpenChange={setPopoverOpen}>
+            <DrawerPopoverTrigger>
                 <h4
                     key={event.id}
                     style={{
@@ -148,9 +148,9 @@ export function AllDayEvent({ event, dayItsOn }: { event: CalendarEvent; dayItsO
                 >
                     {event.title}
                 </h4>
-            </PopoverTrigger>
+            </DrawerPopoverTrigger>
             <ViewEvent event={event} dayItsOn={dayItsOn} popoverOpen={popoverOpen} />
-        </Popover>
+        </DrawerPopover>
     );
 }
 
@@ -177,8 +177,8 @@ export function MonthEvent({ event, dayItsOn }: { event: CalendarEvent; dayItsOn
     }
 
     return (
-        <Popover open={popoverOpen && !isDragging} onOpenChange={setPopoverOpen}>
-            <PopoverTrigger ref={drag}>
+        <DrawerPopover open={popoverOpen && !isDragging} onOpenChange={setPopoverOpen}>
+            <DrawerPopoverTrigger ref={drag}>
                 <div className={cn("flex flex-row justify-between text-xs text-primary", isDragging && "opacity-50")}>
                     <div className="flex flex-row">
                         <div
@@ -191,9 +191,9 @@ export function MonthEvent({ event, dayItsOn }: { event: CalendarEvent; dayItsOn
                         {event.allDay ? "All Day" : event.interval.start?.toLocaleString(DateTime.TIME_SIMPLE)}
                     </h2>
                 </div>
-            </PopoverTrigger>
+            </DrawerPopoverTrigger>
             <ViewEvent event={event} dayItsOn={dayItsOn} popoverOpen={popoverOpen} />
-        </Popover>
+        </DrawerPopover>
     );
 }
 

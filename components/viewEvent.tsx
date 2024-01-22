@@ -12,6 +12,7 @@ import useGetEvent from "~/hooks/events/useGetEvent";
 import useUpdateEvent from "~/hooks/events/useUpdateEvent";
 import { CalendarEvent } from "~/lib/types";
 import { capitalize, cn } from "~/lib/utils";
+import { DrawerPopoverContent } from "./responsiveDrawerPopover";
 import {
     AlertDialog,
     AlertDialogAction,
@@ -24,7 +25,6 @@ import { Button } from "./ui/button";
 import { DatePicker } from "./ui/date-picker";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "./ui/dropdown-menu";
 import { Label } from "./ui/label";
-import { PopoverContent } from "./ui/popover";
 import { Switch } from "./ui/switch";
 export default function ViewEvent({
     event,
@@ -90,7 +90,7 @@ export default function ViewEvent({
 
     return (
         <>
-            <PopoverContent className="">
+            <DrawerPopoverContent>
                 {
                     // Title
                 }
@@ -612,7 +612,7 @@ export default function ViewEvent({
                 >
                     Delete Event
                 </Button>
-            </PopoverContent>
+            </DrawerPopoverContent>
             <AlertDialog open={deleteAlertOpen} onOpenChange={setDeleteAlertOpen}>
                 <AlertDialogContent>
                     <AlertDialogHeader>
