@@ -11,7 +11,7 @@ import {
     AlertDialogDescription,
     AlertDialogFooter,
     AlertDialogHeader,
-    AlertDialogTitle
+    AlertDialogTitle,
 } from "~/components/ui/alert-dialog";
 import {
     Dialog,
@@ -45,8 +45,35 @@ import { Label } from "./ui/label";
 export default function SideBar({}) {
     const { data: calendars } = useGetCalendars();
 
+    const [touchStart, setTouchStart] = useState<number | null>(null);
+    const [touchEnd, setTouchEnd] = useState<number | null>(null);
+    const [sheetOpen, setSheetOpen] = useState(false);
+    // the required distance between touchStart and touchEnd to be detected as a swipe
+    const minSwipeDistance = 100;
+
+    const onTouchStart = (e: TouchEvent) => {
+        setTouchEnd(null); // otherwise the swipe is fired even with usual touch events
+        setTouchStart(e.targetTouches[0].clientX);
+    };
+
+    const onTouchMove = (e: TouchEvent) => setTouchEnd(e.targetTouches[0].clientX);
+
+    const onTouchEnd = () => {
+        if (!touchStart || !touchEnd) return;
+        const distance = touchStart - touchEnd;
+        const isLeftSwipe = distance > minSwipeDistance;
+        const isRightSwipe = distance < -minSwipeDistance;
+        if (!isRightSwipe && !isLeftSwipe) return;
+        if (isLeftSwipe) {setSheetOpen(false);}
+        else if (isRightSwipe) {setSheetOpen(true);}
+    };
+
+    document.addEventListener("touchstart", onTouchStart);
+    document.addEventListener("touchmove", onTouchMove);
+    document.addEventListener("touchend", onTouchEnd);
+
     return (
-        <Sheet>
+        <Sheet onOpenChange={setSheetOpen} open={sheetOpen}>
             <SheetTrigger>
                 <FontAwesomeIcon icon={faBars} />
             </SheetTrigger>
@@ -58,12 +85,16 @@ export default function SideBar({}) {
                         {calendars
                             ?.filter((calendar) => !calendar.subscribed)
                             .sort((a, b) => (a.isDefault === b.isDefault ? 0 : a.isDefault ? -1 : 1))
-                            .map((calendar) => <CalendarItem key={calendar.id} calendar={calendar} />)}
+                            .map((calendar) => (
+                                <CalendarItem key={calendar.id} calendar={calendar} />
+                            ))}
                         <h2>Subscribed Calendars</h2>
                         {calendars
                             ?.filter((calendar) => calendar.subscribed)
                             .sort((a, b) => (a.isDefault === b.isDefault ? 0 : a.isDefault ? -1 : 1))
-                            .map((calendar) => <CalendarItem key={calendar.id} calendar={calendar} />)}
+                            .map((calendar) => (
+                                <CalendarItem key={calendar.id} calendar={calendar} />
+                            ))}
                         <AddCalendar />
                     </div>
                 </SheetHeader>
@@ -140,7 +171,7 @@ function CalendarItem({ calendar }: { calendar: Calendar }) {
                                     <DropdownMenuItem
                                         onClick={(e) => {
                                             navigator.clipboard.writeText(
-                                                `${window.location.origin}/api/calendars/subscribe/${calendar.subscribeCode}`,
+                                                `${window.location.origin}/api/calendars/subscribe/${calendar.subscribeCode}`
                                             );
                                             toast.success("Copied subscribe link to clipboard");
                                             e.preventDefault();
