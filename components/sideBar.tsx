@@ -63,9 +63,8 @@ export default function SideBar({}) {
         const distance = touchStart - touchEnd;
         const isLeftSwipe = distance > minSwipeDistance;
         const isRightSwipe = distance < -minSwipeDistance;
-        if (!isRightSwipe && !isLeftSwipe) return;
-        if (isLeftSwipe) {setSheetOpen(false);}
-        else if (isRightSwipe) {setSheetOpen(true);}
+        if (isLeftSwipe && sheetOpen) {setSheetOpen(false);}
+        else if (isRightSwipe && !sheetOpen) {setSheetOpen(true);}
     };
 
     document.addEventListener("touchstart", onTouchStart);
