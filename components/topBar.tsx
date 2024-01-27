@@ -5,7 +5,7 @@ import {
     faArrowsRotate,
     faCaretDown,
     faPlus,
-    faUser
+    faUser,
 } from "@fortawesome/free-solid-svg-icons";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { DateTime } from "luxon";
@@ -42,10 +42,50 @@ export default function TopBar() {
         document.documentElement.style.setProperty("--calendar-accent", user.accent_color);
     }, [user]);
 
+    const [touchStart, setTouchStart] = useState<number | null>(null);
+    const [touchEnd, setTouchEnd] = useState<number | null>(null);
+    const [sheetOpen, setSheetOpen] = useState(false);
+    // the required distance between touchStart and touchEnd to be detected as a swipe
+    const minSwipeDistance = 100;
+
+    useEffect(() => {
+        const onTouchStart = (e: TouchEvent) => {
+            setTouchEnd(null); // otherwise the swipe is fired even with usual touch events
+            setTouchStart(e.targetTouches[0].clientX);
+        };
+
+        const onTouchMove = (e: TouchEvent) => setTouchEnd(e.targetTouches[0].clientX);
+
+        const onTouchEnd = () => {
+            if (!touchStart || !touchEnd) return;
+            let distance = touchStart - touchEnd;
+            const isLeftSwipe = distance > minSwipeDistance;
+            const isRightSwipe = distance < -minSwipeDistance;
+            console.log("distance", distance);
+            console.log("touchStart", touchStart);
+            console.log("touchEnd", touchEnd);
+            if (isRightSwipe && !sheetOpen) {
+                setSheetOpen(true);
+            }
+            if (isLeftSwipe && sheetOpen) {
+                setSheetOpen(false);
+            }
+        };
+
+        document.addEventListener("touchstart", onTouchStart);
+        document.addEventListener("touchmove", onTouchMove);
+        document.addEventListener("touchend", onTouchEnd);
+        return () => {
+            document.removeEventListener("touchstart", onTouchStart);
+            document.removeEventListener("touchmove", onTouchMove);
+            document.removeEventListener("touchend", onTouchEnd);
+        };
+    }, [sheetOpen, touchStart, touchEnd]);
+
     return (
         <div className="sticky top-0 z-10 mx-5 flex flex-row justify-between bg-background py-4">
             <div className="flex flex-row gap-8">
-                <SideBar />
+                <SideBar open={sheetOpen} onOpenChange={setSheetOpen} />
             </div>
             <div className="flex flex-row gap-4">
                 <TabsList className="my-auto">

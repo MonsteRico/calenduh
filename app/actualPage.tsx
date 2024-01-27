@@ -19,7 +19,6 @@ import { fetchEvents } from "~/hooks/events/useGetEvents";
 import { useToday } from "~/hooks/useToday";
 
 export default function ActualPage({ user }: { user: dbUser }) {
-    console.log(user);
     const today = useToday();
     const lastDayViewed =
         (DateTime.fromISO(localStorage.getItem("lastDayViewed") as string) as DateTime<true>) || today;

@@ -4,8 +4,7 @@ TODO
 
         -   subscribable calendars
 
-    one, whats the best way to subscribe to them in your opinion
-    two, should other people who are subscribed be able to add events to it? should that be an optional thing to enable?
+
 
 -   mobile friendlyfy
 
@@ -23,3 +22,5 @@ TODO
 
 -   allow you to click and drag existing events around and drag edges to change duration/start and end
 -   click and drag to create event is commented out for now, maybe reenable it?
+    one, whats the best way to subscribe to a calendar
+    two, should other people who are subscribed to a calendar be able to add events to it? should that be an optional thing to enable?

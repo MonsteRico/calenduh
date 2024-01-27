@@ -42,39 +42,11 @@ import {
 import { Input } from "./ui/input";
 import { Label } from "./ui/label";
 
-export default function SideBar({}) {
+export default function SideBar({ open, onOpenChange }: { open: boolean; onOpenChange: (open: boolean) => void }) {
     const { data: calendars } = useGetCalendars();
 
-    const [touchStart, setTouchStart] = useState<number | null>(null);
-    const [touchEnd, setTouchEnd] = useState<number | null>(null);
-    const [sheetOpen, setSheetOpen] = useState(false);
-    // the required distance between touchStart and touchEnd to be detected as a swipe
-    const minSwipeDistance = 100;
-
-    const onTouchStart = (e: TouchEvent) => {
-        setTouchEnd(null); // otherwise the swipe is fired even with usual touch events
-        setTouchStart(e.targetTouches[0].clientX);
-    };
-
-    const onTouchMove = (e: TouchEvent) => setTouchEnd(e.targetTouches[0].clientX);
-
-    const onTouchEnd = () => {
-        if (!touchStart || !touchEnd) return;
-        const distance = touchStart - touchEnd;
-        const isLeftSwipe = distance > minSwipeDistance;
-        const isRightSwipe = distance < -minSwipeDistance;
-        if (isLeftSwipe && sheetOpen) {setSheetOpen(false);}
-        else if (isRightSwipe && !sheetOpen) {setSheetOpen(true);}
-        setTouchStart(null);
-        setTouchEnd(null);
-    };
-
-    document.addEventListener("touchstart", onTouchStart);
-    document.addEventListener("touchmove", onTouchMove);
-    document.addEventListener("touchend", onTouchEnd);
-
     return (
-        <Sheet onOpenChange={setSheetOpen} open={sheetOpen}>
+        <Sheet open={open} onOpenChange={onOpenChange}>
             <SheetTrigger>
                 <FontAwesomeIcon icon={faBars} />
             </SheetTrigger>
