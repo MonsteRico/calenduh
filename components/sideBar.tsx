@@ -42,11 +42,11 @@ import {
 import { Input } from "./ui/input";
 import { Label } from "./ui/label";
 
-export default function SideBar({ open, onOpenChange }: { open: boolean; onOpenChange: (open: boolean) => void }) {
+export default function SideBar() {
     const { data: calendars } = useGetCalendars();
 
     return (
-        <Sheet open={open} onOpenChange={onOpenChange}>
+        <Sheet>
             <SheetTrigger>
                 <FontAwesomeIcon icon={faBars} />
             </SheetTrigger>

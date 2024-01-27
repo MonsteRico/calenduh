@@ -196,6 +196,45 @@ export function MobileMonthView() {
         )
         .slice(0, 42);
 
+    const [touchStart, setTouchStart] = useState<number | null>(null);
+    const [touchEnd, setTouchEnd] = useState<number | null>(null);
+    // the required distance between touchStart and touchEnd to be detected as a swipe
+    const minSwipeDistance = 100;
+
+    useEffect(() => {
+        const onTouchStart = (e: TouchEvent) => {
+            setTouchEnd(null); // otherwise the swipe is fired even with usual touch events
+            setTouchStart(e.targetTouches[0].clientX);
+        };
+
+        const onTouchMove = (e: TouchEvent) => setTouchEnd(e.targetTouches[0].clientX);
+
+        const onTouchEnd = () => {
+            if (!touchStart || !touchEnd) return;
+            let distance = touchStart - touchEnd;
+            const isLeftSwipe = distance > minSwipeDistance;
+            const isRightSwipe = distance < -minSwipeDistance;
+            console.log("distance", distance);
+            console.log("touchStart", touchStart);
+            console.log("touchEnd", touchEnd);
+            if (isRightSwipe) {
+                setDayBeingViewed(dayBeingViewed.minus({ month: 1 }));
+            }
+            if (isLeftSwipe) {
+                setDayBeingViewed(dayBeingViewed.plus({ month: 1 }));
+            }
+        };
+
+        document.addEventListener("touchstart", onTouchStart);
+        document.addEventListener("touchmove", onTouchMove);
+        document.addEventListener("touchend", onTouchEnd);
+        return () => {
+            document.removeEventListener("touchstart", onTouchStart);
+            document.removeEventListener("touchmove", onTouchMove);
+            document.removeEventListener("touchend", onTouchEnd);
+        };
+    }, [touchStart, touchEnd]);
+
     return (
         <section className="flex flex-col">
             <div className="mb-2 grid grid-cols-7 text-center text-xl">
