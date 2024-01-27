@@ -7,7 +7,7 @@ import { DndProvider } from "react-dnd";
 import { HTML5Backend } from "react-dnd-html5-backend";
 import { useQueryClient } from "react-query";
 import DayView from "~/components/dayView";
-import MonthView from "~/components/monthView";
+import {MonthView, MobileMonthView} from "~/components/monthView";
 import { SubscribedMessage } from "~/components/subscribedMessage";
 import TopBar from "~/components/topBar";
 import { Tabs, TabsContent } from "~/components/ui/tabs";
@@ -16,10 +16,13 @@ import { dbUser } from "~/db/schema/auth";
 import useGetCalendars from "~/hooks/calendars/useGetCalendars";
 import { CurrentViewContext, DayBeingViewedContext, EnabledCalendarIdsContext } from "~/hooks/contexts";
 import { fetchEvents } from "~/hooks/events/useGetEvents";
+import { useMediaQuery } from "~/hooks/useMediaQuery";
 import { useToday } from "~/hooks/useToday";
 
 export default function ActualPage({ user }: { user: dbUser }) {
     const today = useToday();
+        const isDesktop = useMediaQuery("(min-width: 768px)");
+
     const lastDayViewed =
         (DateTime.fromISO(localStorage.getItem("lastDayViewed") as string) as DateTime<true>) || today;
     const lastViewOn = (localStorage.getItem("lastViewOn") as "month" | "week" | "day") || "month";
@@ -96,7 +99,8 @@ export default function ActualPage({ user }: { user: dbUser }) {
                                 <TopBar />
                                 <main>
                                     <TabsContent value="month">
-                                        <MonthView />
+                                        {isDesktop && <MonthView />}
+                                        {!isDesktop && <MobileMonthView />}
                                     </TabsContent>
                                     <TabsContent value="week">
                                         <WeekView />

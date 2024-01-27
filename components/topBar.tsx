@@ -33,6 +33,8 @@ import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigge
 import { Label } from "./ui/label";
 import { Popover, PopoverContent, PopoverTrigger } from "./ui/popover";
 import { Switch } from "./ui/switch";
+import { useMediaQuery } from "~/hooks/useMediaQuery";
+import { cn } from "~/lib/utils";
 
 export default function TopBar() {
     const user = useUser();
@@ -82,23 +84,24 @@ export default function TopBar() {
         };
     }, [sheetOpen, touchStart, touchEnd]);
 
+    const isDesktop = useMediaQuery("(min-width: 768px)");
+
     return (
         <div className="sticky top-0 z-10 mx-5 flex flex-row justify-between bg-background py-4">
             <div className="flex flex-row gap-8">
                 <SideBar open={sheetOpen} onOpenChange={setSheetOpen} />
             </div>
             <div className="flex flex-row gap-4">
-                <TabsList className="my-auto">
+                {isDesktop && <TabsList className="my-auto">
                     <TabsTrigger value="month">Month</TabsTrigger>
                     <TabsTrigger value="week">Week</TabsTrigger>
                     <TabsTrigger value="day">Day</TabsTrigger>
-                </TabsList>
-                <DaySwitcher />
+                </TabsList>}
+                {isDesktop && <DaySwitcher />}
             </div>
-            <div className="flex flex-row gap-4">
-                <AddEventButton />
+            <div className={cn("flex flex-row gap-4", !isDesktop && "gap-0")}>
                 <RefreshButton />
-                <ThemeToggle />
+                <AddEventButton />
                 <UserPopover />
             </div>
         </div>
@@ -255,7 +258,11 @@ function UserPopover() {
     }, [session]);
 
     if (!session || !calendars) {
-        return null;
+        return (
+            <Button variant="outline" size="icon">
+                <FontAwesomeIcon icon={faUser} />
+            </Button>
+        );
     }
 
     const user = session.user;

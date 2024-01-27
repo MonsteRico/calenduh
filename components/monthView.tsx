@@ -14,7 +14,7 @@ import CreateEvent from "./addEvent";
 import { MonthEvent } from "./event";
 import { DrawerPopover, DrawerPopoverTrigger } from "./responsiveDrawerPopover";
 
-export default function MonthView() {
+export function MonthView() {
     const today = useToday();
     const { value: dayBeingViewed, setValue: setDayBeingViewed } = useContext(DayBeingViewedContext);
 
@@ -28,21 +28,21 @@ export default function MonthView() {
         dayBeingViewed
             .minus({ month: 1 })
             .startOf("day")
-            .set({ day: i + 1 }),
+            .set({ day: i + 1 })
     )
         .slice(-daysBeforeFirst)
         .concat(
             Array.from({ length: dayBeingViewed.daysInMonth }, (_, i) =>
-                dayBeingViewed.startOf("day").set({ day: i + 1 }),
-            ),
+                dayBeingViewed.startOf("day").set({ day: i + 1 })
+            )
         )
         .concat(
             Array.from({ length: daysInNextMonth }, (_, i) =>
                 dayBeingViewed
                     .plus({ month: 1 })
                     .startOf("day")
-                    .set({ day: i + 1 }),
-            ).slice(0, daysAfterLast),
+                    .set({ day: i + 1 })
+            ).slice(0, daysAfterLast)
         )
         .slice(0, 42);
 
@@ -136,14 +136,14 @@ function Day({ day, bottomRow = false }: { day: DateTime<true>; bottomRow?: bool
                         "relative h-32 border-l-4 border-t-4 border-primary-foreground text-2xl",
                         dayIsSaturday && "border-r-4",
                         bottomRow && "border-b-4",
-                        isOver && canDrop && "bg-primary-foreground",
+                        isOver && canDrop && "bg-primary-foreground"
                     )}
                 >
                     <h2
                         className={cn(
                             "absolute left-4 top-2",
                             currentMonth ? "font-bold text-primary" : "text-muted-foreground",
-                            isToday && "text-calendarAccent",
+                            isToday && "text-calendarAccent"
                         )}
                     >
                         {dayNumber}
@@ -161,5 +161,104 @@ function Day({ day, bottomRow = false }: { day: DateTime<true>; bottomRow?: bool
             </DrawerPopoverTrigger>
             <CreateEvent day={day} popoverOpen={createPopoverOpen} onCreated={() => setCreatePopoverOpen(false)} />
         </DrawerPopover>
+    );
+}
+
+export function MobileMonthView() {
+    const today = useToday();
+    const { value: dayBeingViewed, setValue: setDayBeingViewed } = useContext(DayBeingViewedContext);
+
+    const daysBeforeFirst = dayBeingViewed.set({ day: 1 }).weekday;
+    const daysAfterLast = 13 - dayBeingViewed.set({ day: dayBeingViewed.daysInMonth }).weekday;
+    const daysInPreviousMonth = dayBeingViewed.minus({ month: 1 }).daysInMonth;
+    const daysInNextMonth = dayBeingViewed.plus({ month: 1 }).daysInMonth;
+
+    // make an array of all the days shown in the current view
+    const days = Array.from({ length: daysInPreviousMonth }, (_, i) =>
+        dayBeingViewed
+            .minus({ month: 1 })
+            .startOf("day")
+            .set({ day: i + 1 })
+    )
+        .slice(-daysBeforeFirst)
+        .concat(
+            Array.from({ length: dayBeingViewed.daysInMonth }, (_, i) =>
+                dayBeingViewed.startOf("day").set({ day: i + 1 })
+            )
+        )
+        .concat(
+            Array.from({ length: daysInNextMonth }, (_, i) =>
+                dayBeingViewed
+                    .plus({ month: 1 })
+                    .startOf("day")
+                    .set({ day: i + 1 })
+            ).slice(0, daysAfterLast)
+        )
+        .slice(0, 42);
+
+    return (
+        <section className="flex flex-col">
+            <div className="mb-2 grid grid-cols-7 text-center text-xl">
+                <h2 className="">S</h2>
+                <h2 className="">M</h2>
+                <h2 className="">T</h2>
+                <h2 className="">W</h2>
+                <h2 className="">R</h2>
+                <h2 className="">F</h2>
+                <h2 className="">S</h2>
+            </div>
+            <div className="grid grid-cols-7 grid-rows-6">
+                {days.map((day, i) => (
+                    <MobileDay bottomRow={Math.floor(i / 7) == 5} day={day} key={day.toISO()} />
+                ))}
+            </div>
+        </section>
+    );
+}
+
+function MobileDay({ day, bottomRow = false }: { day: DateTime<true>; bottomRow?: boolean }) {
+    const today = useToday();
+    const dayNumber = day.day;
+    const { value: dayBeingViewed } = useContext(DayBeingViewedContext);
+    const currentMonth = dayBeingViewed.month == day.month;
+    const dayIsSaturday = day.weekday === 6;
+    const isToday = day.hasSame(today, "day");
+
+    const { value: enabledCalendarIds } = useContext(EnabledCalendarIdsContext);
+    const { data: events, isLoading } = useGetEvents(day);
+    const [myEvents, setMyEvents] = useState<CalendarEvent[]>([]);
+
+    const [createPopoverOpen, setCreatePopoverOpen] = useState(false);
+    const isDesktop = useMediaQuery("(min-width: 768px)");
+
+    useEffect(() => {
+        if (events) {
+            setMyEvents(events.filter((event) => enabledCalendarIds.includes(event.calendar.id)));
+        }
+    }, [events, enabledCalendarIds]);
+    return (
+        <div
+            className={cn(
+                "relative border-l-4 border-t-4 p-2 flex-col border-primary-foreground text-2xl justify-center items-center flex text-center",
+                dayIsSaturday && "border-r-4",
+                bottomRow && "border-b-4"
+            )}
+        >
+            <h2
+                className={cn(
+                    currentMonth ? "font-bold text-primary" : "text-muted-foreground",
+                    isToday && "text-calendarAccent"
+                )}
+            >
+                {dayNumber}
+            </h2>
+            <div
+                className={cn(
+                    "w-2 h-2 rounded-full flex flex-col",
+                    myEvents.length > 0 && currentMonth && "bg-primary",
+                    myEvents.length > 0 && !currentMonth && "bg-muted-foreground"
+                )}
+            ></div>
+        </div>
     );
 }

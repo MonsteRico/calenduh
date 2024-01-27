@@ -1,11 +1,5 @@
 TODO
 
--   users
-
-        -   subscribable calendars
-
-
-
 -   mobile friendlyfy
 
     -   PWA stuff
