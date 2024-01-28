@@ -45,9 +45,7 @@ export default function DayView() {
                 let distance = touchStart - touchEnd;
                 const isLeftSwipe = distance > minSwipeDistance;
                 const isRightSwipe = distance < -minSwipeDistance;
-                console.log("distance", distance);
-                console.log("touchStart", touchStart);
-                console.log("touchEnd", touchEnd);
+
                 if (isRightSwipe) {
                     setDayBeingViewed(dayBeingViewed.minus({ day: 1 }));
                 }
@@ -87,9 +85,14 @@ export default function DayView() {
                             {fifteenMinChunks.map((time, i) => {
                                 if (time.minute == 0 && time.hour != 0) {
                                     return (
-                                        <div className={`relative h-6 sm:w-24 w-20 justify-end text-muted-foreground`} key={i}>
-                                            <h2 className="absolute right-4 top-[-12px] sm:text-md text-xs">
-                                                {time.toLocaleString(DateTime.TIME_SIMPLE)}
+                                        <div
+                                            className={`relative h-6 sm:w-24 w-14 justify-end text-muted-foreground`}
+                                            key={i}
+                                        >
+                                            <h2 className="absolute right-2 sm:right-4 top-[-8px] sm:top-[-12px] sm:text-md text-xs">
+                                                {isDesktop
+                                                    ? time.toLocaleString(DateTime.TIME_SIMPLE)
+                                                    : time.toFormat("h a")}
                                             </h2>
                                         </div>
                                     );
@@ -220,7 +223,6 @@ function DaysHours({ day, bottomRow = false }: { day: DateTime<true>; bottomRow?
                     .filter((event) => enabledCalendarIds.includes(event.calendar.id))
                     .filter((event) => !event.allDay),
             );
-            console.log("events", events)
         }
     }, [events, enabledCalendarIds]);
     const defaultEvent: CalendarEvent = useMemo(() => {

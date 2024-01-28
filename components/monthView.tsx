@@ -214,9 +214,6 @@ export function MobileMonthView() {
             let distance = touchStart - touchEnd;
             const isLeftSwipe = distance > minSwipeDistance;
             const isRightSwipe = distance < -minSwipeDistance;
-            console.log("distance", distance);
-            console.log("touchStart", touchStart);
-            console.log("touchEnd", touchEnd);
             if (isRightSwipe) {
                 setDayBeingViewed(dayBeingViewed.minus({ month: 1 }));
             }
