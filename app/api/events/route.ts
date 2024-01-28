@@ -124,6 +124,8 @@ export async function GET(request: NextRequest) {
         }
     });
 
+    console.log("events", events)
+
     return NextResponse.json(events);
 }
 

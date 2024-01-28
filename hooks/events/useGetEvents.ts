@@ -21,6 +21,6 @@ export async function fetchEvents(day: DateTime) {
     const response = await fetch(`/api/events?month=${day.month}&day=${day.day}&year=${day.year}`);
     const dbEvents = (await response.json()) as (dbCalendarEvent & { calendar: dbCalendar })[];
     const events = eventsConverter(dbEvents);
-
+    console.log("fetchEvents", events);
     return events;
 }

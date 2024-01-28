@@ -38,7 +38,7 @@ import { cn } from "~/lib/utils";
 
 export default function TopBar() {
     const user = useUser();
-
+    const { value: currentView, setValue: setCurrentView } = useContext(CurrentViewContext);
     useEffect(() => {
         if (!user) return;
         document.documentElement.style.setProperty("--calendar-accent", user.accent_color);
@@ -48,7 +48,7 @@ export default function TopBar() {
 
     return (
         <>
-            <div className="sticky top-0 z-10 mx-5 flex flex-row justify-between bg-background py-4">
+            <div className="sticky top-0 z-10 px-5 flex flex-row justify-between bg-background py-4">
                 <div className="flex flex-row gap-8">
                     <SideBar />
                 </div>
@@ -70,6 +70,9 @@ export default function TopBar() {
             </div>
             {!isDesktop && (
                 <div className="flex justify-center items-center pb-2">
+                    {currentView == "day" && <Button onClick={() => {
+                        setCurrentView("month");
+                    }} className="absolute left-3">BACK</Button>}
                     <DaySwitcher />
                 </div>
             )}

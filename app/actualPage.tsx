@@ -76,6 +76,7 @@ export default function ActualPage({ user }: { user: dbUser }) {
         localStorage.setItem("lastViewOn", currentView);
     }, [currentView]);
 
+
     if (calendarsLoading) {
         // TODO better loading state for whole app
         return <h1>Loading</h1>;
@@ -94,6 +95,7 @@ export default function ActualPage({ user }: { user: dbUser }) {
                                 onValueChange={(newView) => {
                                     setCurrentView(newView as "month" | "week" | "day");
                                 }}
+                                value={currentView}
                                 defaultValue={currentView}
                             >
                                 <TopBar />

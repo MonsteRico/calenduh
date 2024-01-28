@@ -1,9 +1,11 @@
 TODO
 
 -   mobile friendlyfy
-
+    - pull to refresh
     -   PWA stuff
     -   fallback page for no internet
+
+- style events on day page overview
 
 -   notifications for events coming up
 -   stuff to let it work offline? (react query persistent cache)

@@ -27,6 +27,46 @@ export default function DayView() {
 
     const isDesktop = useMediaQuery("(min-width: 768px)");
 
+        const [touchStart, setTouchStart] = useState<number | null>(null);
+        const [touchEnd, setTouchEnd] = useState<number | null>(null);
+        // the required distance between touchStart and touchEnd to be detected as a swipe
+        const minSwipeDistance = 100;
+
+        useEffect(() => {
+            const onTouchStart = (e: TouchEvent) => {
+                setTouchEnd(null); // otherwise the swipe is fired even with usual touch events
+                setTouchStart(e.targetTouches[0].clientX);
+            };
+
+            const onTouchMove = (e: TouchEvent) => setTouchEnd(e.targetTouches[0].clientX);
+
+            const onTouchEnd = () => {
+                if (!touchStart || !touchEnd) return;
+                let distance = touchStart - touchEnd;
+                const isLeftSwipe = distance > minSwipeDistance;
+                const isRightSwipe = distance < -minSwipeDistance;
+                console.log("distance", distance);
+                console.log("touchStart", touchStart);
+                console.log("touchEnd", touchEnd);
+                if (isRightSwipe) {
+                    setDayBeingViewed(dayBeingViewed.minus({ day: 1 }));
+                }
+                if (isLeftSwipe) {
+                    setDayBeingViewed(dayBeingViewed.plus({ day: 1 }));
+                }
+            };
+
+            document.addEventListener("touchstart", onTouchStart);
+            document.addEventListener("touchmove", onTouchMove);
+            document.addEventListener("touchend", onTouchEnd);
+            return () => {
+                document.removeEventListener("touchstart", onTouchStart);
+                document.removeEventListener("touchmove", onTouchMove);
+                document.removeEventListener("touchend", onTouchEnd);
+            };
+        }, [touchStart, touchEnd, dayBeingViewed, setDayBeingViewed]);
+
+
     return (
         <DraggingContext.Provider
             value={{ dragging, setDragging, endDragTime, setEndDragTime, startDragTime, setStartDragTime }}
@@ -39,7 +79,7 @@ export default function DayView() {
                             <h2 className="my-auto mr-4 w-full text-right">All Day</h2>
                         </div>
                         <div className="w-full bg-background pt-1">
-                            <DayHeader day={today} />
+                            <DayHeader day={dayBeingViewed} />
                         </div>
                     </section>
                     <section className="flex flex-row">
@@ -47,19 +87,19 @@ export default function DayView() {
                             {fifteenMinChunks.map((time, i) => {
                                 if (time.minute == 0 && time.hour != 0) {
                                     return (
-                                        <div className={`relative h-6 w-24 justify-end text-muted-foreground`} key={i}>
-                                            <h2 className="absolute right-4 top-[-12px]">
+                                        <div className={`relative h-6 sm:w-24 w-20 justify-end text-muted-foreground`} key={i}>
+                                            <h2 className="absolute right-4 top-[-12px] sm:text-md text-xs">
                                                 {time.toLocaleString(DateTime.TIME_SIMPLE)}
                                             </h2>
                                         </div>
                                     );
                                 }
-                                return <div className={`h-6 w-24 justify-end text-muted-foreground`} key={i}></div>;
+                                return <div className={`h-6 sm:w-24 justify-end text-muted-foreground`} key={i}></div>;
                             })}
                         </div>
                         <div className="flex w-full flex-col">
                             <div className="">
-                                <DaysHours day={today} />
+                                <DaysHours day={dayBeingViewed} />
                             </div>
                         </div>
                     </section>
@@ -180,6 +220,7 @@ function DaysHours({ day, bottomRow = false }: { day: DateTime<true>; bottomRow?
                     .filter((event) => enabledCalendarIds.includes(event.calendar.id))
                     .filter((event) => !event.allDay),
             );
+            console.log("events", events)
         }
     }, [events, enabledCalendarIds]);
     const defaultEvent: CalendarEvent = useMemo(() => {
@@ -208,12 +249,14 @@ function DaysHours({ day, bottomRow = false }: { day: DateTime<true>; bottomRow?
         };
     }, [startDragTime, endDragTime, day]);
 
+    const isDesktop = useMediaQuery("(min-width: 768px)");
+
     if (isLoading) {
         return (
             <div
                 className={`relative ${dayIsSaturday && "border-r-4"} ${bottomRow && "border-b-4"} ${
                     currentMonth ? "text-primary" : "font-bold text-muted"
-                } ${isToday && "bg-accent bg-opacity-50"}`}
+                } ${isToday && isDesktop && "bg-accent bg-opacity-50"}`}
             >
                 {Array.from({ length: 96 }, (_, i) => {
                     return <FifteenMinBlock key={i} i={i} />;

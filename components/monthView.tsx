@@ -4,7 +4,7 @@ import { useToday } from "~/hooks/useToday";
 
 import { useDrop } from "react-dnd";
 import { toast } from "sonner";
-import { DayBeingViewedContext, EnabledCalendarIdsContext } from "~/hooks/contexts";
+import { CurrentViewContext, DayBeingViewedContext, EnabledCalendarIdsContext } from "~/hooks/contexts";
 import useGetEvents from "~/hooks/events/useGetEvents";
 import useMoveEvent from "~/hooks/events/useMoveEvent";
 import { useMediaQuery } from "~/hooks/useMediaQuery";
@@ -233,7 +233,7 @@ export function MobileMonthView() {
             document.removeEventListener("touchmove", onTouchMove);
             document.removeEventListener("touchend", onTouchEnd);
         };
-    }, [touchStart, touchEnd]);
+    }, [touchStart, touchEnd, dayBeingViewed, setDayBeingViewed]);
 
     return (
         <section className="flex flex-col">
@@ -258,10 +258,11 @@ export function MobileMonthView() {
 function MobileDay({ day, bottomRow = false }: { day: DateTime<true>; bottomRow?: boolean }) {
     const today = useToday();
     const dayNumber = day.day;
-    const { value: dayBeingViewed } = useContext(DayBeingViewedContext);
+    const { value: dayBeingViewed, setValue:setDayBeingViewed } = useContext(DayBeingViewedContext);
     const currentMonth = dayBeingViewed.month == day.month;
     const dayIsSaturday = day.weekday === 6;
     const isToday = day.hasSame(today, "day");
+    const {value:currentView, setValue:setCurrentView} = useContext(CurrentViewContext);
 
     const { value: enabledCalendarIds } = useContext(EnabledCalendarIdsContext);
     const { data: events, isLoading } = useGetEvents(day);
@@ -282,6 +283,14 @@ function MobileDay({ day, bottomRow = false }: { day: DateTime<true>; bottomRow?
                 dayIsSaturday && "border-r-4",
                 bottomRow && "border-b-4"
             )}
+            onClick={() => {
+                setDayBeingViewed(day);
+                if (currentView == "month") {
+                    setCurrentView("day");
+                } else {
+                    setCurrentView("month");
+                }
+            }}
         >
             <h2
                 className={cn(
