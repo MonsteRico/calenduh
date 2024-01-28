@@ -271,7 +271,7 @@ function DaysHours({ day, bottomRow = false }: { day: DateTime<true>; bottomRow?
         <div
             className={`relative ${dayIsSaturday && "border-r-4"} ${bottomRow && "border-b-4"} ${
                 currentMonth ? "text-primary" : "font-bold text-muted"
-            } ${isToday && "bg-calendarAccent bg-opacity-50"}`}
+            } ${isToday && isDesktop && "bg-calendarAccent bg-opacity-50"}`}
         >
             {Array.from({ length: 96 }, (_, i) => {
                 const interval = Interval.fromDateTimes(
