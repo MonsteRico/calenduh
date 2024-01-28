@@ -14,7 +14,9 @@ export const metadata: Metadata = {
 export default async function RootLayout({ children }: { children: React.ReactNode }) {
     return (
         <html suppressHydrationWarning lang="en">
-            <body className={inter.className + "overflow-hidden"}>
+            <body style={{
+                overscrollBehavior: "none",
+            }} className={inter.className + "overflow-hidden"}>
                 <Toaster richColors />
                 <ThemeProvider attribute="class" defaultTheme="system" enableSystem disableTransitionOnChange>
                     {children}
