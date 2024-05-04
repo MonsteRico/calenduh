@@ -8,7 +8,7 @@ import { eq } from "drizzle-orm";
 export default async function getServerAuthSession(request?: NextRequest) {
     // get the bearer token from the request if it exists
     const token = request?.headers.get("Authorization")?.replace("Bearer ", "");
-    console.log("using token", token);
+    console.log("headers", request?.headers);
     if (token) {
         const [user] = await db.select().from(users).where(eq(users.apiKey, token)).limit(1);
         return {
