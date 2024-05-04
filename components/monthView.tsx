@@ -131,7 +131,6 @@ function Day({ day, bottomRow = false }: { day: DateTime<true>; bottomRow?: bool
                 className="cursor-default"
             >
                 <div
-                    ref={drop}
                     className={cn(
                         "relative h-32 border-l-4 border-t-4 border-primary-foreground text-2xl",
                         dayIsSaturday && "border-r-4",

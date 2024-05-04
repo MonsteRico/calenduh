@@ -178,7 +178,7 @@ export function MonthEvent({ event, dayItsOn }: { event: CalendarEvent; dayItsOn
 
     return (
         <DrawerPopover open={popoverOpen && !isDragging} onOpenChange={setPopoverOpen}>
-            <DrawerPopoverTrigger ref={drag}>
+            <DrawerPopoverTrigger>
                 <div className={cn("flex flex-row justify-between text-xs text-primary", isDragging && "opacity-50")}>
                     <div className="flex flex-row">
                         <div

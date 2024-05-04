@@ -1,12 +1,12 @@
 import { eq } from "drizzle-orm";
-import { NextResponse } from "next/server";
+import { NextRequest, NextResponse } from "next/server";
 import { db } from "~/db/db";
 import { users } from "~/db/schema/auth";
 import getServerAuthSession from "~/lib/getServerAuthSession";
 export const dynamic = "force-dynamic"; // defaults to auto
 // GET /api/mes/[userId]/userPreferences
 // get all events for the month/day/year passed in
-export async function GET() {
+export async function GET(request: NextRequest) {
     const session = await getServerAuthSession(request);
     const userId = session?.user?.id;
 
