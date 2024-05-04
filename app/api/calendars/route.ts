@@ -9,14 +9,14 @@ export const dynamic = "force-dynamic"; // defaults to auto
 // GET /api/calendars
 // get all calendars
 export async function GET(request: NextRequest) {
-    const session = await getServerAuthSession();
+    const session = await getServerAuthSession(request);
     const userId = session?.user?.id;
     if (!userId) {
         return NextResponse.json(
             {
                 error: "no user found",
             },
-            { status: 404 },
+            { status: 404 }
         );
     }
 
@@ -45,7 +45,7 @@ export async function GET(request: NextRequest) {
 export async function POST(request: NextRequest) {
     const body = await request.json();
 
-    const session = await getServerAuthSession();
+    const session = await getServerAuthSession(request);
     const userId = session?.user?.id;
 
     if (!userId) {
@@ -53,7 +53,7 @@ export async function POST(request: NextRequest) {
             {
                 error: "no user found",
             },
-            { status: 404 },
+            { status: 404 }
         );
     }
 

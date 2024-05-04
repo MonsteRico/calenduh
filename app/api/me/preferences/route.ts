@@ -7,7 +7,7 @@ export const dynamic = "force-dynamic"; // defaults to auto
 // GET /api/mes/[userId]/userPreferences
 // get all events for the month/day/year passed in
 export async function GET() {
-    const session = await getServerAuthSession();
+    const session = await getServerAuthSession(request);
     const userId = session?.user?.id;
 
     if (!userId) {
@@ -15,7 +15,7 @@ export async function GET() {
             {
                 error: "no user found",
             },
-            { status: 404 },
+            { status: 404 }
         );
     }
 

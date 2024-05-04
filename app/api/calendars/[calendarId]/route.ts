@@ -9,14 +9,14 @@ export const dynamic = "force-dynamic"; // defaults to auto
 // GET /api/calendars/[calendarId]
 // get a calendar by id
 export async function GET(request: NextRequest, { params }: { params: { calendarId: string } }) {
-    const session = await getServerAuthSession();
+    const session = await getServerAuthSession(request);
     const userId = session?.user?.id;
     if (!userId) {
         return NextResponse.json(
             {
                 error: "no user found",
             },
-            { status: 404 },
+            { status: 404 }
         );
     }
 
@@ -27,7 +27,7 @@ export async function GET(request: NextRequest, { params }: { params: { calendar
             {
                 error: "calendar not found",
             },
-            { status: 404 },
+            { status: 404 }
         );
     }
 
@@ -40,7 +40,7 @@ export async function GET(request: NextRequest, { params }: { params: { calendar
             {
                 error: "calendar not found",
             },
-            { status: 404 },
+            { status: 404 }
         );
     }
 
@@ -50,14 +50,14 @@ export async function GET(request: NextRequest, { params }: { params: { calendar
 // PATCH /api/calendars/[calendarId]
 // update a calendar by id
 export async function PATCH(request: NextRequest, { params }: { params: { calendarId: string } }) {
-    const session = await getServerAuthSession();
+    const session = await getServerAuthSession(request);
     const userId = session?.user?.id;
     if (!userId) {
         return NextResponse.json(
             {
                 error: "no user found",
             },
-            { status: 404 },
+            { status: 404 }
         );
     }
 
@@ -72,7 +72,7 @@ export async function PATCH(request: NextRequest, { params }: { params: { calend
             {
                 error: "calendar not found",
             },
-            { status: 404 },
+            { status: 404 }
         );
     }
 
@@ -106,7 +106,7 @@ export async function DELETE(request: NextRequest, { params }: { params: { calen
             {
                 error: "calendar not found",
             },
-            { status: 404 },
+            { status: 404 }
         );
     }
 
@@ -115,7 +115,7 @@ export async function DELETE(request: NextRequest, { params }: { params: { calen
             {
                 error: "cannot delete default calendar",
             },
-            { status: 400 },
+            { status: 400 }
         );
     }
 

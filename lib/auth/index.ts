@@ -7,7 +7,6 @@ import { DrizzleAdapter } from "~/lib/auth/drizzleAdapter";
 declare module "next-auth" {}
 
 export const authOptions: NextAuthOptions = {
-    // @ts-expect-error
     adapter: DrizzleAdapter(db),
     session: {
         strategy: "database",

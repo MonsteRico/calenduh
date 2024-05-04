@@ -8,14 +8,14 @@ export const dynamic = "force-dynamic"; // defaults to auto
 // GET /api/events/[eventId]
 // get event by id
 export async function GET(request: NextRequest, { params }: { params: { eventId: string } }) {
-    const session = await getServerAuthSession();
+    const session = await getServerAuthSession(request);
     const userId = session?.user?.id;
     if (!userId) {
         return NextResponse.json(
             {
                 error: "no user found",
             },
-            { status: 404 },
+            { status: 404 }
         );
     }
 
@@ -32,7 +32,7 @@ export async function GET(request: NextRequest, { params }: { params: { eventId:
             {
                 error: "event not found",
             },
-            { status: 404 },
+            { status: 404 }
         );
     }
 
@@ -42,14 +42,14 @@ export async function GET(request: NextRequest, { params }: { params: { eventId:
 // PATCH /api/events/[eventId]
 // update event by id, takes title, interval, allDay, repeatType, daysOfWeek, and calendarId as body
 export async function PATCH(request: NextRequest, { params }: { params: { eventId: string } }) {
-    const session = await getServerAuthSession();
+    const session = await getServerAuthSession(request);
     const userId = session?.user?.id;
     if (!userId) {
         return NextResponse.json(
             {
                 error: "no user found",
             },
-            { status: 404 },
+            { status: 404 }
         );
     }
 
@@ -106,7 +106,7 @@ export async function PATCH(request: NextRequest, { params }: { params: { eventI
             {
                 error: "no data provided",
             },
-            { status: 400 },
+            { status: 400 }
         );
     }
 
@@ -119,7 +119,7 @@ export async function PATCH(request: NextRequest, { params }: { params: { eventI
             {
                 error: "event not found",
             },
-            { status: 404 },
+            { status: 404 }
         );
     }
 
@@ -132,7 +132,7 @@ export async function PATCH(request: NextRequest, { params }: { params: { eventI
                 {
                     error: "calendar to change to not found",
                 },
-                { status: 404 },
+                { status: 404 }
             );
         }
     }
@@ -186,7 +186,7 @@ export async function DELETE(request: NextRequest, { params }: { params: { event
             {
                 error: "event not found",
             },
-            { status: 404 },
+            { status: 404 }
         );
     }
 

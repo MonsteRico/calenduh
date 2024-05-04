@@ -1,18 +1,8 @@
 import { relations } from "drizzle-orm";
-import {
-    boolean,
-    datetime,
-    index,
-    int,
-    mysqlTable,
-    text,
-    timestamp,
-    uniqueIndex,
-    varchar,
-} from "drizzle-orm/mysql-core";
 import { calendarEvents, calendars, usersSubscribedCalendars } from "./main";
+import { boolean, date, index, integer, pgTable, text, timestamp, uniqueIndex, varchar } from "drizzle-orm/pg-core";
 
-export const accounts = mysqlTable(
+export const accounts = pgTable(
     "accounts",
     {
         id: varchar("id", { length: 191 }).primaryKey().notNull(),
@@ -21,33 +11,33 @@ export const accounts = mysqlTable(
         provider: varchar("provider", { length: 191 }).notNull(),
         providerAccountId: varchar("providerAccountId", { length: 191 }).notNull(),
         access_token: text("access_token"),
-        expires_in: int("expires_in"),
+        expires_in: integer("expires_in"),
         id_token: text("id_token"),
         refresh_token: text("refresh_token"),
-        refresh_token_expires_in: int("refresh_token_expires_in"),
+        refresh_token_expires_in: integer("refresh_token_expires_in"),
         scope: varchar("scope", { length: 191 }),
         token_type: varchar("token_type", { length: 191 }),
         createdAt: timestamp("createdAt").defaultNow().notNull(),
-        updatedAt: timestamp("updatedAt").defaultNow().onUpdateNow().notNull(),
+        updatedAt: timestamp("updatedAt").defaultNow().notNull(),
     },
     (account) => ({
         providerProviderAccountIdIndex: uniqueIndex("accounts__provider__providerAccountId__idx").on(
             account.provider,
-            account.providerAccountId,
+            account.providerAccountId
         ),
         userIdIndex: index("accounts__userId__idx").on(account.userId),
-    }),
+    })
 );
 
-export const sessions = mysqlTable(
+export const sessions = pgTable(
     "sessions",
     {
         id: varchar("id", { length: 191 }).primaryKey().notNull(),
         sessionToken: varchar("sessionToken", { length: 191 }).notNull(),
         userId: varchar("userId", { length: 191 }).notNull(),
-        expires: datetime("expires").notNull(),
+        expires: date("expires").notNull(),
         created_at: timestamp("created_at").notNull().defaultNow(),
-        updated_at: timestamp("updated_at").notNull().defaultNow().onUpdateNow(),
+        updated_at: timestamp("updated_at").notNull().defaultNow(),
     },
     (session) => ({
         sessionTokenIndex: uniqueIndex("sessions__sessionToken__idx").on(session.sessionToken),
@@ -55,20 +45,21 @@ export const sessions = mysqlTable(
     }),
 );
 
-export const users = mysqlTable(
+export const users = pgTable(
     "users",
     {
         id: varchar("id", { length: 191 }).primaryKey().notNull(),
+        apiKey: varchar("api_key", { length: 191 }).notNull(),
         name: varchar("name", { length: 191 }),
         email: varchar("email", { length: 191 }).notNull(),
         emailVerified: timestamp("emailVerified"),
         image: varchar("image", { length: 191 }),
         created_at: timestamp("created_at").notNull().defaultNow(),
-        updated_at: timestamp("updated_at").notNull().defaultNow().onUpdateNow(),
+        updated_at: timestamp("updated_at").notNull().defaultNow(),
         accent_color: varchar("accent_color", { length: 191 }).notNull().default("#cfb991"),
         startOnToday: boolean("start_on_today").notNull().default(true), // start on today or last day viewed
         startOnPreviousView: boolean("start_on_previous_view").notNull().default(false), // start on the last view (day, week, month, year) or on month
-        defaultCalendarId: int("default_calendar_id").notNull().default(-1),
+        defaultCalendarId: integer("default_calendar_id").notNull().default(-1),
     },
     (user) => ({
         emailIndex: uniqueIndex("users__email__idx").on(user.email),
@@ -87,14 +78,14 @@ export const userRelations = relations(users, ({ many, one }) => ({
 
 export type dbUser = typeof users.$inferSelect;
 
-export const verificationTokens = mysqlTable(
+export const verificationTokens = pgTable(
     "verification_tokens",
     {
         identifier: varchar("identifier", { length: 191 }).primaryKey().notNull(),
         token: varchar("token", { length: 191 }).notNull(),
-        expires: datetime("expires").notNull(),
+        expires: date("expires").notNull(),
         created_at: timestamp("created_at").notNull().defaultNow(),
-        updated_at: timestamp("updated_at").notNull().defaultNow().onUpdateNow(),
+        updated_at: timestamp("updated_at").notNull().defaultNow(),
     },
     (verificationToken) => ({
         tokenIndex: uniqueIndex("verification_tokens__token__idx").on(verificationToken.token),

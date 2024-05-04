@@ -6,9 +6,9 @@ import { calendars } from "~/db/schema/main";
 import getServerAuthSession from "~/lib/getServerAuthSession";
 export const dynamic = "force-dynamic"; // defaults to auto
 
-// PATCH /api/mes/[userId]
+// PATCH /api/me/[userId]
 export async function PATCH(request: NextRequest) {
-    const session = await getServerAuthSession();
+    const session = await getServerAuthSession(request);
     const userId = session?.user?.id;
 
     if (!userId) {
@@ -16,7 +16,7 @@ export async function PATCH(request: NextRequest) {
             {
                 error: "no user found",
             },
-            { status: 404 },
+            { status: 404 }
         );
     }
     const body = await request.json();
@@ -56,4 +56,23 @@ export async function PATCH(request: NextRequest) {
     }
 
     return NextResponse.json({});
+}
+
+// GET /api/me
+export async function GET(request: NextRequest) {
+    const session = await getServerAuthSession(request);
+    const userId = session?.user?.id;
+
+    if (!userId) {
+        return NextResponse.json(
+            {
+                error: "no user found",
+            },
+            { status: 404 }
+        );
+    }
+
+    const user = await db.select().from(users).where(eq(users.id, userId)).limit(1);
+
+    return NextResponse.json(user[0]);
 }

@@ -8,14 +8,14 @@ export const dynamic = "force-dynamic"; // defaults to auto
 
 // GET /api/calendars/subscribe/[subscribeId]
 export async function GET(request: NextRequest, { params }: { params: { subscribeId: string } }) {
-    const session = await getServerAuthSession();
+    const session = await getServerAuthSession(request);
     const userId = session?.user?.id;
     if (!userId) {
         return NextResponse.json(
             {
                 error: "no user found",
             },
-            { status: 404 },
+            { status: 404 }
         );
     }
 
@@ -30,7 +30,7 @@ export async function GET(request: NextRequest, { params }: { params: { subscrib
             {
                 error: "calendar not found",
             },
-            { status: 404 },
+            { status: 404 }
         );
     }
 
@@ -39,7 +39,7 @@ export async function GET(request: NextRequest, { params }: { params: { subscrib
             {
                 error: "you can't subscribe to your own calendar",
             },
-            { status: 400 },
+            { status: 400 }
         );
     }
 
@@ -48,7 +48,7 @@ export async function GET(request: NextRequest, { params }: { params: { subscrib
             {
                 error: "you can't subscribe to someones default calendar",
             },
-            { status: 400 },
+            { status: 400 }
         );
     }
 

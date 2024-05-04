@@ -1,17 +1,19 @@
 import { createId } from "@paralleldrive/cuid2";
 import Color from "color";
 import { and, eq } from "drizzle-orm";
-import type { PlanetScaleDatabase } from "drizzle-orm/planetscale-serverless";
 import type { Adapter } from "next-auth/adapters";
+import type { DbClient } from "~/db/db";
 import { accounts, sessions, users, verificationTokens } from "~/db/schema/auth";
 import { calendarEvents, calendars } from "~/db/schema/main";
 
-export function DrizzleAdapter(db: PlanetScaleDatabase): Adapter {
+export function DrizzleAdapter(db: DbClient): Adapter {
     return {
         async createUser(userData) {
             const newId = createId();
+            const apiKey = createId();
             await db.insert(users).values({
                 id: newId,
+                apiKey,
                 email: userData.email,
                 emailVerified: userData.emailVerified,
                 name: userData.name,
@@ -94,14 +96,17 @@ export function DrizzleAdapter(db: PlanetScaleDatabase): Adapter {
         async createSession(data) {
             await db.insert(sessions).values({
                 id: createId(),
-                expires: data.expires,
+                expires: data.expires.toISOString(),
                 sessionToken: data.sessionToken,
                 userId: data.userId,
             });
             const rows = await db.select().from(sessions).where(eq(sessions.sessionToken, data.sessionToken)).limit(1);
             const row = rows[0];
             if (!row) throw new Error("User not found");
-            return row;
+            return {
+                ...row,
+                expires: new Date(row.expires),
+            }
         },
         async getSessionAndUser(sessionToken) {
             const rows = await db
@@ -127,12 +132,12 @@ export function DrizzleAdapter(db: PlanetScaleDatabase): Adapter {
                     id: session.id,
                     userId: session.userId,
                     sessionToken: session.sessionToken,
-                    expires: session.expires,
+                    expires: new Date(session.expires),
                 },
             };
         },
         async updateSession(session) {
-            await db.update(sessions).set(session).where(eq(sessions.sessionToken, session.sessionToken));
+            await db.update(sessions).set({...session, expires:session.expires?.toISOString()}).where(eq(sessions.sessionToken, session.sessionToken));
             const rows = await db
                 .select()
                 .from(sessions)
@@ -140,14 +145,17 @@ export function DrizzleAdapter(db: PlanetScaleDatabase): Adapter {
                 .limit(1);
             const row = rows[0];
             if (!row) throw new Error("Coding bug: updated session not found");
-            return row;
+            return {
+                ...row,
+                expires: new Date(row.expires),
+            };
         },
         async deleteSession(sessionToken) {
             await db.delete(sessions).where(eq(sessions.sessionToken, sessionToken));
         },
         async createVerificationToken(verificationToken) {
             await db.insert(verificationTokens).values({
-                expires: verificationToken.expires,
+                expires: verificationToken.expires.toISOString(),
                 identifier: verificationToken.identifier,
                 token: verificationToken.token,
             });
@@ -158,7 +166,10 @@ export function DrizzleAdapter(db: PlanetScaleDatabase): Adapter {
                 .limit(1);
             const row = rows[0];
             if (!row) throw new Error("Coding bug: inserted verification token not found");
-            return row;
+            return {...row,
+                expires: new Date(row.expires),
+            
+            };
         },
         async useVerificationToken({ identifier, token }) {
             const rows = await db.select().from(verificationTokens).where(eq(verificationTokens.token, token)).limit(1);
@@ -167,7 +178,10 @@ export function DrizzleAdapter(db: PlanetScaleDatabase): Adapter {
             await db
                 .delete(verificationTokens)
                 .where(and(eq(verificationTokens.token, token), eq(verificationTokens.identifier, identifier)));
-            return row;
+            return {
+                ...row,
+                expires: new Date(row.expires),
+            };
         },
     };
 }

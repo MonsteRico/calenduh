@@ -8,14 +8,14 @@ export const dynamic = "force-dynamic"; // defaults to auto
 // GET /api/events?month=12&day=15&year=2023
 // get all events for the month/day/year passed in
 export async function GET(request: NextRequest) {
-    const session = await getServerAuthSession();
+    const session = await getServerAuthSession(request);
     const userId = session?.user?.id;
     if (!userId) {
         return NextResponse.json(
             {
                 error: "no user found",
             },
-            { status: 404 },
+            { status: 404 }
         );
     }
 
@@ -29,7 +29,7 @@ export async function GET(request: NextRequest) {
             {
                 error: "month, day, and year are required query parameters",
             },
-            { status: 400 },
+            { status: 400 }
         );
     }
 
@@ -64,7 +64,7 @@ export async function GET(request: NextRequest) {
                 eq(events.startDay, thisDay.day),
                 eq(events.startYear, thisDay.year),
                 eq(events.repeatType, "none"),
-                inArray(events.calendarId, calendarIds),
+                inArray(events.calendarId, calendarIds)
             ),
         with: {
             calendar: true,
@@ -124,7 +124,6 @@ export async function GET(request: NextRequest) {
         }
     });
 
-
     return NextResponse.json(events);
 }
 
@@ -132,7 +131,7 @@ export async function GET(request: NextRequest) {
 // create a new event
 export async function POST(request: NextRequest) {
     const body = await request.json();
-    const session = await getServerAuthSession();
+    const session = await getServerAuthSession(request);
     const userId = session?.user?.id;
 
     if (!userId) {
@@ -140,7 +139,7 @@ export async function POST(request: NextRequest) {
             {
                 error: "no user found",
             },
-            { status: 404 },
+            { status: 404 }
         );
     }
     let fixedEndTime = body.endTime;
