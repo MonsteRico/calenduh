@@ -6,7 +6,7 @@ import { calendars } from "~/db/schema/main";
 import getServerAuthSession from "~/lib/getServerAuthSession";
 export const dynamic = "force-dynamic"; // defaults to auto
 
-// PATCH /api/me/[userId]
+// PATCH /api/me
 export async function PATCH(request: NextRequest) {
     const session = await getServerAuthSession(request);
     const userId = session?.user?.id;
