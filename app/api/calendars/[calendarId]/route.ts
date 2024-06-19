@@ -2,23 +2,20 @@ import { eq } from "drizzle-orm";
 import { NextRequest, NextResponse } from "next/server";
 import { db } from "~/db/db";
 import { calendarEvents, calendars } from "~/db/schema/main";
-import getServerAuthSession from "~/lib/getServerAuthSession";
+import getUser from "~/lib/getUser";
 
 export const dynamic = "force-dynamic"; // defaults to auto
 
 // GET /api/calendars/[calendarId]
 // get a calendar by id
 export async function GET(request: NextRequest, { params }: { params: { calendarId: string } }) {
-    const session = await getServerAuthSession(request);
-    const userId = session?.user?.id;
-    if (!userId) {
-        return NextResponse.json(
-            {
-                error: "no user found",
-            },
-            { status: 404 }
-        );
+      const user = await getUser(request);
+
+    if (!user) {
+        return NextResponse.json(new Error("User not found"), { status: 404 });
     }
+
+
 
     const calendarId = parseInt(params.calendarId);
 
@@ -50,15 +47,10 @@ export async function GET(request: NextRequest, { params }: { params: { calendar
 // PATCH /api/calendars/[calendarId]
 // update a calendar by id
 export async function PATCH(request: NextRequest, { params }: { params: { calendarId: string } }) {
-    const session = await getServerAuthSession(request);
-    const userId = session?.user?.id;
-    if (!userId) {
-        return NextResponse.json(
-            {
-                error: "no user found",
-            },
-            { status: 404 }
-        );
+    const user = await getUser(request);
+
+    if (!user) {
+        return NextResponse.json(new Error("User not found"), { status: 404 });
     }
 
     const calendarId = parseInt(params.calendarId);
@@ -95,6 +87,12 @@ export async function PATCH(request: NextRequest, { params }: { params: { calend
 // DELETE /api/calendars/[calendarId]
 // delete a calendar by id
 export async function DELETE(request: NextRequest, { params }: { params: { calendarId: string } }) {
+    const user = await getUser(request);
+
+    if (!user) {
+        return NextResponse.json(new Error("User not found"), { status: 404 });
+    }
+
     const calendarId = parseInt(params.calendarId);
 
     const calendar = await db.query.calendars.findFirst({
@@ -109,6 +107,18 @@ export async function DELETE(request: NextRequest, { params }: { params: { calen
             { status: 404 }
         );
     }
+
+
+    if (calendar.userId !== user.id) {
+        return NextResponse.json(
+            {
+                error: "you can't delete someone else's calendar",
+            },
+            { status: 401 }
+        );
+    }
+
+
 
     if (calendar.isDefault) {
         return NextResponse.json(

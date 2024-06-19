@@ -3,20 +3,15 @@ import { DateTime } from "luxon";
 import { NextRequest, NextResponse } from "next/server";
 import { db } from "~/db/db";
 import { calendarEvents } from "~/db/schema/main";
-import getServerAuthSession from "~/lib/getServerAuthSession";
+import getUser from "~/lib/getUser";
 export const dynamic = "force-dynamic"; // defaults to auto
 // GET /api/events/[eventId]
 // get event by id
 export async function GET(request: NextRequest, { params }: { params: { eventId: string } }) {
-    const session = await getServerAuthSession(request);
-    const userId = session?.user?.id;
-    if (!userId) {
-        return NextResponse.json(
-            {
-                error: "no user found",
-            },
-            { status: 404 }
-        );
+        const user = await getUser(request);
+
+    if (!user) {
+        return NextResponse.json(new Error("User not found"), { status: 404 });
     }
 
     const eventId = parseInt(params.eventId);
@@ -42,15 +37,10 @@ export async function GET(request: NextRequest, { params }: { params: { eventId:
 // PATCH /api/events/[eventId]
 // update event by id, takes title, interval, allDay, repeatType, daysOfWeek, and calendarId as body
 export async function PATCH(request: NextRequest, { params }: { params: { eventId: string } }) {
-    const session = await getServerAuthSession(request);
-    const userId = session?.user?.id;
-    if (!userId) {
-        return NextResponse.json(
-            {
-                error: "no user found",
-            },
-            { status: 404 }
-        );
+        const user = await getUser(request);
+
+    if (!user) {
+        return NextResponse.json(new Error("User not found"), { status: 404 });
     }
 
     const eventId = parseInt(params.eventId);
@@ -176,6 +166,13 @@ export async function PATCH(request: NextRequest, { params }: { params: { eventI
 // delete event by id
 // if day, month, and year query params are provided, it will instead turn off the event for that day (for toggling recurring events without deleting all instances)
 export async function DELETE(request: NextRequest, { params }: { params: { eventId: string } }) {
+
+    const user = await getUser(request);
+
+    if (!user) {
+        return NextResponse.json(new Error("User not found"), { status: 404 });
+    }
+
     const eventId = parseInt(params.eventId);
     const event = await db.query.calendarEvents.findFirst({
         where: (calendarEvents, { eq }) => eq(calendarEvents.id, eventId),
@@ -187,6 +184,15 @@ export async function DELETE(request: NextRequest, { params }: { params: { event
                 error: "event not found",
             },
             { status: 404 }
+        );
+    }
+
+    if (!user.calendars.map((calendar) => calendar.id).includes(event.calendarId)) {
+        return NextResponse.json(
+            {
+                error: "you can't delete events from someone else's calendar",
+            },
+            { status: 401 }
         );
     }
 

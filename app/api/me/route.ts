@@ -3,15 +3,14 @@ import { NextRequest, NextResponse } from "next/server";
 import { db } from "~/db/db";
 import { users } from "~/db/schema/auth";
 import { calendars } from "~/db/schema/main";
-import getServerAuthSession from "~/lib/getServerAuthSession";
+import getUser from "~/lib/getUser";
 export const dynamic = "force-dynamic"; // defaults to auto
 
 // PATCH /api/me
 export async function PATCH(request: NextRequest) {
-    const session = await getServerAuthSession(request);
-    const userId = session?.user?.id;
+    const user = await getUser(request);
 
-    if (!userId) {
+    if (!user) {
         return NextResponse.json(
             {
                 error: "no user found",
@@ -29,7 +28,7 @@ export async function PATCH(request: NextRequest) {
 
     console.log("body", body);
 
-    const [user] = await db.select().from(users).where(eq(users.id, userId)).limit(1);
+    const userId = user.id;
 
     if (accentColor) {
         await db.update(users).set({ accent_color: accentColor }).where(eq(users.id, userId));
@@ -60,10 +59,9 @@ export async function PATCH(request: NextRequest) {
 
 // GET /api/me
 export async function GET(request: NextRequest) {
-    const session = await getServerAuthSession(request);
-    const userId = session?.user?.id;
+    const user = await getUser(request);
 
-    if (!userId) {
+    if (!user) {
         return NextResponse.json(
             {
                 error: "no user found",
@@ -72,7 +70,5 @@ export async function GET(request: NextRequest) {
         );
     }
 
-    const user = await db.select().from(users).where(eq(users.id, userId)).limit(1);
-
-    return NextResponse.json(user[0]);
+    return NextResponse.json(user);
 }

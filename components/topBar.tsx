@@ -9,7 +9,6 @@ import {
 } from "@fortawesome/free-solid-svg-icons";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { DateTime } from "luxon";
-import { signOut, useSession } from "next-auth/react";
 import { useContext, useEffect, useState } from "react";
 import { useIsFetching, useQueryClient } from "react-query";
 import { ThemeToggle } from "~/components/themeToggle";
@@ -17,7 +16,6 @@ import { TabsList, TabsTrigger } from "~/components/ui/tabs";
 import useGetCalendars from "~/hooks/calendars/useGetCalendars";
 import { CurrentViewContext, DayBeingViewedContext } from "~/hooks/contexts";
 import { useToday } from "~/hooks/useToday";
-import { useUser } from "~/hooks/useUser";
 import useUpdateAccentColor from "~/hooks/userPreferences/useUpdateAccentColor";
 import useUpdateDefaultCalendar from "~/hooks/userPreferences/useUpdateDefaultCalendar";
 import useUpdateStartOnPreviousView from "~/hooks/userPreferences/useUpdateStartOnPreviousView";
@@ -37,12 +35,12 @@ import { useMediaQuery } from "~/hooks/useMediaQuery";
 import { cn } from "~/lib/utils";
 
 export default function TopBar() {
-    const user = useUser();
+    // const user = useUser();
     const { value: currentView, setValue: setCurrentView } = useContext(CurrentViewContext);
-    useEffect(() => {
-        if (!user) return;
-        document.documentElement.style.setProperty("--calendar-accent", user.accent_color);
-    }, [user]);
+    // useEffect(() => {
+    //     if (!user) return;
+    //     document.documentElement.style.setProperty("--calendar-accent", user.accent_color);
+    // }, [user]);
 
     const isDesktop = useMediaQuery("(min-width: 768px)");
 
@@ -212,162 +210,162 @@ function RefreshButton() {
 }
 
 function UserPopover() {
-    const { data: session } = useSession();
-    const [startOnToday, setStartOnToday] = useState<boolean>();
-    const [startOnPreviousView, setStartOnPreviousView] = useState<boolean>();
-    const updateStartOnToday = useUpdateStartOnToday();
-    const updateStartOnPreviousView = useUpdateStartOnPreviousView();
-    const updateDefaultCalendar = useUpdateDefaultCalendar();
-    const { data: calendars } = useGetCalendars();
-    const [myCalendar, setMyCalendar] = useState<CalendarType>();
-    useEffect(() => {
-        if (!session || !calendars) return;
-        setStartOnToday(session.user.startOnToday);
-        setStartOnPreviousView(session.user.startOnPreviousView);
-        const defaultCalendar = calendars.find((calendar) => calendar.id == session.user.defaultCalendarId);
-        if (!defaultCalendar) return;
-        setMyCalendar(defaultCalendar);
-    }, [session]);
+    // const { isLoaded, isSignedIn, user } = useUser();
+    // const [startOnToday, setStartOnToday] = useState<boolean>();
+    // const [startOnPreviousView, setStartOnPreviousView] = useState<boolean>();
+    // const updateStartOnToday = useUpdateStartOnToday();
+    // const updateStartOnPreviousView = useUpdateStartOnPreviousView();
+    // const updateDefaultCalendar = useUpdateDefaultCalendar();
+    // const { data: calendars } = useGetCalendars();
+    // const [myCalendar, setMyCalendar] = useState<CalendarType>();
+    // useEffect(() => {
+    //     if (!isLoaded || !calendars || !user) return;
+    //     setStartOnToday(user.startOnToday);
+    //     setStartOnPreviousView(user.startOnPreviousView);
+    //     const defaultCalendar = calendars.find((calendar) => calendar.id == user.defaultCalendarId);
+    //     if (!defaultCalendar) return;
+    //     setMyCalendar(defaultCalendar);
+    // }, [isLoaded, user]);
 
-    if (!session || !calendars) {
-        return (
-            <Button variant="outline" size="icon">
-                <FontAwesomeIcon icon={faUser} />
-            </Button>
-        );
-    }
+    // if (!session || !calendars) {
+    //     return (
+    //         <Button variant="outline" size="icon">
+    //             <FontAwesomeIcon icon={faUser} />
+    //         </Button>
+    //     );
+    // }
 
-    const user = session.user;
+    // const user = session.user;
 
-    return (
-        <Popover>
-            <PopoverTrigger asChild>
-                <Button variant="outline" size="icon">
-                    <FontAwesomeIcon icon={faUser} />
-                </Button>
-            </PopoverTrigger>
-            <PopoverContent align="end">
-                <div className="flex flex-col gap-4">
-                    <div className="flex flex-row gap-8">
-                        {user.image ? (
-                            <img src={user.image} className="w-12 h-12 rounded-full" />
-                        ) : (
-                            <FontAwesomeIcon className="w-8 h-8 rounded-full bg-yellow-300 text-black" icon={faUser} />
-                        )}
-                        <h2 className="text-left w-full my-auto text-xl ">{user.name}</h2>
-                    </div>
-                    <hr />
-                    <ThemeSettings />
-                    <hr />
-                    <div className="flex flex-row justify-between">
-                        <Label className="my-auto">Open on Today?</Label>
-                        <Switch
-                            checked={startOnToday}
-                            onCheckedChange={() => {
-                                setStartOnToday(!startOnToday);
-                                updateStartOnToday.mutate({ startOnToday: !startOnToday });
-                            }}
-                        />
-                    </div>
-                    <hr />
-                    <div className="flex flex-row justify-between">
-                        <Label className="my-auto">Open on Previous View?</Label>
-                        <Switch
-                            checked={startOnPreviousView}
-                            onCheckedChange={() => {
-                                setStartOnPreviousView(!startOnPreviousView);
-                                updateStartOnPreviousView.mutate({ startOnPreviousView: !startOnPreviousView });
-                            }}
-                        />
-                    </div>
-                    <hr />
-                    <div className="flex flex-row justify-between">
-                        <Label className="my-auto">Calendar</Label>
-                        <DropdownMenu>
-                            <DropdownMenuTrigger className="text-sm flex flex-row text-muted-foreground">
-                                <div
-                                    style={{ backgroundColor: myCalendar?.color }}
-                                    className="w-3 h-3 rounded-full my-auto"
-                                ></div>
-                                <h3 className="text-ellipsis px-2 overflow-hidden">{myCalendar?.name}</h3>
-                                <FontAwesomeIcon icon={faCaretDown} className="my-auto" />
-                            </DropdownMenuTrigger>
-                            <DropdownMenuContent>
-                                {calendars
-                                    .filter((calendar) => !calendar.subscribed)
-                                    .map((calendar) => {
-                                        if (calendar.isDefault) return null;
-                                        return (
-                                            <DropdownMenuItem
-                                                onClick={() => {
-                                                    setMyCalendar(calendar);
-                                                    updateDefaultCalendar.mutate({ newDefaultCalendar: calendar });
-                                                }}
-                                                key={calendar.id}
-                                                className="flex flex-row"
-                                            >
-                                                <div
-                                                    style={{ backgroundColor: calendar.color }}
-                                                    className="w-3 h-3 rounded-full my-auto"
-                                                ></div>
-                                                <h3 className="text-ellipsis px-2 overflow-hidden">{calendar.name}</h3>
-                                            </DropdownMenuItem>
-                                        );
-                                    })}
-                            </DropdownMenuContent>
-                        </DropdownMenu>
-                    </div>
-                    <hr />
-                    <Button
-                        variant="default"
-                        className="text-lg"
-                        onClick={() => {
-                            signOut();
-                        }}
-                    >
-                        Sign Out
-                    </Button>
-                </div>
-            </PopoverContent>
-        </Popover>
+    return (null
+        // <Popover>
+        //     <PopoverTrigger asChild>
+        //         <Button variant="outline" size="icon">
+        //             <FontAwesomeIcon icon={faUser} />
+        //         </Button>
+        //     </PopoverTrigger>
+        //     <PopoverContent align="end">
+        //         <div className="flex flex-col gap-4">
+        //             <div className="flex flex-row gap-8">
+        //                 {user.image ? (
+        //                     <img src={user.image} className="w-12 h-12 rounded-full" />
+        //                 ) : (
+        //                     <FontAwesomeIcon className="w-8 h-8 rounded-full bg-yellow-300 text-black" icon={faUser} />
+        //                 )}
+        //                 <h2 className="text-left w-full my-auto text-xl ">{user.name}</h2>
+        //             </div>
+        //             <hr />
+        //             <ThemeSettings />
+        //             <hr />
+        //             <div className="flex flex-row justify-between">
+        //                 <Label className="my-auto">Open on Today?</Label>
+        //                 <Switch
+        //                     checked={startOnToday}
+        //                     onCheckedChange={() => {
+        //                         setStartOnToday(!startOnToday);
+        //                         updateStartOnToday.mutate({ startOnToday: !startOnToday });
+        //                     }}
+        //                 />
+        //             </div>
+        //             <hr />
+        //             <div className="flex flex-row justify-between">
+        //                 <Label className="my-auto">Open on Previous View?</Label>
+        //                 <Switch
+        //                     checked={startOnPreviousView}
+        //                     onCheckedChange={() => {
+        //                         setStartOnPreviousView(!startOnPreviousView);
+        //                         updateStartOnPreviousView.mutate({ startOnPreviousView: !startOnPreviousView });
+        //                     }}
+        //                 />
+        //             </div>
+        //             <hr />
+        //             <div className="flex flex-row justify-between">
+        //                 <Label className="my-auto">Calendar</Label>
+        //                 <DropdownMenu>
+        //                     <DropdownMenuTrigger className="text-sm flex flex-row text-muted-foreground">
+        //                         <div
+        //                             style={{ backgroundColor: myCalendar?.color }}
+        //                             className="w-3 h-3 rounded-full my-auto"
+        //                         ></div>
+        //                         <h3 className="text-ellipsis px-2 overflow-hidden">{myCalendar?.name}</h3>
+        //                         <FontAwesomeIcon icon={faCaretDown} className="my-auto" />
+        //                     </DropdownMenuTrigger>
+        //                     <DropdownMenuContent>
+        //                         {calendars
+        //                             .filter((calendar) => !calendar.subscribed)
+        //                             .map((calendar) => {
+        //                                 if (calendar.isDefault) return null;
+        //                                 return (
+        //                                     <DropdownMenuItem
+        //                                         onClick={() => {
+        //                                             setMyCalendar(calendar);
+        //                                             updateDefaultCalendar.mutate({ newDefaultCalendar: calendar });
+        //                                         }}
+        //                                         key={calendar.id}
+        //                                         className="flex flex-row"
+        //                                     >
+        //                                         <div
+        //                                             style={{ backgroundColor: calendar.color }}
+        //                                             className="w-3 h-3 rounded-full my-auto"
+        //                                         ></div>
+        //                                         <h3 className="text-ellipsis px-2 overflow-hidden">{calendar.name}</h3>
+        //                                     </DropdownMenuItem>
+        //                                 );
+        //                             })}
+        //                     </DropdownMenuContent>
+        //                 </DropdownMenu>
+        //             </div>
+        //             <hr />
+        //             <Button
+        //                 variant="default"
+        //                 className="text-lg"
+        //                 onClick={() => {
+        //                     signOut();
+        //                 }}
+        //             >
+        //                 Sign Out
+        //             </Button>
+        //         </div>
+        //     </PopoverContent>
+        // </Popover>
     );
 }
 
 function ThemeSettings() {
-    const [accentColor, setAccentColor] = useState("");
-    const [open, setOpen] = useState(false);
-    const updateAccentColor = useUpdateAccentColor();
-    const user = useUser();
-    useEffect(() => {
-        if (!user) return;
-        setAccentColor(user.accent_color);
-    }, [user]);
+    // const [accentColor, setAccentColor] = useState("");
+    // const [open, setOpen] = useState(false);
+    // const updateAccentColor = useUpdateAccentColor();
+    // const user = useUser();
+    // useEffect(() => {
+    //     if (!user) return;
+    //     setAccentColor(user.accent_color);
+    // }, [user]);
 
-    useEffect(() => {
-        if (!accentColor || !user) return;
-        if (accentColor == user.accent_color) return;
-        // set the accent color in database
-        updateAccentColor.mutate({ newColor: accentColor });
-        // update css variables
-        document.documentElement.style.setProperty("--calendar-accent", accentColor);
-    }, [accentColor]);
+    // useEffect(() => {
+    //     if (!accentColor || !user) return;
+    //     if (accentColor == user.accent_color) return;
+    //     // set the accent color in database
+    //     updateAccentColor.mutate({ newColor: accentColor });
+    //     // update css variables
+    //     document.documentElement.style.setProperty("--calendar-accent", accentColor);
+    // }, [accentColor]);
 
-    return (
-        <div className="flex flex-row gap-8">
-            <ThemeToggle />
-            <DrawerPopover open={open} onOpenChange={setOpen}>
-                <DrawerPopoverTrigger>
-                    <Button variant="outline">Change Accent Color</Button>
-                </DrawerPopoverTrigger>
-                <DrawerPopoverContent>
-                    <CircleColorPicker
-                        color={accentColor}
-                        onChange={(newColor) => {
-                            setAccentColor(newColor);
-                        }}
-                    />
-                </DrawerPopoverContent>
-            </DrawerPopover>
-        </div>
+    return (null
+        // <div className="flex flex-row gap-8">
+        //     <ThemeToggle />
+        //     <DrawerPopover open={open} onOpenChange={setOpen}>
+        //         <DrawerPopoverTrigger>
+        //             <Button variant="outline">Change Accent Color</Button>
+        //         </DrawerPopoverTrigger>
+        //         <DrawerPopoverContent>
+        //             <CircleColorPicker
+        //                 color={accentColor}
+        //                 onChange={(newColor) => {
+        //                     setAccentColor(newColor);
+        //                 }}
+        //             />
+        //         </DrawerPopoverContent>
+        //     </DrawerPopover>
+        // </div>
     );
 }

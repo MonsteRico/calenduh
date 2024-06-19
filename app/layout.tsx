@@ -4,6 +4,8 @@ import { Toaster } from "~/components/ui/sonner";
 import "./TimePicker.css";
 import "./globals.css";
 import { ThemeProvider } from "./providers";
+import { ClerkProvider } from "@clerk/nextjs";
+
 const inter = Inter({ subsets: ["latin"] });
 
 export const metadata: Metadata = {
@@ -13,6 +15,7 @@ export const metadata: Metadata = {
 
 export default async function RootLayout({ children }: { children: React.ReactNode }) {
     return (
+        <ClerkProvider>
         <html
             style={{
                 overscrollBehavior: "none",
@@ -26,6 +29,6 @@ export default async function RootLayout({ children }: { children: React.ReactNo
                     {children}
                 </ThemeProvider>
             </body>
-        </html>
+        </html></ClerkProvider>
     );
 }

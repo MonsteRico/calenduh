@@ -2,24 +2,12 @@ import { eq } from "drizzle-orm";
 import { NextRequest, NextResponse } from "next/server";
 import { db } from "~/db/db";
 import { users } from "~/db/schema/auth";
-import getServerAuthSession from "~/lib/getServerAuthSession";
+import getUser from "~/lib/getUser";
 export const dynamic = "force-dynamic"; // defaults to auto
 // GET /api/mes/[userId]/userPreferences
 // get all events for the month/day/year passed in
 export async function GET(request: NextRequest) {
-    const session = await getServerAuthSession(request);
-    const userId = session?.user?.id;
-
-    if (!userId) {
-        return NextResponse.json(
-            {
-                error: "no user found",
-            },
-            { status: 404 }
-        );
-    }
-
-    const [user] = await db.select().from(users).where(eq(users.id, userId)).limit(1);
+    const user = await getUser(request);
 
     if (!user) {
         return NextResponse.json(new Error("User not found"), { status: 404 });

@@ -1,13 +1,14 @@
 import { redirect } from "next/navigation";
-import getServerAuthSession from "~/lib/getServerAuthSession";
 import ActualPage from "./actualPage";
+import getUser from "~/lib/getUser";
+
 
 export default async function Home() {
-    const session = await getServerAuthSession();
-    if (!session || !session.user) {
+    const user = await getUser();
+    if (!user) {
         // redirect to /api/auth/signin
-        redirect("/api/auth/signin");
+        redirect("/signin");
     }
 
-    return <ActualPage user={session.user} />;
+    return <ActualPage user={user} />;
 }

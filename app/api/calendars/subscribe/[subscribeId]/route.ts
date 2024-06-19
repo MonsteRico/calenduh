@@ -2,22 +2,20 @@ import { redirect } from "next/navigation";
 import { NextRequest, NextResponse } from "next/server";
 import { db } from "~/db/db";
 import { usersSubscribedCalendars } from "~/db/schema/main";
-import getServerAuthSession from "~/lib/getServerAuthSession";
+
+import getUser from "~/lib/getUser";
 
 export const dynamic = "force-dynamic"; // defaults to auto
 
 // GET /api/calendars/subscribe/[subscribeId]
 export async function GET(request: NextRequest, { params }: { params: { subscribeId: string } }) {
-    const session = await getServerAuthSession(request);
-    const userId = session?.user?.id;
-    if (!userId) {
-        return NextResponse.json(
-            {
-                error: "no user found",
-            },
-            { status: 404 }
-        );
+        const user = await getUser(request);
+
+    if (!user) {
+        return NextResponse.json(new Error("User not found"), { status: 404 });
     }
+
+    const userId = user.id;
 
     const subscribeId = params.subscribeId;
 

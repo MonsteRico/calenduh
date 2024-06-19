@@ -3,21 +3,18 @@ import { DateTime } from "luxon";
 import { NextRequest, NextResponse } from "next/server";
 import { db } from "~/db/db";
 import { calendarEvents } from "~/db/schema/main";
-import getServerAuthSession from "~/lib/getServerAuthSession";
+import getUser from "~/lib/getUser";
 export const dynamic = "force-dynamic"; // defaults to auto
 // GET /api/events?month=12&day=15&year=2023
 // get all events for the month/day/year passed in
 export async function GET(request: NextRequest) {
-    const session = await getServerAuthSession(request);
-    const userId = session?.user?.id;
-    if (!userId) {
-        return NextResponse.json(
-            {
-                error: "no user found",
-            },
-            { status: 404 }
-        );
+        const user = await getUser(request);
+    
+    if (!user) {
+        return NextResponse.json(new Error("User not found"), { status: 404 });
     }
+
+    const userId = user.id;
 
     const searchParams = request.nextUrl.searchParams;
 
@@ -131,17 +128,13 @@ export async function GET(request: NextRequest) {
 // create a new event
 export async function POST(request: NextRequest) {
     const body = await request.json();
-    const session = await getServerAuthSession(request);
-    const userId = session?.user?.id;
+        const user = await getUser(request);
 
-    if (!userId) {
-        return NextResponse.json(
-            {
-                error: "no user found",
-            },
-            { status: 404 }
-        );
+    if (!user) {
+        return NextResponse.json(new Error("User not found"), { status: 404 });
     }
+
+    const userId = user.id;
     let fixedEndTime = body.endTime;
     // if endTime starts with "00", change it to "24" so it's not interpreted as the next day
     if (body.endTime && body.endTime.startsWith("00")) {

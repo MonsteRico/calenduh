@@ -2,23 +2,20 @@ import { createId } from "@paralleldrive/cuid2";
 import { NextRequest, NextResponse } from "next/server";
 import { db } from "~/db/db";
 import { calendars } from "~/db/schema/main";
-import getServerAuthSession from "~/lib/getServerAuthSession";
+import getUser from "~/lib/getUser";
 
 export const dynamic = "force-dynamic"; // defaults to auto
 
 // GET /api/calendars
 // get all calendars
 export async function GET(request: NextRequest) {
-    const session = await getServerAuthSession(request);
-    const userId = session?.user?.id;
-    if (!userId) {
-        return NextResponse.json(
-            {
-                error: "no user found",
-            },
-            { status: 404 }
-        );
+       const user = await getUser(request);
+
+    if (!user) {
+        return NextResponse.json(new Error("User not found"), { status: 404 });
     }
+
+    const userId = user.id;
 
     const calendars = await db.query.calendars.findMany({
         where: (calendars, { eq }) => eq(calendars.userId, userId),
@@ -45,18 +42,13 @@ export async function GET(request: NextRequest) {
 export async function POST(request: NextRequest) {
     const body = await request.json();
 
-    const session = await getServerAuthSession(request);
-    const userId = session?.user?.id;
+        const user = await getUser(request);
 
-    if (!userId) {
-        return NextResponse.json(
-            {
-                error: "no user found",
-            },
-            { status: 404 }
-        );
+    if (!user) {
+        return NextResponse.json(new Error("User not found"), { status: 404 });
     }
 
+    const userId = user.id;
     const subscribeCode = createId();
 
     const calendar = await db.insert(calendars).values({
