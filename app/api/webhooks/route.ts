@@ -5,7 +5,7 @@ import { createUser } from '~/lib/createUser'
 import { db } from '~/db/db'
 import { users } from '~/db/schema/auth'
 import { eq } from 'drizzle-orm'
-
+export const dynamic = "force-dynamic"; // defaults to auto
 export async function POST(req: Request) {
 
   // You can find this in the Clerk Dashboard -> Webhooks -> choose the endpoint
@@ -62,7 +62,8 @@ export async function POST(req: Request) {
   console.log('Webhook body:', body)
 
   if (evt.type == "user.created") {
-    createUser(evt.data)
+    await createUser(evt.data)
+    console.log("user created")
   }
 
   if (evt.type == "user.deleted") {
