@@ -4,7 +4,9 @@ import {
 } from '@clerk/nextjs/server';
 
 const isProtectedRoute = createRouteMatcher([
-  '/api/(.*)',
+  '/api/calendars/(.*)',
+  '/api/events/(.*)',
+  '/api/me/(.*)',
   '/',
 ]);
 

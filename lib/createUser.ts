@@ -8,10 +8,9 @@ import {  users,  } from "~/db/schema/auth";
 import { calendarEvents, calendars } from "~/db/schema/main";
 
         export async function createUser(userData:User) {
-            const newId = createId();
             const apiKey = createId();
             await db.insert(users).values({
-                id: newId,
+                id: userData.id,
                 apiKey,
                 email: userData.primaryEmailAddress!.emailAddress,
                 emailVerified: new Date(),
@@ -27,12 +26,12 @@ import { calendarEvents, calendars } from "~/db/schema/main";
             await db.insert(calendars).values({
                 name: "Default Calendar",
                 color: newColor,
-                userId: newId,
+                userId: userData.id,
                 isDefault: true,
                 subscribeCode,
             });
-            const [newCalendar] = await db.select().from(calendars).where(eq(calendars.userId, newId)).limit(1);
-            await db.update(users).set({ defaultCalendarId: newCalendar.id }).where(eq(users.id, newId));
+            const [newCalendar] = await db.select().from(calendars).where(eq(calendars.userId, userData.id)).limit(1);
+            await db.update(users).set({ defaultCalendarId: newCalendar.id }).where(eq(users.id, userData.id));
             const rows = await db.select().from(users).where(eq(users.email, userData.primaryEmailAddress!.emailAddress)).limit(1);
             const row = rows[0];
             if (!row) throw new Error("User not found");
