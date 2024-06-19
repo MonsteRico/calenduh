@@ -18,10 +18,7 @@ export const users = pgTable(
         startOnToday: boolean("start_on_today").notNull().default(true), // start on today or last day viewed
         startOnPreviousView: boolean("start_on_previous_view").notNull().default(false), // start on the last view (day, week, month, year) or on month
         defaultCalendarId: integer("default_calendar_id").notNull().default(-1),
-    },
-    (user) => ({
-        emailIndex: uniqueIndex("users__email__idx").on(user.email),
-    }),
+    }
 );
 
 export const userRelations = relations(users, ({ many, one }) => ({
