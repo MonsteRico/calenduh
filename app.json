@@ -11,15 +11,14 @@
     "ios": {
       "supportsTablet": true,
       "bundleIdentifier": "com.calenduh.calenduh",
-      "infoPlist": {
-        "ITSAppUsesNonExemptEncryption": false
-      }
+      "usesAppleSignIn": true
     },
     "android": {
       "adaptiveIcon": {
         "foregroundImage": "./assets/images/adaptive-icon.png",
         "backgroundColor": "#ffffff"
-      }
+      },
+      "package": "com.calenduh.calenduh"
     },
     "web": {
       "bundler": "metro",
@@ -27,6 +26,7 @@
       "favicon": "./assets/images/favicon.png"
     },
     "plugins": [
+      "expo-apple-authentication",
       "expo-router",
       [
         "expo-splash-screen",
@@ -36,7 +36,8 @@
           "resizeMode": "contain",
           "backgroundColor": "#ffffff"
         }
-      ]
+      ],
+      "expo-secure-store"
     ],
     "experiments": {
       "typedRoutes": true
