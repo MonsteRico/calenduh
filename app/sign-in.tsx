@@ -11,7 +11,7 @@ export default function SignIn() {
 	return (
 		<View style={{ flex: 1, justifyContent: "center", alignItems: "center" }}>
 			<Text className="text-foreground text-4xl">Sign In</Text>
-            <Text className="text-red-500 text-2xl">Test</Text>
+			<Text className="text-2xl text-red-500">Test</Text>
 			<AppleAuthentication.AppleAuthenticationButton
 				buttonType={AppleAuthentication.AppleAuthenticationButtonType.CONTINUE}
 				buttonStyle={AppleAuthentication.AppleAuthenticationButtonStyle.WHITE}
@@ -20,35 +20,44 @@ export default function SignIn() {
 					try {
 						const credential: AppleAuthentication.AppleAuthenticationCredential = await AppleAuthentication.signInAsync(
 							{
-								requestedScopes: [
-									AppleAuthentication.AppleAuthenticationScope.EMAIL,
-								],
+								requestedScopes: [AppleAuthentication.AppleAuthenticationScope.EMAIL],
 							}
 						);
-                        const response = await server.post("/auth/apple/login", credential); 
-                        if (response.status !== 200) {
-                            throw new Error("Axios shouldve caught already");
-                        }
-                        const session = response.data;
-						// call will error if credential is not valid sending to catch otherwise will return session data
-						// api checks if credential is a valid apple jwt'
-						// we set our login context to true and set the session data
-                        throw new Error("Axios shouldve DEFINITELY caught already");
-						setAppSession(session);
-						// if not valid, api returns error
+						const response = await server.post("/auth/apple/login", credential);
+						const loginData = response.data;
+						console.log("loginData", loginData);
+						setAppSession(loginData);
 					} catch (error: any) {
 						if (error.code === "ERR_CANCELED") {
 							console.error("Continue was cancelled.");
 						} else {
-							console.error("Error message",error.message);
-                            console.error("FUll error",error);
+							console.error("Error message", error.message);
+							console.error("FUll error", error);
 						}
 					}
 				}}
 			/>
-			<Button onPress={() => {
-				setAppSession({user:"test"});
-			}}>Fake Sign In</Button>
+			<Button
+				onPress={() => {
+					setAppSession({
+						session: {
+							id: "test",
+							user_id: "test",
+							type: "test",
+							access_token: "test",
+							refresh_token: "test",
+							expires_on: 1234567890,
+						},
+						user: {
+							id: "test",
+							email: "test@test.com",
+							username: "test",
+						},
+					});
+				}}
+			>
+				Fake Sign In
+			</Button>
 		</View>
 	);
 }

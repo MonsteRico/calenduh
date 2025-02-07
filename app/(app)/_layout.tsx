@@ -4,10 +4,15 @@ import { useSession } from "@/hooks/context";
 import { useColorScheme } from "nativewind";
 import { cn } from "@/lib/utils";
 import { StatusBar } from "expo-status-bar";
+import { useEffect } from "react";
 
 export default function AppLayout() {
 	const { session, isLoading } = useSession();
 	const { colorScheme } = useColorScheme();
+
+  useEffect(() => {
+    console.log("session",session);
+  }, [session]);
 
 	// You can keep the splash screen open, or render a loading screen like we do here.
 	if (isLoading) {

@@ -4,19 +4,20 @@ import { useQuery, useQueryClient } from "@tanstack/react-query";
 import * as SecureStore from "expo-secure-store";
 import server from "@/constants/serverAxiosClient";
 import { router } from "expo-router";
+import { User, Session } from "@/lib/types";
 
 const AuthContext = createContext<{
-	setAppSession: (userData: { user: string }) => void;
+	setAppSession: (loginData: { session: Session; user: User }) => void;
 	signOut: () => void;
-	session?: {
-		user: string;
-	} | null;
+	session?: Session | null;
 	isLoading: boolean;
+	user?: User | null
 }>({
-	setAppSession: (userData: { user: string }) => null,
+	setAppSession: (loginData: { session: Session; user: User }) => null,
 	signOut: () => null,
 	session: null,
 	isLoading: false,
+	user: null,
 });
 
 // This hook can be used to access the user info.
@@ -33,12 +34,12 @@ export function useSession() {
 
 export function SessionProvider({ children }: PropsWithChildren) {
 	// check for preexisting session DIFFERENT ON WEB AND MOBILE
-	const { data: session, isLoading } = useQuery({
+	const { data: loginData, isLoading } = useQuery<{ session: Session; user: User }>({
 		queryKey: ["session"],
 		queryFn: async () => {
 			console.log("fetching session");
 			if (Platform.OS === "web") {
-				return { user: "test" };
+				return { session: { user_id: "test", id: "test", type: "test", access_token: "test", refresh_token: "test", expires_on: 1234567890 }, user: { id: "test", email: "test@test.com", username: "test" } };
 
 				// try to fetch session from server
 				const response = await server.get("/session");
@@ -47,8 +48,11 @@ export function SessionProvider({ children }: PropsWithChildren) {
 				}
 			} else {
 				const stringifiedSession = await SecureStore.getItemAsync("session");
-				if (stringifiedSession) {
-					return JSON.parse(stringifiedSession);
+				const stringifiedUser = await SecureStore.getItemAsync("user");
+				if (stringifiedSession && stringifiedUser) {
+					const session = JSON.parse(stringifiedSession);
+					const user = JSON.parse(stringifiedUser);
+					return { session, user };
 				}
 				return null;
 			}
@@ -60,9 +64,10 @@ export function SessionProvider({ children }: PropsWithChildren) {
 	return (
 		<AuthContext.Provider
 			value={{
-				setAppSession: (session: { user: string }) => {
+				setAppSession: (loginData: { session: Session; user: User }) => {
 					if (Platform.OS !== "web") {
-						SecureStore.setItem("session", JSON.stringify(session));
+						SecureStore.setItem("session", JSON.stringify(loginData.session));
+						SecureStore.setItem("user", JSON.stringify(loginData.user));
 					}
 					// session was set on server (since we received the session from the server)
 					// so we need to refresh the query to get the new session
@@ -76,11 +81,13 @@ export function SessionProvider({ children }: PropsWithChildren) {
 						// sign out of server
 					} else {
 						SecureStore.deleteItemAsync("session");
+						SecureStore.deleteItemAsync("user");
 					}
 					// navigate to sign in page
 					router.replace("/sign-in");
 				},
-				session,
+				session: loginData?.session,
+				user: loginData?.user,
 				isLoading,
 			}}
 		>
