@@ -17,9 +17,9 @@ export async function setStorageItemAsync(key: string, value: string | null) {
   if (Platform.OS === 'web') {
     try {
       if (value === null) {
-        localStorage.removeItem(key);
+        document.cookie = `${key}=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/;`;
       } else {
-        localStorage.setItem(key, value);
+        document.cookie = `${key}=${value}; path=/;`;
       }
     } catch (e) {
       console.error('Local storage is unavailable:', e);
