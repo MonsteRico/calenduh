@@ -15,8 +15,8 @@ export default function RootLayout() {
 	return (
 		<QueryClientProvider client={queryClient}>
 			<SessionProvider>
-				<View className={cn("flex-1", colorScheme === "dark" ? "dark" : "")}>
-					<StatusBar style="auto" />
+			<View className={cn("flex-1 native:my-16 native:mx-4", colorScheme === "dark" ? "dark" : "")}>
+				<StatusBar style="auto" />
 					<Slot />
 				</View>
 			</SessionProvider>

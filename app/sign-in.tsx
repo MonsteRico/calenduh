@@ -9,7 +9,7 @@ export default function SignIn() {
 	const { setAppSession } = useSession();
 
 	return (
-		<View style={{ flex: 1, justifyContent: "center", alignItems: "center" }}>
+		<View className="flex-1 justify-content-center align-items-center">
 			<Text className="text-foreground text-4xl">Sign In</Text>
             <Text className="text-red-500 text-2xl">Test</Text>
 			<AppleAuthentication.AppleAuthenticationButton
