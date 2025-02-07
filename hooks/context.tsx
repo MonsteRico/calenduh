@@ -3,6 +3,7 @@ import { Platform } from "react-native";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import * as SecureStore from "expo-secure-store";
 import server from "@/constants/serverAxiosClient";
+import { router } from "expo-router";
 
 const AuthContext = createContext<{
 	setAppSession: (userData: { user: string }) => void;
@@ -35,13 +36,15 @@ export function SessionProvider({ children }: PropsWithChildren) {
 	const { data: session, isLoading } = useQuery({
 		queryKey: ["session"],
 		queryFn: async () => {
+			console.log("fetching session");
 			if (Platform.OS === "web") {
+				return { user: "test" };
+
 				// try to fetch session from server
 				const response = await server.get("/session");
 				if (response.status === 200) {
 					return response.data;
 				}
-				return null;
 			} else {
 				const stringifiedSession = await SecureStore.getItemAsync("session");
 				if (stringifiedSession) {
@@ -50,8 +53,6 @@ export function SessionProvider({ children }: PropsWithChildren) {
 				return null;
 			}
 		},
-		refetchInterval: false,
-		networkMode: "always",
 	});
 
 	const queryClient = useQueryClient();
@@ -61,13 +62,14 @@ export function SessionProvider({ children }: PropsWithChildren) {
 			value={{
 				setAppSession: (session: { user: string }) => {
 					if (Platform.OS !== "web") {
-						SecureStore.setItemAsync("session", JSON.stringify(session));
+						SecureStore.setItem("session", JSON.stringify(session));
 					}
 					// session was set on server (since we received the session from the server)
 					// so we need to refresh the query to get the new session
 					queryClient.invalidateQueries({
 						queryKey: ["session"],
 					});
+					router.replace("/");
 				},
 				signOut: () => {
 					if (Platform.OS === "web") {
@@ -76,6 +78,7 @@ export function SessionProvider({ children }: PropsWithChildren) {
 						SecureStore.deleteItemAsync("session");
 					}
 					// navigate to sign in page
+					router.replace("/sign-in");
 				},
 				session,
 				isLoading,

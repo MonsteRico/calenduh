@@ -4,12 +4,13 @@ import { Text, View } from "react-native";
 import { useSession } from "../hooks/context";
 import * as AppleAuthentication from "expo-apple-authentication";
 import server from "@/constants/serverAxiosClient";
+import { Button } from "@/components/Button";
 export default function SignIn() {
 	const { setAppSession } = useSession();
 
 	return (
 		<View style={{ flex: 1, justifyContent: "center", alignItems: "center" }}>
-			<Text className="text-green-500 text-4xl">Sign In</Text>
+			<Text className="text-foreground text-4xl">Sign In</Text>
             <Text className="text-red-500 text-2xl">Test</Text>
 			<AppleAuthentication.AppleAuthenticationButton
 				buttonType={AppleAuthentication.AppleAuthenticationButtonType.CONTINUE}
@@ -45,6 +46,9 @@ export default function SignIn() {
 					}
 				}}
 			/>
+			<Button onPress={() => {
+				setAppSession({user:"test"});
+			}}>Fake Sign In</Button>
 		</View>
 	);
 }
