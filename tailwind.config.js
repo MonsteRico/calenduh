@@ -3,9 +3,12 @@ module.exports = {
 	// NOTE: Update this to include the paths to all of your component files.
 	content: ["./app/**/*.{js,jsx,ts,tsx}", "./components/**/*.{js,jsx,ts,tsx}"],
 	presets: [require("nativewind/preset")],
-  darkMode: "class",
+	darkMode: "class",
 	theme: {
 		extend: {
+			spacing: {
+				"1/7": "14%",
+			},
 			colors: {
 				border: "hsl(var(--border))",
 				input: "hsl(var(--input))",

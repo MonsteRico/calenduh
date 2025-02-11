@@ -7,19 +7,25 @@ import "../global.css";
 import { useColorScheme } from "nativewind";
 import { View } from "react-native";
 import { cn } from "@/lib/utils";
+import { SafeAreaProvider, SafeAreaView } from "react-native-safe-area-context";
+import { GestureHandlerRootView } from "react-native-gesture-handler";
 
 // Create a client
 const queryClient = new QueryClient();
 export default function RootLayout() {
-	const {colorScheme} = useColorScheme();
+	const { colorScheme } = useColorScheme();
 	return (
 		<QueryClientProvider client={queryClient}>
-			<SessionProvider>
-			<View className={cn("flex-1 native:my-16 native:mx-4", colorScheme === "dark" ? "dark" : "")}>
-				<StatusBar style="auto" />
-					<Slot />
-				</View>
-			</SessionProvider>
+			<GestureHandlerRootView>
+				<SessionProvider>
+					<SafeAreaProvider>
+						<SafeAreaView className={cn("flex-1 bg-background", colorScheme === "dark" ? "dark" : "")}>
+							<StatusBar style="auto" />
+							<Slot />
+						</SafeAreaView>
+					</SafeAreaProvider>
+				</SessionProvider>
+			</GestureHandlerRootView>
 		</QueryClientProvider>
 	);
 }

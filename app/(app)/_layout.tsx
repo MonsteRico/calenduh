@@ -4,11 +4,15 @@ import { useSession } from "@/hooks/context";
 import { useColorScheme } from "nativewind";
 import { cn } from "@/lib/utils";
 import { StatusBar } from "expo-status-bar";
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
+import { DayBeingViewedContext } from "@/hooks/useCurrentViewedDay";
+import { DateTime } from "luxon";
 
 export default function AppLayout() {
 	const { session, isLoading } = useSession();
 	const { colorScheme } = useColorScheme();
+
+	const [dayBeingViewed, setDayBeingViewed] = useState(DateTime.now());
 
   useEffect(() => {
     console.log("session",session);
@@ -30,8 +34,11 @@ export default function AppLayout() {
 
 	// This layout can be deferred because it's not the root layout.
 	return (
-		<View className={cn("flex-1 native:my-16 native:mx-4", colorScheme === "dark" ? "dark" : "")}>
+		<DayBeingViewedContext.Provider value={{
+			value: dayBeingViewed,
+			setValue: setDayBeingViewed,
+		}}>
 			<Slot screenOptions={{ headerShown: false }} />
-		</View>
+		</DayBeingViewedContext.Provider>
 	);
 }
