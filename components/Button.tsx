@@ -64,7 +64,6 @@ function Button({
 }: ButtonProps) {
 
   const {colorScheme} = useColorScheme();
-  console.log("colorScheme",colorScheme);
 
   return (
     <TouchableOpacity

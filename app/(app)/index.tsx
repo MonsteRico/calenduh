@@ -116,9 +116,10 @@ export default function MonthScreen() {
 				style={{
 					width: screenWidth,
 					height: monthHeight + 75,
+					flexDirection: "row"
 				}}
 			>
-				{monthData && (
+				{monthData && screenWidth > 0 && monthHeight > 0 && (
 					<FlashList
 						estimatedItemSize={screenWidth}
 						ref={flashListRef}
