@@ -34,11 +34,32 @@ export default function AppLayout() {
 
 	// This layout can be deferred because it's not the root layout.
 	return (
-		<DayBeingViewedContext.Provider value={{
-			value: dayBeingViewed,
-			setValue: setDayBeingViewed,
-		}}>
-			<Slot screenOptions={{ headerShown: false }} />
+		<DayBeingViewedContext.Provider
+			value={{
+				value: dayBeingViewed,
+				setValue: setDayBeingViewed,
+			}}
+		>
+			<Stack
+				screenOptions={{
+					headerShown: false,
+					contentStyle: { flex: 1, backgroundColor: colorScheme === "dark" ? "#030711" : "white" },
+				}}
+			>
+				<Stack.Screen name="index" />
+				<Stack.Screen
+					name="createEvent"
+					options={{
+						presentation: "modal",
+					}}
+				/>
+				<Stack.Screen
+					name="calendarsList"
+					options={{
+						presentation: "modal",
+					}}
+				/>
+			</Stack>
 		</DayBeingViewedContext.Provider>
 	);
 }

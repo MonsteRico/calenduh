@@ -20,6 +20,7 @@ import { FlashList } from "@shopify/flash-list";
 import { useCurrentViewedDay } from "@/hooks/useCurrentViewedDay";
 import useStateWithCallbackLazy from "@/hooks/useStateWithCallbackLazy";
 import Divider from "@/components/Divider";
+import { router } from "expo-router";
 
 export default function MonthScreen() {
 	const today = DateTime.now();
@@ -116,7 +117,7 @@ export default function MonthScreen() {
 				style={{
 					width: screenWidth,
 					height: monthHeight + 75,
-					flexDirection: "row"
+					flexDirection: "row",
 				}}
 			>
 				{monthData && screenWidth > 0 && monthHeight > 0 && (
@@ -158,7 +159,18 @@ export default function MonthScreen() {
 				>
 					<Text className="text-primary-foreground">Sign Out</Text>
 				</Button>
-				<Button onPress={() => {}}>
+				<Button
+					onPress={() => {
+						router.navigate("/createEvent");
+					}}
+				>
+					<Text className="text-primary-foreground">Create Event</Text>
+				</Button>
+				<Button
+					onPress={() => {
+						router.navigate("/calendarsList");
+					}}
+				>
 					<Text className="text-primary-foreground">Create Event</Text>
 				</Button>
 			</View>

@@ -21,7 +21,14 @@ export default function RootLayout() {
 					<SafeAreaProvider>
 						<SafeAreaView className={cn("flex-1 bg-background", colorScheme === "dark" ? "dark" : "")}>
 							<StatusBar style="auto" />
-							<Slot />
+							<Stack
+								screenOptions={{
+									headerShown: false,
+									contentStyle: { flex: 1, backgroundColor: colorScheme === "dark" ? "#030711" : "white" },
+								}}
+							>
+								<Stack.Screen name="app" /> {/* <= important! */}
+							</Stack>
 						</SafeAreaView>
 					</SafeAreaProvider>
 				</SessionProvider>
