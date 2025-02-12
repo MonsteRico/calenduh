@@ -50,8 +50,10 @@ export function SessionProvider({ children }: PropsWithChildren) {
 				const stringifiedSession = await SecureStore.getItemAsync("session");
 				const stringifiedUser = await SecureStore.getItemAsync("user");
 				if (stringifiedSession && stringifiedUser) {
-					const session = JSON.parse(stringifiedSession);
+					const session = JSON.parse(stringifiedSession) as Session;
 					const user = JSON.parse(stringifiedUser);
+					// set session-id cookie on server instance as a default header
+					server.defaults.headers.Cookie = `session_id=${session.id};`;
 					return { session, user };
 				}
 				return null;
@@ -79,6 +81,7 @@ export function SessionProvider({ children }: PropsWithChildren) {
 				signOut: () => {
 					if (Platform.OS === "web") {
 						// sign out of server
+						server.post("/auth/logout");
 					} else {
 						SecureStore.deleteItemAsync("session");
 						SecureStore.deleteItemAsync("user");

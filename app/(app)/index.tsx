@@ -21,6 +21,7 @@ import { useCurrentViewedDay } from "@/hooks/useCurrentViewedDay";
 import useStateWithCallbackLazy from "@/hooks/useStateWithCallbackLazy";
 import Divider from "@/components/Divider";
 import { router } from "expo-router";
+import server from "@/constants/serverAxiosClient";
 
 export default function MonthScreen() {
 	const today = DateTime.now();
