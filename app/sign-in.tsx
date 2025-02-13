@@ -5,8 +5,32 @@ import { useSession } from "../hooks/context";
 import * as AppleAuthentication from "expo-apple-authentication";
 import server from "@/constants/serverAxiosClient";
 import { Button } from "@/components/Button";
+import * as WebBrowser from "expo-web-browser";
+import { useEffect } from "react";
+import  * as AuthSession from "expo-auth-session";
+WebBrowser.maybeCompleteAuthSession();
+const redirectUri = AuthSession.makeRedirectUri()
+
 export default function SignIn() {
 	const { setAppSession } = useSession();
+
+  useEffect(() => {
+    WebBrowser.warmUpAsync();
+
+    return () => {
+      WebBrowser.coolDownAsync();
+    };
+  }, []);
+
+
+//   const [request, result, promptAsync] = AuthSession.useAuthRequest(
+// 		{
+// 			clientId: "native.code",
+// 			redirectUri,
+// 			scopes: ["openid", "profile", "email", "offline_access"],
+// 		},
+// 		discovery
+// 	);
 
 	return (
 		<View className="flex-1 justify-content-center align-items-center">
