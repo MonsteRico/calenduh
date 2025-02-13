@@ -34,7 +34,7 @@ function Checkbox({
       <TouchableOpacity onPress={toggleCheckbox}>
         <View
           className={cn(
-            'w-4 h-4 border rounded bg-background flex justify-center items-center',
+            'w-6 h-6 border rounded bg-background flex justify-center items-center',
             {
               'bg-foreground': isChecked,
             },
