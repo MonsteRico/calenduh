@@ -2,6 +2,19 @@ import { Button } from "@/components/Button";
 import { router } from "expo-router";
 import { StyleSheet, Text, View } from "react-native";
 import { Checkbox } from "@/components/Checkbox";
+import { Accordion } from "@/components/Accordion";
+
+interface example_calendar {
+    name: string;
+    color: string;
+}
+
+const calendars: example_calendar[] = [
+    { name: "Calendar1", color: "#0000FF" },
+    { name: "Calendar2", color: "#d42245" },
+    { name: "Calendar3", color: "#0a571e"}
+];
+
 
 export default function CalendarsList() {
       const isPresented = router.canGoBack();
@@ -15,19 +28,42 @@ export default function CalendarsList() {
                 }} labelClasses="text-secondary">
                     Back
                 </Button>}
-                <Text className="text-2xl font-bold pl-5">Calendars</Text>
+                <Text className="text-3xl font-bold pl-5">Calendars</Text>
                 </View>
                 <View className="mr-3">
                     <Button labelClasses="text-secondary">Add Calendar</Button>
                 </View>
 
             </View>
-
-            <View className="m-3">
-                <Checkbox label="Calendar1" labelClasses="text-xl" color='#0000FF' checkSymbol={false}/>
-                <Checkbox label="Calendar2" labelClasses="text-xl"/>
-                       
+            <Accordion title={"Owned Calendars"} className="mb-5">
+            <View className="m-5">
+                {calendars.map((calendar) => (
+                    <View className="mb-3">
+                        <Checkbox key={calendar.name} label={calendar.name} color={calendar.color} labelClasses="text-2xl" checkSymbol={false}/>
+                    </View>
+                ))}
             </View>
+            </Accordion>
+
+            <Accordion title={"Group Calendars"} className="mb-5">
+            <View className="m-5">
+                {calendars.map((calendar) => (
+                    <View className="mb-3">
+                        <Checkbox key={calendar.name} label={calendar.name} color={calendar.color} labelClasses="text-2xl" checkSymbol={false}/>
+                    </View>
+                ))}
+            </View>
+            </Accordion>
+            
+            <Accordion title={"Other Calendars"}>
+            <View className="m-5">
+                {calendars.map((calendar) => (
+                    <View className="mb-3">
+                        <Checkbox key={calendar.name} label={calendar.name} color={calendar.color} labelClasses="text-2xl" checkSymbol={false}/>
+                    </View>
+                ))}
+            </View>
+            </Accordion>
         </View>
     );
 }
