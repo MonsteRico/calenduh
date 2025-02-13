@@ -171,7 +171,7 @@ export default function MonthScreen() {
 						router.navigate("/calendarsList");
 					}}
 				>
-					<Text className="text-primary-foreground">Create Event</Text>
+					<Text className="text-primary-foreground">Calendar List</Text>
 				</Button>
 			</View>
 		</View>
