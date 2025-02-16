@@ -12,45 +12,54 @@ export default function CreateEvent() {
 
       const [name, setName] = React.useState(''); //Text box
       const [startDate, setStartDate] = React.useState(''); //DateTimePicker
+      const [startTime, setStartTime] = React.useState(''); //DateTimePicker
       const [endDate, setEndDate] = React.useState(''); //DateTimePicker
+      const [endTime, setEndTime] = React.useState(''); //DateTimePicker
       const [location, setLocation] = React.useState(''); //Text box
       const [description, setDescription] = React.useState(''); //Text box
-      const [selected, setSelected] = React.useState(""); //Single Select List
+      const [cal, setSelected] = React.useState(""); //Single Select List
 
       //REPLACE WITH USER'S CALENDARS
-      const data = [
-        {key:'1', value:'Mobiles'},
-        {key:'2', value:'Appliances'},
-        {key:'3', value:'Cameras'},
-        {key:'4', value:'Computers'},
-        {key:'5', value:'Vegetables'},
-        {key:'6', value:'Diary Products'},
-        {key:'7', value:'Drinks'},
+      const userCals = [
+        {key:'1', value:'Calendar 1'},
+        {key:'2', value:'Calendar 2'},
+        {key:'3', value:'Calendar 3'},
       ]
 
     return (
         <View>
-            {isPresented && <Button onPress={() => {
+            <View className="flex-row items-center m-2">
+                {isPresented && <Button onPress={() => {
                 router.back();
-            }}>
-                Cancel
-            </Button>}
+                }}>
+                    Cancel
+                </Button>}
 
-            <Text className="text-primary">Create Event</Text>
-      
-      
+                {/* need to change this to follow user's appearance settings */}
+
+                <Text className="text-3xl font-bold pl-5 items-center">Create Event</Text>
+            </View>
+
+            <Text>Name:</Text>
+            <Input value={name} onChangeText={setName} placeholder="Event Name" /*style={{color:'white'}}*//>
+
+            <Text>Location:</Text>
+            <Input value={location} onChangeText={setLocation} placeholder="Location" />
+
+            {/* need to change this to follow user's appearance settings */}
+            <Text>Description:</Text>
+            <Input value={description} onChangeText={setDescription} placeholder="Description" multiline={true} numberOfLines={4}/>
 
             <Text className="text-primary">Calendar : </Text>
-
+            {/* need to change this to follow user's appearance settings */}
             <SelectList 
                 setSelected={(val) => setSelected(val)} 
-                data={data} 
+                data={userCals} 
                 save="value"
-                arrowicon={<FontAwesome name="chevron-down" size={12} color={'white'} />} 
-                searchicon={<FontAwesome name="search" size={12} color={'white'} />}
-                closeicon={<FontAwesome name="fa-solid fa-xmark" size={12} color={'white'} />}
-                dropdownTextStyles={{color:'white'}}
-                inputStyles={{color:'white'}}
+                arrowicon={<FontAwesome name="chevron-down" size={12} /*color={'white'}*/ />} 
+                searchicon={<FontAwesome name="search" size={12} /*color={'white'}*/ />}
+                /*dropdownTextStyles={{color:'white'}}
+                inputStyles={{color:'white'}}*/
                 maxHeight={100}
             />
 
