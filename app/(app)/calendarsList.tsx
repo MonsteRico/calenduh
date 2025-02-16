@@ -34,7 +34,7 @@ export default function CalendarsList() {
                     </Button>}
                     <Text className="text-3xl font-bold pl-5">Calendars</Text>
                 </View>
-                <Button labelClasses="text-secondary" className="mr-5">Add Calendar</Button>
+                <Button labelClasses="text-secondary" className="mr-5" onPress={() => { router.navigate("/createCalendar" )}}>Add Calendar</Button>
 
             </View>
             <Accordion title={"Owned Calendars"} className="mb-5">

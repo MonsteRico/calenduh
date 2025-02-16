@@ -9,7 +9,7 @@ interface CalendarColorModalProps {
     onColorChange: (color: string) => void;
 }
 
-const calendarColors = [
+ const calendarColors = [
     { name: "Ruby Red", hex: "#E63946" },
     { name: "Coral", hex: "#FF6B6B" },
     { name: "Peach", hex: "#FFA07A" },
@@ -70,4 +70,4 @@ function CalendarColorModal({ visible, color, onClose, onColorChange }: Calendar
         </Modal>
     )
 }
-export { CalendarColorModal }
+export { CalendarColorModal, calendarColors };
