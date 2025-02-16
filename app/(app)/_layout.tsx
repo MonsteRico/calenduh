@@ -59,6 +59,12 @@ export default function AppLayout() {
 						presentation: "modal",
 					}}
 				/>
+				<Stack.Screen
+					name="calendarInfoView"
+					options={{
+						presentation: "modal",
+					}}
+				/>
 			</Stack>
 		</DayBeingViewedContext.Provider>
 	);
