@@ -5,7 +5,6 @@ import { Checkbox } from "@/components/Checkbox";
 import { Accordion } from "@/components/Accordion";
 import { useState } from "react";
 import { CalendarItem } from "@/components/CalendarItem";
-import { CalendarModal } from "@/components/CalendarModal";
 
 interface example_calendar {
     name: string;
@@ -26,8 +25,6 @@ export default function CalendarsList() {
     return (
 
         <View>
-
-            <CalendarModal visible={modalVisible} name="Test" color="test" onClose={() => setModalVisible(!modalVisible)} />
             <View className='bg-border items-left flex-row items-center justify-between'>
                 <View className="flex-row items-center m-2">
                     {isPresented && <Button onPress={() => {
