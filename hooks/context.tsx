@@ -7,15 +7,15 @@ import { router } from "expo-router";
 import { User, Session } from "@/lib/types";
 
 const AuthContext = createContext<{
-	setAppSession: (loginData: { session: Session; user: User }) => void;
+	signIn: (sessionId: string) => void;
 	signOut: () => void;
-	session?: Session | null;
+	sessionId?: string | null;
 	isLoading: boolean;
 	user?: User | null
 }>({
-	setAppSession: (loginData: { session: Session; user: User }) => null,
+	signIn: (sessionId: string) => null,
 	signOut: () => null,
-	session: null,
+	sessionId: null,
 	isLoading: false,
 	user: null,
 });
@@ -34,12 +34,12 @@ export function useSession() {
 
 export function SessionProvider({ children }: PropsWithChildren) {
 	// check for preexisting session DIFFERENT ON WEB AND MOBILE
-	const { data: loginData, isLoading } = useQuery<{ session: Session; user: User }>({
-		queryKey: ["session"],
+	const { data: loginData, isLoading } = useQuery<{ sessionId: string; user: User }>({
+		queryKey: ["loginData"],
 		queryFn: async () => {
 			console.log("fetching session");
 			if (Platform.OS === "web") {
-				return { session: { user_id: "test", id: "test", type: "test", access_token: "test", refresh_token: "test", expires_on: 1234567890 }, user: { id: "test", email: "test@test.com", username: "test" } };
+				return { sessionId: "test", user: { id: "test", email: "test@test.com", username: "test" } };
 
 				// try to fetch session from server
 				const response = await server.get("/session");
@@ -47,14 +47,13 @@ export function SessionProvider({ children }: PropsWithChildren) {
 					return response.data;
 				}
 			} else {
-				const stringifiedSession = await SecureStore.getItemAsync("session");
+				const sessionId = await SecureStore.getItemAsync("sessionId");
 				const stringifiedUser = await SecureStore.getItemAsync("user");
-				if (stringifiedSession && stringifiedUser) {
-					const session = JSON.parse(stringifiedSession) as Session;
+				if (sessionId && stringifiedUser) {
 					const user = JSON.parse(stringifiedUser);
 					// set session-id cookie on server instance as a default header
-					server.defaults.headers.Cookie = `session_id=${session.id};`;
-					return { session, user };
+					server.defaults.headers.Cookie = `sessionId=${sessionId};`;
+					return { sessionId, user };
 				}
 				return null;
 			}
@@ -66,30 +65,49 @@ export function SessionProvider({ children }: PropsWithChildren) {
 	return (
 		<AuthContext.Provider
 			value={{
-				setAppSession: (loginData: { session: Session; user: User }) => {
+				signIn: async (sessionId: string) => {
+					if (sessionId === "test") {
+						const user = {
+							id: "test",
+							email: "test@test.com",
+							username: "test",
+						};
+						if (Platform.OS !== "web") {
+							SecureStore.setItem("sessionId", JSON.stringify(sessionId));
+							SecureStore.setItem("user", JSON.stringify(user));
+						}
+						// session was set on server (since we received the session from the server)
+						// so we need to refresh the query to get the new session
+						queryClient.invalidateQueries({
+							queryKey: ["loginData"],
+						});
+						router.replace("/");
+					}
+					server.defaults.headers.Cookie = `sessionId=${sessionId};`;
+					const response = await server.get(`/users/@me`);
+					const user = response.data;
+					console.log("user", user);
 					if (Platform.OS !== "web") {
-						SecureStore.setItem("session", JSON.stringify(loginData.session));
-						SecureStore.setItem("user", JSON.stringify(loginData.user));
+						SecureStore.setItem("sessionId", JSON.stringify(sessionId));
+						SecureStore.setItem("user", JSON.stringify(user));
 					}
 					// session was set on server (since we received the session from the server)
 					// so we need to refresh the query to get the new session
 					queryClient.invalidateQueries({
-						queryKey: ["session"],
+						queryKey: ["loginData"],
 					});
 					router.replace("/");
 				},
 				signOut: () => {
-					if (Platform.OS === "web") {
-						// sign out of server
-						server.post("/auth/logout");
-					} else {
+					server.post("/auth/logout"); // TODO make this a react query mutation so it can run when reconnect to internet
+					if (Platform.OS !== "web")  {
 						SecureStore.deleteItemAsync("session");
 						SecureStore.deleteItemAsync("user");
 					}
 					// navigate to sign in page
 					router.replace("/sign-in");
 				},
-				session: loginData?.session,
+				sessionId: loginData?.sessionId,
 				user: loginData?.user,
 				isLoading,
 			}}

@@ -8,11 +8,12 @@ import { Button } from "@/components/Button";
 import * as WebBrowser from "expo-web-browser";
 import { useEffect } from "react";
 import  * as AuthSession from "expo-auth-session";
+import * as Crypto from "expo-crypto";
 WebBrowser.maybeCompleteAuthSession();
 const redirectUri = AuthSession.makeRedirectUri()
 
 export default function SignIn() {
-	const { setAppSession } = useSession();
+	const { signIn } = useSession();
 
   useEffect(() => {
     WebBrowser.warmUpAsync();
@@ -23,18 +24,49 @@ export default function SignIn() {
   }, []);
 
 
-//   const [request, result, promptAsync] = AuthSession.useAuthRequest(
-// 		{
-// 			clientId: "native.code",
-// 			redirectUri,
-// 			scopes: ["openid", "profile", "email", "offline_access"],
-// 		},
-// 		discovery
-// 	);
+  const [_googleRequest, googleResult, googleSignIn] = AuthSession.useAuthRequest(
+		{
+			clientId: "calenduh",
+			redirectUri,
+			state: Crypto.randomUUID().toString()
+		},
+		{
+			authorizationEndpoint: `${process.env.EXPO_PUBLIC_SERVER_URL}/auth/google/login`,
+		}
+	);
+
+	  const [_discordRequest, discordResult, discordSignIn] = AuthSession.useAuthRequest(
+			{
+				clientId: "calenduh",
+				redirectUri,
+				state: Crypto.randomUUID().toString(),
+			},
+			{
+				authorizationEndpoint: `${process.env.EXPO_PUBLIC_SERVER_URL}/auth/discord/login`,
+			}
+		);
+
+	useEffect(() => {
+		if (!googleResult) return;
+		console.log("we have a result");
+		console.log("result", googleResult);
+		if (googleResult.type !== "success") return;
+		console.log("result was success", googleResult);
+		signIn(googleResult.params.sessionId);
+	}, [googleResult]);
+
+		useEffect(() => {
+			if (!discordResult) return;
+			console.log("we have a result");
+			console.log("result", discordResult);
+			if (discordResult.type !== "success") return;
+			console.log("result was success", discordResult);
+			signIn(discordResult.params.sessionId);
+		}, [discordResult]);
 
 	return (
-		<View className="flex-1 justify-content-center align-items-center">
-			<Text className="text-foreground text-4xl">Sign In</Text>
+		<View className="justify-content-center align-items-center flex-1">
+			<Text className="text-4xl text-foreground">Sign In</Text>
 			<Text className="text-2xl text-red-500">Test</Text>
 			<AppleAuthentication.AppleAuthenticationButton
 				buttonType={AppleAuthentication.AppleAuthenticationButtonType.CONTINUE}
@@ -48,9 +80,8 @@ export default function SignIn() {
 							}
 						);
 						const response = await server.post("/auth/apple/login", credential);
-						const loginData = response.data;
-						console.log("loginData", loginData);
-						setAppSession(loginData);
+						const sessionId = response.data.sessionId;
+						signIn(sessionId);
 					} catch (error: any) {
 						if (error.code === "ERR_CANCELED") {
 							console.error("Continue was cancelled.");
@@ -63,21 +94,21 @@ export default function SignIn() {
 			/>
 			<Button
 				onPress={() => {
-					setAppSession({
-						session: {
-							id: "test",
-							user_id: "test",
-							type: "test",
-							access_token: "test",
-							refresh_token: "test",
-							expires_on: 1234567890,
-						},
-						user: {
-							id: "test",
-							email: "test@test.com",
-							username: "test",
-						},
-					});
+					googleSignIn();
+				}}
+			>
+				Google OAuth
+			</Button>
+			<Button
+				onPress={() => {
+					discordSignIn();
+				}}
+			>
+				Discord OAuth
+			</Button>
+			<Button
+				onPress={() => {
+					signIn("test");
 				}}
 			>
 				Fake Sign In
