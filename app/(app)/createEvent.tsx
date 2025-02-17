@@ -6,8 +6,10 @@ import React from 'react';
 import { FontAwesome } from "@expo/vector-icons";
 import { Input } from "@/components/Input";
 import DateTimePicker from '@react-native-community/datetimepicker';
+import { useColorScheme } from "nativewind";
 
 export default function CreateEvent() {
+      const { colorScheme } = useColorScheme();
       const isPresented = router.canGoBack();
 
       const [name, setName] = React.useState(''); //Text box
@@ -26,7 +28,10 @@ export default function CreateEvent() {
         {key:'3', value:'Calendar 3'},
       ]
 
+      
+
     return (
+        
         <View>
             <View className="flex-row items-center m-2">
                 {isPresented && <Button onPress={() => {
@@ -51,15 +56,22 @@ export default function CreateEvent() {
 
             <Text className="text-primary">Calendar : </Text>
 
-            {/* need to change this to follow user's appearance settings */}
             <SelectList 
                 setSelected={(val) => setSelected(val)} 
                 data={userCals} 
                 save="value"
-                arrowicon={<FontAwesome className="text-primary" name="chevron-down" size={12} /*color={'white'}*/ />} 
-                searchicon={<FontAwesome className="text-primary" name="search" size={12} /*color={'white'}*/ />}
-                /*dropdownTextStyles={{color:'white'}}
-                inputStyles={{color:'white'}}*/
+                //These icons for no reason don't use className :sob:
+                arrowicon={<FontAwesome className="text-primary" name="chevron-down" size={12} />} 
+                searchicon={<FontAwesome className="text-primary" name="search" size={12} />}
+                //All because this lovely component doesn't have className
+                boxStyles={{ color: colorScheme == "light" ? "black" : "white"}}
+                inputStyles={{ color: colorScheme == "light" ? "black" : "white"}}
+                dropdownStyles={{ color: colorScheme == "light" ? "black" : "white"}}
+                dropdownItemStyles={{ color: colorScheme == "light" ? "black" : "white"}}
+                dropdownTextStyles={{ color: colorScheme == "light" ? "black" : "white"}}
+                //In case disabled is needed
+                disabledItemStyles={{ color: colorScheme == "light" ? "black" : "white"}}
+                disabledTextStyles={{ color: colorScheme == "light" ? "black" : "white"}}
                 maxHeight={100}
             />
 
