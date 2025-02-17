@@ -31,33 +31,33 @@ export default function CreateEvent() {
             <View className="flex-row items-center m-2">
                 {isPresented && <Button onPress={() => {
                 router.back();
-                }}>
+                }} className="text-primary">
                     Cancel
                 </Button>}
 
                 {/* need to change this to follow user's appearance settings */}
 
-                <Text className="text-3xl font-bold pl-5 items-center">Create Event</Text>
+                <Text className="text-primary text-3xl font-bold pl-5 items-center">Create Event</Text>
             </View>
 
-            <Text>Name:</Text>
-            <Input value={name} onChangeText={setName} placeholder="Event Name" /*style={{color:'white'}}*//>
+            <Text className="text-primary">Name:</Text>
+            <Input className="text-primary" value={name} onChangeText={setName} placeholder="Event Name" />
 
-            <Text>Location:</Text>
-            <Input value={location} onChangeText={setLocation} placeholder="Location" />
+            <Text className="text-primary">Location:</Text>
+            <Input className="text-primary" value={location} onChangeText={setLocation} placeholder="Location" />
 
-            {/* need to change this to follow user's appearance settings */}
-            <Text>Description:</Text>
-            <Input value={description} onChangeText={setDescription} placeholder="Description" multiline={true} numberOfLines={4}/>
+            <Text className="text-primary">Description:</Text>
+            <Input className="text-primary" value={description} onChangeText={setDescription} placeholder="Description" multiline={true} numberOfLines={4}/>
 
             <Text className="text-primary">Calendar : </Text>
+
             {/* need to change this to follow user's appearance settings */}
             <SelectList 
                 setSelected={(val) => setSelected(val)} 
                 data={userCals} 
                 save="value"
-                arrowicon={<FontAwesome name="chevron-down" size={12} /*color={'white'}*/ />} 
-                searchicon={<FontAwesome name="search" size={12} /*color={'white'}*/ />}
+                arrowicon={<FontAwesome className="text-primary" name="chevron-down" size={12} /*color={'white'}*/ />} 
+                searchicon={<FontAwesome className="text-primary" name="search" size={12} /*color={'white'}*/ />}
                 /*dropdownTextStyles={{color:'white'}}
                 inputStyles={{color:'white'}}*/
                 maxHeight={100}
