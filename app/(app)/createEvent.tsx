@@ -5,20 +5,21 @@ import { SelectList } from 'react-native-dropdown-select-list';
 import React from 'react';
 import { FontAwesome } from "@expo/vector-icons";
 import { Input } from "@/components/Input";
-import DateTimePicker from '@react-native-community/datetimepicker';
+//import DateTimePicker from '@react-native-community/datetimepicker'; TO REMOVE?
 import { useColorScheme } from "nativewind";
+import DateTimePicker from 'react-native-ui-datepicker';
+import dayjs from 'dayjs';
 
 export default function CreateEvent() {
       const { colorScheme } = useColorScheme();
       const isPresented = router.canGoBack();
 
       const [name, setName] = React.useState(''); //Text box
-      const [startDate, setStartDate] = React.useState(''); //DateTimePicker
-      const [startTime, setStartTime] = React.useState(''); //DateTimePicker
-      const [endDate, setEndDate] = React.useState(''); //DateTimePicker
-      const [endTime, setEndTime] = React.useState(''); //DateTimePicker
+      const [startDate, setStartDate] = React.useState(dayjs()); //DateTimePicker
+      const [endDate, setEndDate] = React.useState(dayjs()); //DateTimePicker
       const [location, setLocation] = React.useState(''); //Text box
       const [description, setDescription] = React.useState(''); //Text box
+      const [notify, setNotif] = React.useState(''); //Text box
       const [cal, setSelected] = React.useState(""); //Single Select List
 
       //REPLACE WITH USER'S CALENDARS
@@ -28,7 +29,7 @@ export default function CreateEvent() {
         {key:'3', value:'Calendar 3'},
       ]
 
-      
+      const globColor = colorScheme == "light" ? "black" : "white"
 
     return (
         
@@ -54,15 +55,19 @@ export default function CreateEvent() {
             <Text className="text-primary">Description:</Text>
             <Input className="text-primary" value={description} onChangeText={setDescription} placeholder="Description" multiline={true} numberOfLines={4}/>
 
-            <Text className="text-primary">Calendar : </Text>
+            <Text className="text-primary">Notification:</Text>
+            <Input className="text-primary" value={notify} onChangeText={setNotif} placeholder="Notification" maxLength={100}/>
+
+            <Text className="text-primary">Calendar:</Text>
 
             <SelectList 
-                setSelected={(val) => setSelected(val)} 
+                setSelected={(cal) => setSelected(cal)} 
                 data={userCals} 
                 save="value"
                 //These icons for no reason don't use className :sob:
-                arrowicon={<FontAwesome className="text-primary" name="chevron-down" size={12} />} 
-                searchicon={<FontAwesome className="text-primary" name="search" size={12} />}
+                arrowicon={<FontAwesome  name="chevron-down" size={12} color={globColor}/>} 
+                searchicon={<FontAwesome name="search" size={12} color={globColor}/>}
+                closeicon={<FontAwesome name="stop" size={12} color={globColor}/>}
                 //All because this lovely component doesn't have className
                 boxStyles={{ color: colorScheme == "light" ? "black" : "white"}}
                 inputStyles={{ color: colorScheme == "light" ? "black" : "white"}}
@@ -75,8 +80,30 @@ export default function CreateEvent() {
                 maxHeight={100}
             />
 
+            <Text className="text-primary">Start: </Text>
+            <View style={styles.container}>
+                <DateTimePicker
+                    mode="single"
+                    date={startDate}
+                    timePicker={true}
+                    onChange={(params) => setStartDate(params.date)}
+                />
+
+                <Text className="text-primary">End: </Text>
+                <DateTimePicker 
+                    mode="single"
+                    date={endDate}
+                    timePicker={true}
+                    onChange={(params) => setEndDate(params.date)}
+                />
+            </View>
             
         </View>)
-
-        
 }
+
+const styles = StyleSheet.create({
+    container: {
+        flex: 1,
+        backgroundColor: '#F5FCFF',
+      },
+})
