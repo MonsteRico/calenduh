@@ -1,5 +1,5 @@
 import { router } from "expo-router";
-import { Text, View } from "react-native";
+import { Platform, Text, View } from "react-native";
 
 import { useSession } from "../hooks/context";
 import * as AppleAuthentication from "expo-apple-authentication";
@@ -68,7 +68,7 @@ export default function SignIn() {
 		<View className="justify-content-center align-items-center flex-1">
 			<Text className="text-4xl text-foreground">Sign In</Text>
 			<Text className="text-2xl text-red-500">Test</Text>
-			<AppleAuthentication.AppleAuthenticationButton
+			{Platform.OS === "ios" && <AppleAuthentication.AppleAuthenticationButton
 				buttonType={AppleAuthentication.AppleAuthenticationButtonType.CONTINUE}
 				buttonStyle={AppleAuthentication.AppleAuthenticationButtonStyle.WHITE}
 				style={{ width: 300, height: 50 }}
@@ -91,7 +91,7 @@ export default function SignIn() {
 						}
 					}
 				}}
-			/>
+			/>}
 			<Button
 				onPress={() => {
 					googleSignIn();
