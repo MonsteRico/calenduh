@@ -12,7 +12,6 @@ import {
 import { DateTime } from "luxon";
 import { useSession } from "@/hooks/context";
 import Month from "@/components/Month";
-import Carousel from "react-native-reanimated-carousel";
 import { useSharedValue } from "react-native-reanimated";
 import { useEffect, useRef, useState } from "react";
 import { Button } from "@/components/Button";
@@ -21,6 +20,8 @@ import { useCurrentViewedDay } from "@/hooks/useCurrentViewedDay";
 import useStateWithCallbackLazy from "@/hooks/useStateWithCallbackLazy";
 import Divider from "@/components/Divider";
 import { router } from "expo-router";
+import DrawerMenu from "@/components/DrawerMenu";
+import CalendarsList from "./calendarsList";
 
 export default function MonthScreen() {
 	const today = DateTime.now();
@@ -31,8 +32,27 @@ export default function MonthScreen() {
 	const screenWidth = Dimensions.get("window").width;
 	const monthHeight = Platform.OS === "web" ? Dimensions.get("window").height - 150 : screenWidth * 0.9;
 
+ const [isDrawerOpen, setIsDrawerOpen] = useState(false);
+
+ const toggleDrawer = () => {
+		setIsDrawerOpen(!isDrawerOpen);
+ };
+
 	return (
-		<View className="flex min-h-screen w-full flex-col items-center">
+		<View className="flex min-h-screen w-full flex-col items-center p-1">
+			<DrawerMenu title="Calendars" isOpen={isDrawerOpen} onClose={toggleDrawer}>
+				<CalendarsList toggleDrawer={toggleDrawer} />
+			</DrawerMenu>
+			<View className="flex w-full flex-row justify-between">
+				<Button
+					onPress={() => {
+						toggleDrawer();
+					}}
+				>
+					Calendars
+				</Button>
+				<Button onPress={() => {}}>Force Sync</Button>
+			</View>{" "}
 			<View
 				style={{
 					width: screenWidth,
@@ -57,13 +77,6 @@ export default function MonthScreen() {
 					}}
 				>
 					<Text className="text-primary-foreground">Create Event</Text>
-				</Button>
-				<Button
-					onPress={() => {
-						router.navigate("/calendarsList");
-					}}
-				>
-					<Text className="text-primary-foreground">Calendar List</Text>
 				</Button>
 			</View>
 		</View>
