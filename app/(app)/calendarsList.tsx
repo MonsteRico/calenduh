@@ -7,65 +7,52 @@ import { useState } from "react";
 import { CalendarItem } from "@/components/CalendarItem";
 
 interface example_calendar {
-    name: string;
-    color: string;
+	name: string;
+	color: string;
 }
 
 const calendars: example_calendar[] = [
-    { name: "Calendar1", color: "#0000FF" },
-    { name: "Calendar2", color: "#d42245" },
-    { name: "Calendar3", color: "#0a571e" }
+	{ name: "Calendar1", color: "#0000FF" },
+	{ name: "Calendar2", color: "#d42245" },
+	{ name: "Calendar3", color: "#0a571e" },
 ];
 
+export default function CalendarsList({ toggleDrawer }: { toggleDrawer: () => void }) {
+	return (
+		<View className="flex w-full flex-col gap-3">
+			<Accordion title={"My Calendars"} defaultOpen className="mb-5 text-primary">
+				<View className="flex flex-col gap-2 h-auto">
+					{calendars.map((calendar, i) => (
+						<CalendarItem key={calendar.name} calendarName={calendar.name} calendarColor={calendar.color} />
+					))}
+				</View>
+			</Accordion>
 
-export default function CalendarsList() {
-    const isPresented = router.canGoBack();
-    const [modalVisible, setModalVisible] = useState(false);
+			<Accordion title={"Group Calendars"} className="mb-5">
+				<View className="flex flex-col gap-2 h-auto">
+					{calendars.map((calendar, i) => (
+						<CalendarItem key={calendar.name} calendarName={calendar.name} calendarColor={calendar.color} />
+					))}
+				</View>
+			</Accordion>
 
-    return (
-
-        <View>
-            <View className='bg-border items-left flex-row items-center justify-between'>
-                <View className="flex-row items-center m-2">
-                    {isPresented && <Button onPress={() => {
-                        router.back();
-                    }} labelClasses="text-secondary">
-                        Back
-                    </Button>}
-                    <Text className="text-3xl font-bold pl-5">Calendars</Text>
-                </View>
-                <Button labelClasses="text-secondary" className="mr-5" onPress={() => { router.navigate("/createCalendar" )}}>Add Calendar</Button>
-
-            </View>
-            <Accordion title={"Owned Calendars"} className="mb-5">
-                <View className="m-5">
-                    {calendars.map((calendar) => (
-                        <View className="mb-3">
-                            <CalendarItem key={calendar.name} name={calendar.name} color={calendar.color} onPress={() => { router.navigate("/calendarInfoView") }} />
-                        </View>
-                    ))}
-                </View>
-            </Accordion>
-
-            <Accordion title={"Group Calendars"} className="mb-5">
-                <View className="m-5">
-                    {calendars.map((calendar) => (
-                        <View className="mb-3">
-                            <CalendarItem key={calendar.name} name={calendar.name} color={calendar.color} />
-                        </View>
-                    ))}
-                </View>
-            </Accordion>
-
-            <Accordion title={"Other Calendars"}>
-                <View className="m-5">
-                    {calendars.map((calendar) => (
-                        <View className="mb-3">
-                            <CalendarItem key={calendar.name} name={calendar.name} color={calendar.color} />
-                        </View>
-                    ))}
-                </View>
-            </Accordion>
-        </View>
-    );
+			<Accordion title={"Other Calendars"}>
+				<View className="flex flex-col gap-2 h-auto">
+					{calendars.map((calendar, i) => (
+						<CalendarItem key={calendar.name} calendarName={calendar.name} calendarColor={calendar.color} />
+					))}
+				</View>
+			</Accordion>
+			<Button
+				labelClasses="text-secondary"
+				onPress={() => {
+					toggleDrawer();
+					router.navigate("/createCalendar");
+				}}
+				className="mt-5"
+			>
+				Add Calendar
+			</Button>
+		</View>
+	);
 }

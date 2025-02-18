@@ -11,10 +11,11 @@ interface AccordionProps {
   title: React.ReactNode;
   children: React.ReactNode;
   className?: string;
+  defaultOpen?: boolean;
 }
 
-const Accordion: React.FC<AccordionProps> = ({ title, children, className }) => {
-  const [isOpen, setIsOpen] = useState(false);
+const Accordion: React.FC<AccordionProps> = ({ title, children, className, defaultOpen = false }) => {
+  const [isOpen, setIsOpen] = useState(defaultOpen);
 
   const toggleOpen = () => {
     setIsOpen(value => !value);
@@ -22,22 +23,22 @@ const Accordion: React.FC<AccordionProps> = ({ title, children, className }) => 
   };
 
   return (
-    <View className={cn("border-b border-gray-200 flex-col", className)}>
+    <View className={cn("border-b border-muted-foreground flex-col", className)}>
       <TouchableOpacity
         onPress={toggleOpen}
-        activeOpacity={0.6}
+        activeOpacity={0.7}
       >
-        <View className="flex-row items-center ml-5">
-          <Text className="text-2xl font-bold">{title}</Text>
-          <Text className="text-2xl font-bold pl-3">
+        <View className="flex-row justify-between">
+          <Text className="text-lg font-bold text-primary">{title}</Text>
+          <Text className="text-lg font-bold pl-3 text-primary">
             {isOpen ? '\u2212' : '\u002B'}
           </Text>
         </View>
       </TouchableOpacity>
       <View
         className={cn(
-          "overflow-hidden",
-          isOpen ? "h-auto" : "h-0"
+          "overflow-hidden my-4",
+          isOpen ? "h-auto flex" : "hidden"
         )}
       >
         {children}
