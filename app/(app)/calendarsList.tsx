@@ -34,6 +34,14 @@ export default function CalendarsList({ toggleDrawer }: { toggleDrawer: () => vo
 		}
 	};
 
+	const calendarOnPress = (id: string) => {
+		if (editMode) {
+			editOnPress();
+ 		} else {
+			toggleCalendar(id);
+		}
+	}
+
 	return (
 		<ScrollView className="mb-20 flex w-full flex-col gap-3">
 			<Accordion title={"My Calendars"} defaultOpen className="mb-5 text-primary">
@@ -45,13 +53,7 @@ export default function CalendarsList({ toggleDrawer }: { toggleDrawer: () => vo
 							calendarName={calendar.name}
 							calendarColor={calendar.color}
 							editMode={editMode}
-							onPress={
-								editMode
-									? editOnPress
-									: () => {
-											toggleCalendar(calendar.id);
-										}
-							}
+							onPress={() => calendarOnPress(calendar.id) }
 						/>
 					))}
 				</View>
@@ -66,13 +68,7 @@ export default function CalendarsList({ toggleDrawer }: { toggleDrawer: () => vo
 							calendarName={calendar.name}
 							calendarColor={calendar.color}
 							editMode={editMode}
-							onPress={
-								editMode
-									? editOnPress
-									: () => {
-											toggleCalendar(calendar.id);
-										}
-							}
+							onPress={() => calendarOnPress(calendar.id) }
 						/>
 					))}
 				</View>
@@ -87,13 +83,7 @@ export default function CalendarsList({ toggleDrawer }: { toggleDrawer: () => vo
 							calendarName={calendar.name}
 							calendarColor={calendar.color}
 							editMode={editMode}
-							onPress={
-								editMode
-									? editOnPress
-									: () => {
-											toggleCalendar(calendar.id);
-										}
-							}
+							onPress={() => calendarOnPress(calendar.id) }
 						/>
 					))}
 				</View>
@@ -144,6 +134,8 @@ function CalendarItem({
 	onPress,
 }: CalendarItemProps) {
 	const [isChecked, setIsChecked] = useState(checked);
+
+
 	return (
 		<View>
 			{editMode ? (
