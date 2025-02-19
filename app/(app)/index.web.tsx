@@ -10,7 +10,7 @@ import {
 	View,
 } from "react-native";
 import { DateTime } from "luxon";
-import { useSession } from "@/hooks/context";
+import { useSession } from "@/hooks/authContext";
 import Month from "@/components/Month";
 import { useSharedValue } from "react-native-reanimated";
 import { useEffect, useRef, useState } from "react";
@@ -27,16 +27,16 @@ export default function MonthScreen() {
 	const today = DateTime.now();
 	const { signOut } = useSession();
 
-	const { value: dayBeingViewed, setValue: setDayBeingViewed } = useCurrentViewedDay();
+	const { dayBeingViewed, setDayBeingViewed } = useCurrentViewedDay();
 
 	const screenWidth = Dimensions.get("window").width;
 	const monthHeight = Platform.OS === "web" ? Dimensions.get("window").height - 150 : screenWidth * 0.9;
 
- const [isDrawerOpen, setIsDrawerOpen] = useState(false);
+	const [isDrawerOpen, setIsDrawerOpen] = useState(false);
 
- const toggleDrawer = () => {
+	const toggleDrawer = () => {
 		setIsDrawerOpen(!isDrawerOpen);
- };
+	};
 
 	return (
 		<View className="flex min-h-screen w-full flex-col items-center p-1">

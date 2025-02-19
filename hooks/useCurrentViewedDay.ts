@@ -9,5 +9,14 @@ export const DayBeingViewedContext = React.createContext({
 });
 
 export function useCurrentViewedDay() {
-	return React.useContext(DayBeingViewedContext);
+	const value = React.useContext(DayBeingViewedContext);
+	if (process.env.NODE_ENV !== "production") {
+		if (!value) {
+			throw new Error("useCurrentViewedDay must be wrapped in a <DayBeingViewedProvider />");
+		}
+	}
+	return {
+		setDayBeingViewed: value.setValue,
+		dayBeingViewed: value.value,
+	};
 }

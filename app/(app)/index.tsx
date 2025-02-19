@@ -10,7 +10,7 @@ import {
 	View,
 } from "react-native";
 import { DateTime } from "luxon";
-import { useSession } from "@/hooks/context";
+import { useSession } from "@/hooks/authContext";
 import Month from "@/components/Month";
 import { useEffect, useRef, useState } from "react";
 import { Button } from "@/components/Button";
@@ -22,13 +22,16 @@ import { router } from "expo-router";
 import server from "@/constants/serverAxiosClient";
 import DrawerMenu from "@/components/DrawerMenu";
 import CalendarsList from "./calendarsList";
+import { useEnabledCalendarIds } from "@/hooks/useEnabledCalendarIds";
 
 export default function MonthScreen() {
 	const today = DateTime.now();
 	const { signOut } = useSession();
 
 	const flashListRef = useRef<FlashList<any>>(null);
-	const { value: dayBeingViewed, setValue: setDayBeingViewed } = useCurrentViewedDay();
+	const { dayBeingViewed, setDayBeingViewed } = useCurrentViewedDay();
+
+	const { enabledCalendarIds } = useEnabledCalendarIds();
 
 	const previousMonth = dayBeingViewed.minus({ month: 1 });
 	const nextMonth = dayBeingViewed.plus({ month: 1 });
@@ -112,20 +115,25 @@ export default function MonthScreen() {
 		if (distanceFromStart.x === 0) prependData();
 	}
 
-  const [isDrawerOpen, setIsDrawerOpen] = useState(false);
+	const [isDrawerOpen, setIsDrawerOpen] = useState(false);
 
 	const toggleDrawer = () => {
 		setIsDrawerOpen(!isDrawerOpen);
 	};
 
-
 	return (
 		<View className="flex min-h-screen w-full flex-col items-center p-1">
 			<DrawerMenu title="Calendars" isOpen={isDrawerOpen} onClose={toggleDrawer}>
-					<CalendarsList toggleDrawer={toggleDrawer} />
+				<CalendarsList toggleDrawer={toggleDrawer} />
 			</DrawerMenu>
 			<View className="flex w-full flex-row justify-between">
-				<Button onPress={() => {toggleDrawer()}}>Calendars</Button>
+				<Button
+					onPress={() => {
+						toggleDrawer();
+					}}
+				>
+					Calendars
+				</Button>
 				<Button onPress={() => {}}>Force Sync</Button>
 			</View>
 			<View
@@ -172,15 +180,23 @@ export default function MonthScreen() {
 						signOut();
 					}}
 				>
-					<Text className="text-primary-foreground">Sign Out</Text>
+					Sign Out
 				</Button>
 				<Button
 					onPress={() => {
 						router.navigate("/createEvent");
 					}}
 				>
-					<Text className="text-primary-foreground">Create Event</Text>
+					Create Event
 				</Button>
+			</View>
+			<View className="flex flex-row justify-center gap-4">
+				<Text className="text-primary">Enabled Calendars: {enabledCalendarIds.length}</Text>
+				{enabledCalendarIds.map((calendarId) => (
+					<Text className="text-primary" key={calendarId}>
+						{calendarId}
+					</Text>
+				))}
 			</View>
 		</View>
 	);

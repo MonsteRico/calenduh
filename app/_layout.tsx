@@ -1,4 +1,4 @@
-import { SessionProvider } from "@/hooks/context";
+import { SessionProvider } from "@/hooks/authContext";
 import { Slot, Stack } from "expo-router";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { StatusBar } from "expo-status-bar";
