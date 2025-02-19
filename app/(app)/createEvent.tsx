@@ -21,6 +21,7 @@ export default function CreateEvent() {
       const [description, setDescription] = React.useState(''); //Text box
       const [notify, setNotif] = React.useState(''); //Text box
       const [cal, setSelected] = React.useState(""); //Single Select List
+      const [freq, setFrequency] = React.useState(""); //Single Select List
 
       //REPLACE WITH USER'S CALENDARS
       const userCals = [
@@ -28,6 +29,14 @@ export default function CreateEvent() {
         {key:'2', value:'Calendar 2'},
         {key:'3', value:'Calendar 3'},
       ]
+
+      /*
+      const freqs = [
+        {key:'1', value:'Weekly'},
+        {key:'2', value:'Calendar 2'},
+        {key:'3', value:'Calendar 3'},
+      ]
+      */
 
       const globColor = colorScheme == "light" ? "black" : "white"
 
@@ -97,6 +106,9 @@ export default function CreateEvent() {
                     onChange={(params) => setEndDate(params.date)}
                 />
             </View>
+
+            {/* Get this to send event to db */}
+            <Button>Create Event</Button>
             
         </View>)
 }
