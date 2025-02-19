@@ -22,6 +22,7 @@ export default function CalendarsList({ toggleDrawer }: { toggleDrawer: () => vo
 
 	const editOnPress = () => {
 		router.navigate("/calendarInfoView");
+		setEditMode(false);
 	}
 
 	return (
@@ -54,6 +55,7 @@ export default function CalendarsList({ toggleDrawer }: { toggleDrawer: () => vo
 					onPress={() => {
 						toggleDrawer();
 						router.navigate("/createCalendar");
+						setEditMode(false);
 					}}
 					className="mt-5"
 				>
@@ -67,7 +69,7 @@ export default function CalendarsList({ toggleDrawer }: { toggleDrawer: () => vo
 					}}
 					className="mt-5"
 				>
-					Edit Calendar
+					{editMode ? "Cancel": "Edit Calendar"}
 				</Button>
 		</ScrollView>
 	);

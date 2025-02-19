@@ -19,7 +19,7 @@ export default function CreateCalendar() {
 	const [notificationModalVisible, setNotificationModalVisible] = useState(false);
 	const [calendarDefaultNotification, setCalendarDefaultNotification] = useState("30 minutes before");
 	const [calendarSync, setCalendarSync] = useState(true);
-
+	
 	return (
 		<View className="flex-1 bg-background">
 			<CalendarColorModal
@@ -37,7 +37,7 @@ export default function CreateCalendar() {
 
 			<View className="items-left flex-row items-center justify-between bg-muted">
 				<View className="m-2 flex-row items-center">
-					{isPresented && Platform.OS === "web" && (
+					{isPresented && (
 						<Button
 							onPress={() => {
 								router.back();
