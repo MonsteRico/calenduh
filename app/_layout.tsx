@@ -9,6 +9,8 @@ import { View } from "react-native";
 import { cn } from "@/lib/utils";
 import { SafeAreaProvider, SafeAreaView } from "react-native-safe-area-context";
 import { GestureHandlerRootView } from "react-native-gesture-handler";
+import { SQLiteDatabase, SQLiteProvider, useSQLiteContext } from "expo-sqlite";
+import { migrateDbIfNeeded } from "@/lib/migrate";
 
 // Create a client
 const queryClient = new QueryClient();
@@ -16,23 +18,25 @@ export default function RootLayout() {
 	const { colorScheme } = useColorScheme();
 	return (
 		<QueryClientProvider client={queryClient}>
-			<GestureHandlerRootView>
-				<SessionProvider>
-					<SafeAreaProvider>
-						<SafeAreaView className={cn("flex-1 bg-background", colorScheme === "dark" ? "dark" : "")}>
-							<StatusBar style="auto" />
-							<Stack
-								screenOptions={{
-									headerShown: false,
-									contentStyle: { flex: 1, backgroundColor: colorScheme === "dark" ? "#030711" : "white" },
-								}}
-							>
-								<Stack.Screen name="app" /> {/* <= important! */}
-							</Stack>
-						</SafeAreaView>
-					</SafeAreaProvider>
-				</SessionProvider>
-			</GestureHandlerRootView>
+			<SQLiteProvider databaseName="local.db" onInit={migrateDbIfNeeded}>
+				<GestureHandlerRootView>
+					<SessionProvider>
+						<SafeAreaProvider>
+							<SafeAreaView className={cn("flex-1 bg-background", colorScheme === "dark" ? "dark" : "")}>
+								<StatusBar style="auto" />
+								<Stack
+									screenOptions={{
+										headerShown: false,
+										contentStyle: { flex: 1, backgroundColor: colorScheme === "dark" ? "#030711" : "white" },
+									}}
+								>
+									<Stack.Screen name="app" /> {/* <= important! */}
+								</Stack>
+							</SafeAreaView>
+						</SafeAreaProvider>
+					</SessionProvider>
+				</GestureHandlerRootView>
+			</SQLiteProvider>
 		</QueryClientProvider>
 	);
 }
