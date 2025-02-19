@@ -10,6 +10,8 @@ interface CheckboxProps extends React.ComponentPropsWithoutRef<typeof View> {
   checkboxClasses?: string;
   color?: string; // border and fill color of box in hex
   checkSymbol?: boolean; // enable/disable check symbol in box
+  checked?: boolean;
+  onCheck?: (checked: boolean) => void;
 }
 function Checkbox({
   label,
@@ -18,12 +20,12 @@ function Checkbox({
   className,
   color = '#525f7f', //gray-700 in hex
   checkSymbol = true,
+  checked = false,
+  onCheck = () => { },
   ...props
 }: CheckboxProps) {
-  const [isChecked, setChecked] = useState(false);
-
   const toggleCheckbox = () => {
-    setChecked(prev => !prev);
+    onCheck(!checked);
   };
 
   return (
@@ -36,16 +38,16 @@ function Checkbox({
           className={cn(
             'w-6 h-6 border rounded bg-background flex justify-center items-center',
             {
-              'bg-foreground': isChecked,
+              'bg-foreground': checked,
             },
             checkboxClasses
           )}
           style={{
             borderColor: color,
-            backgroundColor: isChecked ? color: 'transparent'
+            backgroundColor: checked ? color : 'transparent'
           }}
         >
-          {isChecked && checkSymbol && <Text className="text-background text-xs">✓</Text>}
+          {checked && checkSymbol && <Text className="text-background text-xs">✓</Text>}
         </View>
       </TouchableOpacity>
       {label && (
