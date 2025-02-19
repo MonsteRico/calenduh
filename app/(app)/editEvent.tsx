@@ -9,7 +9,7 @@ import { useColorScheme } from "nativewind";
 import DateTimePicker from 'react-native-ui-datepicker';
 import dayjs from 'dayjs';
 
-export default function CreateEvent() {
+export default function EditEvent() {
       const { colorScheme } = useColorScheme();
       const isPresented = router.canGoBack();
 
@@ -49,22 +49,20 @@ export default function CreateEvent() {
                     Cancel
                 </Button>}
 
-                {/* need to change this to follow user's appearance settings */}
-
-                <Text className="text-primary text-3xl font-bold pl-5 items-center">Create Event</Text>
+                <Text className="text-primary text-3xl font-bold pl-5 items-center">Edit Event</Text>
             </View>
 
             <Text className="text-primary">Name:</Text>
-            <Input className="text-primary" value={name} onChangeText={setName} placeholder="Event Name" />
+            <Input className="text-primary" value={name} onChangeText={setName} defaultValue={name} />
 
             <Text className="text-primary">Location:</Text>
-            <Input className="text-primary" value={location} onChangeText={setLocation} placeholder="Location" />
+            <Input className="text-primary" value={location} onChangeText={setLocation} defaultValue={location} />
 
             <Text className="text-primary">Description:</Text>
-            <Input className="text-primary" value={description} onChangeText={setDescription} placeholder="Description" multiline={true} numberOfLines={4}/>
+            <Input className="text-primary" value={description} onChangeText={setDescription} defaultValue={description} multiline={true} numberOfLines={4}/>
 
             <Text className="text-primary">Notification:</Text>
-            <Input className="text-primary" value={notify} onChangeText={setNotif} placeholder="Notification" maxLength={100}/>
+            <Input className="text-primary" value={notify} onChangeText={setNotif} defaultValue={notify} maxLength={100}/>
 
             <Text className="text-primary">Calendar:</Text>
 
@@ -76,6 +74,9 @@ export default function CreateEvent() {
                 arrowicon={<FontAwesome  name="chevron-down" size={12} color={globColor}/>} 
                 searchicon={<FontAwesome name="search" size={12} color={globColor}/>}
                 closeicon={<FontAwesome name="stop" size={12} color={globColor}/>}
+
+                defaultOption={{key:'1', value:'Calendar 1'}} //Update to whatever the user had on this event last
+
                 //All because this lovely component doesn't have className
                 boxStyles={{ color: colorScheme == "light" ? "black" : "white"}}
                 inputStyles={{ color: colorScheme == "light" ? "black" : "white"}}
@@ -91,6 +92,7 @@ export default function CreateEvent() {
             <Text className="text-primary">Start:</Text>
             <View style={styles.container}>
                 <DateTimePicker
+                //Update to whatever the user had on this event last
                     mode="single"
                     date={startDate}
                     timePicker={true}
@@ -99,6 +101,7 @@ export default function CreateEvent() {
 
                 <Text className="text-primary">End:</Text>
                 <DateTimePicker 
+                //Update to whatever the user had on this event last
                     mode="single"
                     date={endDate}
                     timePicker={true}
@@ -107,7 +110,10 @@ export default function CreateEvent() {
             </View>
 
             {/* Get this to send event to db */}
-            <Button>Create Event</Button>
+            <Button>Update Event</Button>
+
+            {/* Get this to send event to db */}
+            <Button>Delete Event</Button>
             
         </View>)
 }
