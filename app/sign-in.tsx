@@ -76,7 +76,6 @@ export default function SignIn() {
       className="flex-1"
     >
       <View className="items-center justify-between flex-1 px-6">
-        {/* Logo and Header */}
         <View className="items-center mt-16">
           <View className="w-24 h-24 rounded-full bg-blue-50 items-center justify-center mb-4">
             <Feather name="calendar" size={48} color="#3b82f6" />
@@ -85,11 +84,10 @@ export default function SignIn() {
           <Text className="text-sm text-gray-500 mt-2">The cleanest calendar app you've ever used. No bloat. Duh.</Text>
         </View>
 
-        {/* Sign In Container */}
         <View className="w-full max-w-md bg-white rounded-3xl px-6 py-8 shadow-lg items-center">
           <Text className="text-2xl font-semibold text-gray-800 mb-6">Sign In</Text>
 
-          <View className="w-full space-y-4">
+          <View className="w-full space-y-4. gap-2">
             {Platform.OS === "ios" && (
               <View className="items-center w-full">
                 <AppleAuthentication.AppleAuthenticationButton

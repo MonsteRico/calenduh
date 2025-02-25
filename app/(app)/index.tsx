@@ -23,6 +23,7 @@ import server from "@/constants/serverAxiosClient";
 import DrawerMenu from "@/components/DrawerMenu";
 import CalendarsList from "./calendarsList";
 import { useEnabledCalendarIds } from "@/hooks/useEnabledCalendarIds";
+import { EventViewModal } from '@/components/EventViewModal';
 
 export default function MonthScreen() {
 	const today = DateTime.now();
@@ -116,6 +117,7 @@ export default function MonthScreen() {
 	}
 
 	const [isDrawerOpen, setIsDrawerOpen] = useState(false);
+	const [isEventViewModalOpen, setIsEventViewModalOpen] = useState(false)
 
 	const toggleDrawer = () => {
 		setIsDrawerOpen(!isDrawerOpen);
@@ -126,6 +128,9 @@ export default function MonthScreen() {
 			<DrawerMenu title="Calendars" isOpen={isDrawerOpen} onClose={toggleDrawer}>
 				<CalendarsList toggleDrawer={toggleDrawer} />
 			</DrawerMenu>
+
+			<EventViewModal visible={isEventViewModalOpen} onClose={() => setIsEventViewModalOpen(false)} calendarId="" eventId="" />
+
 			<View className="flex w-full flex-row justify-between">
 				<Button
 					onPress={() => {
