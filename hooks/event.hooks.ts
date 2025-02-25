@@ -15,6 +15,7 @@ import {
 	deleteEventOnServer,
 	getEventFromDB,
 } from "@/lib/event.helpers";
+import { addMutationToQueue } from "@/lib/mutation.helpers";
 
 // --- Queries ---
 
@@ -128,6 +129,7 @@ export const useCreateEvent = (calendar_id: string) => {
 			if (isConnected) {
 				return await createEventOnServer(calendar_id, newEvent);
 			} else {
+				addMutationToQueue("CREATE_EVENT", newEvent);
 				return { ...newEvent, event_id: Date.now().toString() } as Event;
 			}
 		},
@@ -180,6 +182,7 @@ export const useUpdateEvent = (calendar_id: string) => {
 			if (isConnected) {
 				return await updateEventOnServer(calendar_id, updatedEvent);
 			} else {
+				addMutationToQueue("UPDATE_EVENT", updatedEvent);
 				return updatedEvent;
 			}
 		},
@@ -217,6 +220,7 @@ export const useDeleteEvent = (calendar_id: string) => {
 			if (isConnected) {
 				return await deleteEventOnServer(calendar_id, event_id);
 			} else {
+				addMutationToQueue("DELETE_EVENT", event_id);
 				return;
 			}
 		},

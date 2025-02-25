@@ -10,18 +10,28 @@ import { DateTime } from "luxon";
 import { EnabledCalendarIdsContext } from "@/hooks/useEnabledCalendarIds";
 import { useIsConnected } from "@/hooks/useIsConnected";
 import * as Network from "expo-network";
-
+import Storage from "expo-sqlite/kv-store"
+import { SyncContext } from "@/hooks/sync";
 export default function AppLayout() {
 	const networkState = Network.useNetworkState();
 	const { sessionId, isLoading } = useSession();
 	const { colorScheme } = useColorScheme();
 
 	const [dayBeingViewed, setDayBeingViewed] = useState(DateTime.now());
-	const [enabledCalendarIds, setEnabledCalendarIds] = useState<string[]>([]);
-
+	const [enabledCalendarIds, setEnabledCalendarIds] = useState<string[]>(JSON.parse(Storage.getItemSync("enabledCalendarIds") ?? "[]"));
+	const [syncing, setIsSyncing] = useState(false);
 	useEffect(() => {
 		console.log("sessionId", sessionId);
 	}, [sessionId]);
+
+	useEffect(() => {
+		Storage.setItemSync("enabledCalendarIds", JSON.stringify(enabledCalendarIds));
+	}, [enabledCalendarIds]);
+
+	useEffect(() => {
+		console.log("enabledCalendarIds", enabledCalendarIds);
+	}, [enabledCalendarIds]);
+
 
 	// You can keep the splash screen open, or render a loading screen like we do here.
 	if (isLoading) {
@@ -41,55 +51,61 @@ export default function AppLayout() {
 		return <Text>Loading...</Text>;
 	}
 
-
 	// This layout can be deferred because it's not the root layout.
 	return (
-		<DayBeingViewedContext.Provider
+		<SyncContext.Provider
 			value={{
-				value: dayBeingViewed,
-				setValue: setDayBeingViewed,
+				syncing,
+				setSyncing: setIsSyncing,
 			}}
 		>
-			<EnabledCalendarIdsContext.Provider
+			<DayBeingViewedContext.Provider
 				value={{
-					value: enabledCalendarIds,
-					setValue: setEnabledCalendarIds,
+					value: dayBeingViewed,
+					setValue: setDayBeingViewed,
 				}}
 			>
-				<Stack
-					screenOptions={{
-						headerShown: false,
-						contentStyle: { flex: 1, backgroundColor: colorScheme === "dark" ? "#030711" : "white" },
+				<EnabledCalendarIdsContext.Provider
+					value={{
+						value: enabledCalendarIds,
+						setValue: setEnabledCalendarIds,
 					}}
 				>
-					<Stack.Screen name="index" />
-					<Stack.Screen
-						name="createEvent"
-						options={{
-							presentation: "modal",
+					<Stack
+						screenOptions={{
+							headerShown: false,
+							contentStyle: { flex: 1, backgroundColor: colorScheme === "dark" ? "#030711" : "white" },
 						}}
-					/>
-					<Stack.Screen
-						name="calendarsList"
-						options={{
-							presentation: "modal",
-						}}
-					/>
-					<Stack.Screen
-						name="calendarInfoView"
-						options={{
-							presentation: "modal",
-						}}
-					/>
+					>
+						<Stack.Screen name="index" />
+						<Stack.Screen
+							name="createEvent"
+							options={{
+								presentation: "modal",
+							}}
+						/>
+						<Stack.Screen
+							name="calendarsList"
+							options={{
+								presentation: "modal",
+							}}
+						/>
+						<Stack.Screen
+							name="calendarInfoView"
+							options={{
+								presentation: "modal",
+							}}
+						/>
 
-					<Stack.Screen
-						name="createCalendar"
-						options={{
-							presentation: "modal",
-						}}
-					/>
-				</Stack>
-			</EnabledCalendarIdsContext.Provider>
-		</DayBeingViewedContext.Provider>
+						<Stack.Screen
+							name="createCalendar"
+							options={{
+								presentation: "modal",
+							}}
+						/>
+					</Stack>
+				</EnabledCalendarIdsContext.Provider>
+			</DayBeingViewedContext.Provider>
+		</SyncContext.Provider>
 	);
 }

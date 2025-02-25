@@ -26,9 +26,10 @@ import { useEnabledCalendarIds } from "@/hooks/useEnabledCalendarIds";
 import { EventViewModal } from '@/components/EventViewModal';
 import { useCalendars, useMyCalendars } from "@/hooks/calendar.hooks";
 import { useDbVersion } from "@/hooks/useDbVersion";
+import ForceSync from "@/components/ForceSync";
 
 export default function MonthScreen() {
-	const { data: calendars, isLoading } = useCalendars();
+	const { data: calendars, isLoading } = useMyCalendars();
 
 	const dbVersion = useDbVersion();
 
@@ -149,7 +150,7 @@ export default function MonthScreen() {
 				>
 					Calendars
 				</Button>
-				<Button onPress={() => {}}>Force Sync</Button>
+				<ForceSync />
 			</View>
 			<View
 				style={{

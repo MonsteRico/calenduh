@@ -40,9 +40,13 @@ export default function TestButtons() {
 				<Button
 					onPress={async () => {
 						await db.execAsync(`PRAGMA user_version = 0`);
+						await db.execAsync(`DROP TABLE IF EXISTS calendars`);
+						await db.execAsync(`DROP TABLE IF EXISTS events`);
+						await db.execAsync(`DROP TABLE IF EXISTS subscriptions`);
+						await db.execAsync(`DROP TABLE IF EXISTS mutations`);
 					}}
 				>
-					Reset DB Version to 0
+					Reset DB COMPLETELY
 				</Button>
 			</View>
 			{!isLoading && calendars && (

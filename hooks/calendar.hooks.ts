@@ -16,36 +16,28 @@ import {
 	getCalendarFromDB,
 	upsertCalendarIntoDB,
 } from "@/lib/calendar.helpers";
+import { addMutationToQueue } from "@/lib/mutation.helpers";
 
 // --- Queries ---
 
 export const useCalendars = () => {
-	const queryClient = useQueryClient();
 	const isConnected = useIsConnected();
 
 	return useQuery<Calendar[], Error>({
-		queryKey: ["calendars"],
+		queryKey: ["all_calendars"],
 		queryFn: async () => {
-			console.log("calendars");
-			const localCalendars = await getCalendarsFromDB();
-			console.log("local calendars", localCalendars);
 			if (isConnected) {
 				try {
-					console.log("connected");
 					const serverCalendars = await getCalendarsFromServer();
 
-					for (const calendar of serverCalendars) {
-						await upsertCalendarIntoDB(calendar);
-					}
-
-					// queryClient.invalidateQueries({ queryKey: ["calendars"] });
 					return serverCalendars;
 				} catch (error) {
 					console.error("Error fetching calendars from server:", error);
-					return localCalendars;
+					return [];
 				}
 			} else {
-				return localCalendars;
+				console.log("You are offline, cannot fetch the calendars from the server");
+				return [];
 			}
 		},
 	});
@@ -64,7 +56,7 @@ export const useCalendar = (calendar_id: string) => {
 					if (!serverCalendar) {
 						throw new Error("Calendar not found on server");
 					}
-					await updateCalendarInDB(serverCalendar);
+					await updateCalendarInDB(serverCalendar.calendar_id, serverCalendar);
 					queryClient.invalidateQueries({ queryKey: ["calendars", calendar_id] });
 					return serverCalendar;
 				} catch (error) {
@@ -93,25 +85,25 @@ export const useMyCalendars = () => {
 	const isConnected = useIsConnected();
 
 	return useQuery<Calendar[], Error>({
-		queryKey: ["myCalendars"],
+		queryKey: ["calendars"],
 		queryFn: async () => {
-			console.log("my calendars");
-			console.log(isConnected);
+			const localCalendars = await getCalendarsFromDB();
 			if (isConnected) {
 				try {
-					console.log("connected");
 					const serverCalendars = await getMyCalendarsFromServer();
-					// Update local DB (you might need to clear existing and insert)
-					// queryClient.invalidateQueries({ queryKey: ["myCalendars"] });
+
+					for (const calendar of serverCalendars) {
+						await upsertCalendarIntoDB(calendar);
+					}
+
+					// queryClient.invalidateQueries({ queryKey: ["calendars"] });
 					return serverCalendars;
 				} catch (error) {
-					console.error("Error fetching my calendars from server:", error);
-					console.log("not connected");
-					return []; // Or handle error as needed
+					console.error("Error fetching calendars from server:", error);
+					return localCalendars;
 				}
 			} else {
-				console.log("not connected");
-				return []; // Or get from local DB if you store "my" calendars separately
+				return localCalendars;
 			}
 		},
 	});
@@ -128,7 +120,6 @@ export const useSubscribedCalendars = () => {
 				try {
 					const serverCalendars = await getSubscribedCalendarsFromServer();
 					// Update local DB
-					queryClient.invalidateQueries({ queryKey: ["subscribedCalendars"] });
 					return serverCalendars;
 				} catch (error) {
 					console.error("Error fetching subscribed calendars from server:", error);
@@ -151,6 +142,7 @@ export const useCreateCalendar = () => {
 		{
 			mutationFn: async (newCalendar: Omit<Calendar, "calendar_id">) => {
 				if (isConnected) {
+					console.log("creating calendar on server");
 					return await createCalendarOnServer(newCalendar);
 				} else {
 					// Optimistic update only, server sync will happen later
@@ -158,6 +150,7 @@ export const useCreateCalendar = () => {
 				}
 			},
 			onMutate: async (newCalendar) => {
+				console.log("mutate");
 				await queryClient.cancelQueries({ queryKey: ["calendars"] });
 				const previousCalendars = queryClient.getQueryData<Calendar[]>(["calendars"]) || [];
 
@@ -170,6 +163,7 @@ export const useCreateCalendar = () => {
 				queryClient.setQueryData<Calendar[]>(["calendars"], (old) => [...(old || []), optimisticCalendar]);
 
 				await insertCalendarIntoDB(optimisticCalendar);
+				addMutationToQueue("CREATE_CALENDAR", newCalendar, tempId);
 
 				return { previousCalendars, tempId };
 			},
@@ -178,16 +172,19 @@ export const useCreateCalendar = () => {
 				queryClient.setQueryData<Calendar[]>(["calendars"], context?.previousCalendars);
 			},
 			onSuccess: (data, variables, context) => {
+				console.log("success");
 				// Boom baby!
 			},
 			onSettled: async (newCalendar, error, variables, context) => {
-				if (isConnected && newCalendar && context?.tempId) {
+				console.log("settled");
+				if (isConnected && newCalendar && context?.tempId && !error) {
 					try {
-						const serverCalendar = await createCalendarOnServer(variables);
-						await updateCalendarInDB(serverCalendar);
-						queryClient.setQueryData<Calendar[]>(["calendars"], (old) =>
-							old?.map((calendar) => (calendar.calendar_id === context.tempId ? serverCalendar : calendar))
-						);
+						console.log(context);
+						// const serverCalendar = await createCalendarOnServer(variables);
+						await updateCalendarInDB(context.tempId, newCalendar);
+						// queryClient.setQueryData<Calendar[]>(["calendars"], (old) =>
+						// 	old?.map((calendar) => (calendar.calendar_id === context.tempId ? serverCalendar : calendar))
+						// );
 					} catch (error) {
 						console.error("Error syncing calendar to server:", error);
 					}
@@ -207,6 +204,7 @@ export const useUpdateCalendar = () => {
 			if (isConnected) {
 				return await updateCalendarOnServer(updatedCalendar);
 			} else {
+				addMutationToQueue("UPDATE_CALENDAR", updatedCalendar, updatedCalendar.calendar_id);
 				return updatedCalendar;
 			}
 		},
@@ -218,7 +216,7 @@ export const useUpdateCalendar = () => {
 				old?.map((calendar) => (calendar.calendar_id === updatedCalendar.calendar_id ? updatedCalendar : calendar))
 			);
 
-			await updateCalendarInDB(updatedCalendar);
+			await updateCalendarInDB(updatedCalendar.calendar_id, updatedCalendar);
 
 			return { previousCalendars };
 		},
@@ -244,6 +242,7 @@ export const useDeleteCalendar = () => {
 			if (isConnected) {
 				return await deleteCalendarOnServer(calendar_id);
 			} else {
+				addMutationToQueue("DELETE_CALENDAR", calendar_id);
 				return;
 			}
 		},

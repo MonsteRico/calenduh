@@ -2,6 +2,7 @@ export interface Calendar {
 	calendar_id: string;
 	user_id: string | null;
 	group_id: string | null;
+	color: string;
 	title: string;
 	is_public: boolean;
 }

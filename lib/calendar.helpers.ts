@@ -41,13 +41,13 @@ export const insertCalendarIntoDB = async (calendar: CalendarUpsert): Promise<vo
 	const db = await openDatabaseAsync("local.db");
 	try {
 		await db.runAsync(
-			"INSERT INTO calendars (calendar_id, user_id, group_id, title, is_public) VALUES (?, ?, ?, ?, ?)",
+			"INSERT INTO calendars (calendar_id, group_id, color, title, is_public) VALUES (?, ?, ?, ?, ?)",
 			[
 				calendar.calendar_id || "",
-				calendar.user_id || null,
 				calendar.group_id || null,
+				calendar.color || "#fac805",
 				calendar.title,
-				calendar.is_public ? 1 : 0,
+				calendar.is_public ? true : false,
 			]
 		);
 	} catch (error) {
@@ -70,7 +70,7 @@ export const upsertCalendarIntoDB = async (calendar: CalendarUpsert): Promise<vo
 	try {
 		if (calendarInDB) {
 			console.log("updating calendar");
-			await updateCalendarInDB(calendar as Calendar);
+			await updateCalendarInDB(calendar.calendar_id as string, calendar as Calendar);
 		} else {
 			console.log("inserting calendar");
 			await insertCalendarIntoDB(calendar);
@@ -82,17 +82,18 @@ export const upsertCalendarIntoDB = async (calendar: CalendarUpsert): Promise<vo
 };
 
 // Update a calendar in the local database
-export const updateCalendarInDB = async (calendar: Calendar): Promise<void> => {
+export const updateCalendarInDB = async (calendar_id: string, calendar: Calendar): Promise<void> => {
 	const db = await openDatabaseAsync("local.db");
 	try {
 		await db.runAsync(
-			"UPDATE calendars SET user_id = ?, group_id = ?, title = ?, is_public = ? WHERE calendar_id = ?",
+			"UPDATE calendars SET group_id = ?, title = ?, color = ?, is_public = ?, calendar_id = ? WHERE calendar_id = ?",
 			[
-				calendar.user_id || null,
 				calendar.group_id || null,
 				calendar.title,
-				calendar.is_public ? 1 : 0,
+				calendar.color || "#fac805",
+				calendar.is_public ? true : false,
 				calendar.calendar_id,
+				calendar_id,
 			]
 		);
 	} catch (error) {
@@ -135,7 +136,8 @@ export const getSubscribedCalendarsFromServer = async (): Promise<Calendar[]> =>
 };
 
 export const createCalendarOnServer = async (calendar: Omit<Calendar, "calendar_id">): Promise<Calendar> => {
-	const response = await server.post("/calendars", calendar);
+	const response = await server.post("/calendars/", calendar);
+	console.log("create calendar on server", response.data);
 	return response.data;
 };
 

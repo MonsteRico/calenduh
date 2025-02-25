@@ -11,7 +11,7 @@ interface example_calendar {
 	id: string;
 }
 
-const calendars: example_calendar[] = [
+const dummyCalendars: example_calendar[] = [
 	{ name: "Calendar1", color: "#0000FF", id: "a" },
 	{ name: "Calendar2", color: "#d42245", id: "b" },
 	{ name: "Calendar3", color: "#0a571e", id: "c" },
@@ -42,18 +42,21 @@ export default function CalendarsList({ toggleDrawer }: { toggleDrawer: () => vo
 		}
 	}
 
+	const { data: calendars, isLoading } = useMyCalendars();
+
+
 	return (
 		<ScrollView className="mb-20 flex w-full flex-col gap-3">
 			<Accordion title={"My Calendars"} defaultOpen className="mb-5 text-primary">
 				<View className="flex h-auto flex-col gap-2">
-					{calendars.map((calendar, i) => (
+					{calendars && calendars.map((calendar, i) => (
 						<CalendarItem
-							checked={enabledCalendarIds.includes(calendar.id)}
-							key={calendar.name}
-							calendarName={calendar.name}
-							calendarColor={calendar.color}
+							checked={enabledCalendarIds.includes(calendar.calendar_id)}
+							key={calendar.calendar_id}
+							calendarName={calendar.title + " " + calendar.calendar_id}
+							calendarColor={"#fac805"}
 							editMode={editMode}
-							onPress={() => calendarOnPress(calendar.id) }
+							onPress={() => calendarOnPress(calendar.calendar_id) }
 						/>
 					))}
 				</View>
@@ -61,7 +64,7 @@ export default function CalendarsList({ toggleDrawer }: { toggleDrawer: () => vo
 
 			<Accordion title={"Group Calendars"} className="mb-5">
 				<View className="flex h-auto flex-col gap-2">
-					{calendars.map((calendar, i) => (
+					{dummyCalendars.map((calendar, i) => (
 						<CalendarItem
 							checked={enabledCalendarIds.includes(calendar.id)}
 							key={calendar.name}
@@ -76,7 +79,7 @@ export default function CalendarsList({ toggleDrawer }: { toggleDrawer: () => vo
 
 			<Accordion title={"Other Calendars"}>
 				<View className="flex h-auto flex-col gap-2">
-					{calendars.map((calendar, i) => (
+					{dummyCalendars.map((calendar, i) => (
 						<CalendarItem
 							checked={enabledCalendarIds.includes(calendar.id)}
 							key={calendar.name}
@@ -118,6 +121,7 @@ import { cn } from "@/lib/utils";
 import { type VariantProps, cva } from "class-variance-authority";
 import FontAwesome from "@expo/vector-icons/FontAwesome";
 import { useEnabledCalendarIds } from "@/hooks/useEnabledCalendarIds";
+import { useMyCalendars } from "@/hooks/calendar.hooks";
 interface CalendarItemProps extends React.ComponentPropsWithoutRef<typeof TouchableOpacity> {
 	calendarName: string;
 	calendarColor: string;
