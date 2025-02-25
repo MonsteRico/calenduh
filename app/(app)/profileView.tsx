@@ -3,13 +3,18 @@ import { router } from "expo-router";
 import { StyleSheet, Text, View } from "react-native";
 import { Input } from "@/components/Input";
 import { useState } from "react";
+import DateTimePicker from 'react-native-ui-datepicker';
+import dayjs from 'dayjs';
+import React from "react";
 
 
-export default function ProfileView({ user }) {
+export default function ProfileView() {
     const isPresented = router.canGoBack();
     
     const [isEditing, setIsEditing] = useState(false);
-    const [userData, setUserData] = useState(user);
+    const [username, setUserName] = useState("");
+    const [name, setName] = useState("");
+    const [birthday, setBirthday] = React.useState(dayjs());
 
     const handleEditToggle = () => {
         setIsEditing(!isEditing);
@@ -45,16 +50,16 @@ export default function ProfileView({ user }) {
             {isEditing ? (
                 <>
                     <Text className="text-primary">Username:</Text>
-                    <Input className="text-primary" value={userData.Username} onChange={(e) => setUserData({ ...userData, username: e.target.value })} placeholder="Username" />
+                    <Input className="text-primary" value={username} onChangeText={setUserName} placeholder="Username" />
 
                     <Text className="text-primary">Name:</Text>
-                    <Input className="text-primary" value={userData.name} onChange={(e) => setUserData({ ...userData, name: e.target.value })} placeholder="Name" />
+                    <Input className="text-primary" value={name} onChangeText={setName} placeholder="Name" />
 
                     <Text className="text-primary">Birthday:</Text>
                     <DateTimePicker
                         mode="single"
-                        date={userData.birthday}
-                        onChange={(e) => setUserData({ ...userData, name: e.target.value })}
+                        date={birthday}
+                        onChange={({ date }) => setBirthday(birthday)}
                     />
 
                     <Button onPress={handleSave}>
@@ -63,9 +68,9 @@ export default function ProfileView({ user }) {
                 </>
             ) : (
                 <>
-                    <Text className="text-primary">Username: {userData.Username} </Text>
-                    <Text className="text-primary">Name: {userData.name} </Text>
-                    <Text className="text-primary">Birthday: {userData.Birthday} </Text>
+                    <Text className="text-primary">Username: {username} </Text>
+                    <Text className="text-primary">Name: {name} </Text>
+                    <Text className="text-primary">Birthday: {birthday.format("MM-DD-YYYY")} </Text>
                 </>
             )}
 
