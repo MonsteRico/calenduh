@@ -6,11 +6,13 @@ import { Accordion } from "@/components/Accordion";
 import { useState } from "react";
 import { useQueryClient } from "@tanstack/react-query";
 import { useCalendars } from "@/hooks/calendar.hooks";
+import { useSQLiteContext } from "expo-sqlite";
 
 export default function TestButtons() {
 	const isPresented = router.canGoBack();
 	const queryClient = useQueryClient();
 	const { data: calendars, isLoading } = useCalendars();
+	const db = useSQLiteContext();
 	return (
 		<View className="flex-1 bg-background">
 			{isPresented && (
@@ -30,10 +32,17 @@ export default function TestButtons() {
 				<Button
 					onPress={() => {
 						queryClient.invalidateQueries({ queryKey: ["calendars"] });
-                        queryClient.setQueryData(["calendars"], []);
+						queryClient.setQueryData(["calendars"], []);
 					}}
 				>
 					Invalidate calendars
+				</Button>
+				<Button
+					onPress={async () => {
+						await db.execAsync(`PRAGMA user_version = 0`);
+					}}
+				>
+					Reset DB Version to 0
 				</Button>
 			</View>
 			{!isLoading && calendars && (

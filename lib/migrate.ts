@@ -8,9 +8,9 @@ export async function migrateDbIfNeeded(db: SQLiteDatabase) {
 		return;
 	}
 	if (currentDbVersion === 0) {
-		console.log("migrating db", currentDbVersion);
+		console.log("CREATING TABLES");
 		await db.execAsync(`
-    CREATE TABLE users (
+    CREATE TABLE IF NOT EXISTS users (
       user_id TEXT PRIMARY KEY,
       email TEXT NOT NULL UNIQUE,
       username TEXT NOT NULL
@@ -18,7 +18,7 @@ export async function migrateDbIfNeeded(db: SQLiteDatabase) {
   `);
 
 		await db.execAsync(`
-    CREATE TABLE calendars (
+    CREATE TABLE IF NOT EXISTS calendars (
       calendar_id TEXT PRIMARY KEY,
       user_id TEXT,
       group_id TEXT,
@@ -30,7 +30,7 @@ export async function migrateDbIfNeeded(db: SQLiteDatabase) {
   `);
 
 		await db.execAsync(`
-    CREATE TABLE events (
+    CREATE TABLE IF NOT EXISTS events (
       event_id TEXT PRIMARY KEY,
       calendar_id TEXT NOT NULL,
       name TEXT NOT NULL,
@@ -46,7 +46,7 @@ export async function migrateDbIfNeeded(db: SQLiteDatabase) {
   `);
 
 		await db.execAsync(`
-    CREATE TABLE subscriptions (
+    CREATE TABLE IF NOT EXISTS subscriptions (
       user_id TEXT NOT NULL,
       calendar_id TEXT NOT NULL,
       PRIMARY KEY (user_id, calendar_id),

@@ -184,7 +184,7 @@ export default function MonthScreen() {
 				)}
 			</View>
 			<Divider className="my-4" />
-			<View className="flex flex-row justify-center gap-4">
+			<View className="flex flex-row flex-wrap justify-center gap-4">
 				<Button
 					onPress={() => {
 						router.navigate("/profileView");
