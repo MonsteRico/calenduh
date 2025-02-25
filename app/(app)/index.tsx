@@ -24,8 +24,14 @@ import DrawerMenu from "@/components/DrawerMenu";
 import CalendarsList from "./calendarsList";
 import { useEnabledCalendarIds } from "@/hooks/useEnabledCalendarIds";
 import { EventViewModal } from '@/components/EventViewModal';
+import { useCalendars, useMyCalendars } from "@/hooks/calendar.hooks";
+import { useDbVersion } from "@/hooks/useDbVersion";
 
 export default function MonthScreen() {
+	const { data: calendars, isLoading } = useCalendars();
+
+	const dbVersion = useDbVersion();
+
 	const today = DateTime.now();
 	const { signOut } = useSession();
 
@@ -123,6 +129,10 @@ export default function MonthScreen() {
 		setIsDrawerOpen(!isDrawerOpen);
 	};
 
+	if (isLoading) return <Text>Loading...</Text>;
+
+	console.log("calendars", calendars);
+
 	return (
 		<View className="flex min-h-screen w-full flex-col items-center p-1">
 			<DrawerMenu title="Calendars" isOpen={isDrawerOpen} onClose={toggleDrawer}>
@@ -179,7 +189,14 @@ export default function MonthScreen() {
 				)}
 			</View>
 			<Divider className="my-4" />
-			<View className="flex flex-row justify-center gap-4">
+			<View className="flex flex-row flex-wrap justify-center gap-4">
+				<Button
+					onPress={() => {
+						router.navigate("/profileView");
+					}}
+				>
+					Profile
+				</Button>
 				<Button
 					onPress={() => {
 						signOut();
@@ -194,6 +211,13 @@ export default function MonthScreen() {
 				>
 					Create Event
 				</Button>
+				<Button
+					onPress={() => {
+						router.navigate("/testButtons");
+					}}
+				>
+					Test Buttons
+				</Button>
 			</View>
 			<View className="flex flex-row justify-center gap-4">
 				<Text className="text-primary">Enabled Calendars: {enabledCalendarIds.length}</Text>
@@ -202,6 +226,7 @@ export default function MonthScreen() {
 						{calendarId}
 					</Text>
 				))}
+				<Text className="text-primary">Db Version: {dbVersion}</Text>
 			</View>
 		</View>
 	);
