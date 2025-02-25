@@ -122,7 +122,7 @@ export default function SignIn() {
               size="lg"
               className="border border-gray-300 bg-white rounded-xl"
               labelClasses="text-primary"
-              onPress={() => googleSignIn}
+              onPress={() => {googleSignIn()}}
             >
               <View className="flex-row items-center">
                 <Svg width={20} height={20} style={{ marginRight: 8, marginTop: 3 }} viewBox="0 0 24 24">
@@ -152,7 +152,7 @@ export default function SignIn() {
               size="lg"
               className="bg-white rounded-xl border border-gray-300"
               labelClasses="text-primary"
-              onPress={() => discordSignIn}
+              onPress={() => {discordSignIn()}}
             >
               <View className="flex-row items-center">
               <FontAwesome6 name="discord" size={20} color="#7289DA" className="pt-1 pr-1"/>
@@ -174,6 +174,11 @@ export default function SignIn() {
               onPress={() => signIn("test")}
             >
               Continue as Guest
+            </Button>
+            <Button onPress={() => {
+              console.log("cookie", server.defaults.headers);
+            }}>
+              clear
             </Button>
           </View>
         </View>

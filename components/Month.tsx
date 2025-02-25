@@ -69,6 +69,7 @@ function Day({ day, currentMonth, bottomRow = false }: { day: DateTime<true>; cu
 	const dayIsSaturday = day.weekday === 6;
 	const isToday = day.hasSame(DateTime.now(), "day");
 
+
 	return (
 		<Pressable
 			className={cn(

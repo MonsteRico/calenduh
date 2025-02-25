@@ -53,6 +53,8 @@ export function SessionProvider({ children }: PropsWithChildren) {
 					const user = JSON.parse(stringifiedUser);
 					// set session-id cookie on server instance as a default header
 					server.defaults.headers.Cookie = `sessionId=${sessionId};`;
+					console.log("sessionId IN AUTH CONTEXT", sessionId);
+					console.log(server.defaults.headers.Cookie);
 					return { sessionId, user };
 				}
 				return null;
@@ -104,6 +106,7 @@ export function SessionProvider({ children }: PropsWithChildren) {
 						SecureStore.deleteItemAsync("session");
 						SecureStore.deleteItemAsync("user");
 					}
+					server.defaults.headers.Cookie = "";
 					// navigate to sign in page
 					router.replace("/sign-in");
 				},

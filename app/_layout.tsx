@@ -11,11 +11,19 @@ import { SafeAreaProvider, SafeAreaView } from "react-native-safe-area-context";
 import { GestureHandlerRootView } from "react-native-gesture-handler";
 import { SQLiteDatabase, SQLiteProvider, useSQLiteContext } from "expo-sqlite";
 import { migrateDbIfNeeded } from "@/lib/migrate";
-
+import * as Network from "expo-network";
+import { Text } from "react-native";
 // Create a client
 const queryClient = new QueryClient();
 export default function RootLayout() {
+		const networkState = Network.useNetworkState();
+
 	const { colorScheme } = useColorScheme();
+	
+	if (networkState.isConnected == undefined) {
+		return <Text>Loading...</Text>;
+	}
+
 	return (
 		<QueryClientProvider client={queryClient}>
 			<SQLiteProvider databaseName="local.db" onInit={migrateDbIfNeeded}>

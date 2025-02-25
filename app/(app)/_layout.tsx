@@ -8,8 +8,11 @@ import { useEffect, useState } from "react";
 import { DayBeingViewedContext } from "@/hooks/useCurrentViewedDay";
 import { DateTime } from "luxon";
 import { EnabledCalendarIdsContext } from "@/hooks/useEnabledCalendarIds";
+import { useIsConnected } from "@/hooks/useIsConnected";
+import * as Network from "expo-network";
 
 export default function AppLayout() {
+	const networkState = Network.useNetworkState();
 	const { sessionId, isLoading } = useSession();
 	const { colorScheme } = useColorScheme();
 
@@ -33,6 +36,11 @@ export default function AppLayout() {
 		// in the headless Node process that the pages are rendered in.
 		return <Redirect href="/sign-in" />;
 	}
+
+	if (networkState.isConnected == undefined) {
+		return <Text>Loading...</Text>;
+	}
+
 
 	// This layout can be deferred because it's not the root layout.
 	return (
