@@ -177,6 +177,13 @@ export default function MonthScreen() {
 			<View className="flex flex-row justify-center gap-4">
 				<Button
 					onPress={() => {
+						router.navigate("/profileView");
+					}}
+				>
+					Profile
+				</Button>
+				<Button
+					onPress={() => {
 						signOut();
 					}}
 				>
