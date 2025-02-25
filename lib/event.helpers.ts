@@ -1,4 +1,4 @@
-import { useSQLiteContext } from "expo-sqlite";
+import { openDatabaseAsync, useSQLiteContext } from "expo-sqlite";
 import { Event, EventUpsert } from "@/types/event.types";
 import server from "@/constants/serverAxiosClient";
 

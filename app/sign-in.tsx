@@ -84,7 +84,7 @@ export default function SignIn() {
           <Text className="text-sm text-gray-500 mt-2">The cleanest calendar app you've ever used. No bloat. Duh.</Text>
         </View>
 
-        <View className="w-full max-w-md bg-white rounded-3xl px-6 py-8 shadow-lg items-center">
+        <View className="w-full max-w-md bg-white rounded-3xl px-6 py-8 shadow-lg items-center gap-2">
           <Text className="text-2xl font-semibold text-gray-800 mb-6">Sign In</Text>
 
           <View className="w-full space-y-4. gap-2">
@@ -174,9 +174,9 @@ export default function SignIn() {
               Continue as Guest
             </Button>
             <Button onPress={() => {
-              console.log("cookie", server.defaults.headers);
+              signIn("100034878333321704744");
             }}>
-              clear
+              Continue as Dev User
             </Button>
           </View>
         </View>
