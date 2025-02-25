@@ -173,11 +173,6 @@ export default function SignIn() {
             >
               Continue as Guest
             </Button>
-            <Button onPress={() => {
-              signIn("100034878333321704744");
-            }}>
-              Continue as Dev User
-            </Button>
           </View>
         </View>
 
