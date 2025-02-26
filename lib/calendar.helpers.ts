@@ -1,17 +1,18 @@
 import { useSQLiteContext, openDatabaseAsync } from "expo-sqlite";
 import * as SQLite from "expo-sqlite";
 import server from "@/constants/serverAxiosClient";
-import { Calendar, CalendarUpsert } from "@/types/calendar.types";
+import { Calendar, CalendarUpsert, UpdateCalendar } from "@/types/calendar.types";
+import { useSession } from "@/hooks/authContext";
 
 // Get all calendars from the local database
 export const getCalendarsFromDB = async (): Promise<Calendar[]> => {
 	const db = await openDatabaseAsync("local.db");
 	try {
-		const calendars = await db.getAllAsync<Calendar>("SELECT * FROM calendars");
+		const calendars = await db.getAllAsync<Omit<Calendar, "is_public"> & {is_public: number}>("SELECT * FROM calendars");
 		// Convert INTEGER is_public to boolean
 		return calendars.map((item) => ({
 			...item,
-			is_public: item.is_public === true,
+			is_public: item.is_public == 1 ? true : false,
 		}));
 	} catch (error) {
 		console.error("Error fetching calendars:", error);
@@ -23,10 +24,11 @@ export const getCalendarsFromDB = async (): Promise<Calendar[]> => {
 export const getCalendarFromDB = async (calendar_id: string): Promise<Calendar | undefined> => {
 	const db = await openDatabaseAsync("local.db");
 	try {
-		const calendar = await db.getFirstAsync<Calendar>("SELECT * FROM calendars WHERE calendar_id = ?", calendar_id);
+		const calendar = await db.getFirstAsync<Omit<Calendar, "is_public"> & {is_public: number}>("SELECT * FROM calendars WHERE calendar_id = ?", calendar_id);
 		if (calendar) {
 			return {
 				...calendar,
+				is_public: calendar.is_public == 1 ? true : false,
 			};
 		}
 		return undefined;
@@ -37,12 +39,14 @@ export const getCalendarFromDB = async (calendar_id: string): Promise<Calendar |
 };
 
 // Insert a calendar into the local database
-export const insertCalendarIntoDB = async (calendar: CalendarUpsert): Promise<void> => {
+export const insertCalendarIntoDB = async (calendar: CalendarUpsert, userId: string): Promise<void> => {
 	const db = await openDatabaseAsync("local.db");
+	console.log("inserting calendar for user", userId);
 	try {
 		await db.runAsync(
-			"INSERT INTO calendars (calendar_id, group_id, color, title, is_public) VALUES (?, ?, ?, ?, ?)",
+			"INSERT INTO calendars (user_id, calendar_id, group_id, color, title, is_public) VALUES (?, ?, ?, ?, ?, ?)",
 			[
+				userId,
 				calendar.calendar_id || "",
 				calendar.group_id || null,
 				calendar.color || "#fac805",
@@ -56,10 +60,11 @@ export const insertCalendarIntoDB = async (calendar: CalendarUpsert): Promise<vo
 	}
 };
 
-// Insert a calendar into the local database
-export const upsertCalendarIntoDB = async (calendar: CalendarUpsert): Promise<void> => {
+// Up a calendar into the local database
+export const upsertCalendarIntoDB = async (calendar: CalendarUpsert, userId: string): Promise<void> => {
 	const db = await openDatabaseAsync("local.db");
 	let calendarInDB = false;
+	
 	if (calendar.calendar_id) {
 		const calendarFromDB = await getCalendarFromDB(calendar.calendar_id);
 		if (calendarFromDB) {
@@ -70,10 +75,10 @@ export const upsertCalendarIntoDB = async (calendar: CalendarUpsert): Promise<vo
 	try {
 		if (calendarInDB) {
 			console.log("updating calendar");
-			await updateCalendarInDB(calendar.calendar_id as string, calendar as Calendar);
+			await updateCalendarInDB(calendar.calendar_id as string, calendar as Calendar, userId);
 		} else {
 			console.log("inserting calendar");
-			await insertCalendarIntoDB(calendar);
+			await insertCalendarIntoDB(calendar, userId);
 		}
 	} catch (error) {
 		console.error("Error upserting calendar:", error);
@@ -82,16 +87,23 @@ export const upsertCalendarIntoDB = async (calendar: CalendarUpsert): Promise<vo
 };
 
 // Update a calendar in the local database
-export const updateCalendarInDB = async (calendar_id: string, calendar: Calendar): Promise<void> => {
+export const updateCalendarInDB = async (calendar_id: string, calendar: UpdateCalendar, userId: string): Promise<void> => {
 	const db = await openDatabaseAsync("local.db");
 	try {
+		const existingCalendar = await getCalendarFromDB(calendar_id);
+
+		if (!existingCalendar) {
+			throw new Error("Calendar not found");
+		}
+
 		await db.runAsync(
-			"UPDATE calendars SET group_id = ?, title = ?, color = ?, is_public = ?, calendar_id = ? WHERE calendar_id = ?",
+			"UPDATE calendars SET user_id = ?, group_id = ?, title = ?, color = ?, is_public = ?, calendar_id = ? WHERE calendar_id = ?",
 			[
-				calendar.group_id || null,
-				calendar.title,
-				calendar.color || "#fac805",
-				calendar.is_public ? true : false,
+				userId,
+				calendar.group_id ?? existingCalendar.group_id,
+				calendar.title ?? existingCalendar.title,
+				calendar.color ?? existingCalendar.color,
+				calendar.is_public ?? existingCalendar.is_public,
 				calendar.calendar_id,
 				calendar_id,
 			]
@@ -141,8 +153,27 @@ export const createCalendarOnServer = async (calendar: Omit<Calendar, "calendar_
 	return response.data;
 };
 
-export const updateCalendarOnServer = async (calendar: Calendar): Promise<Calendar> => {
-	const response = await server.put(`/calendars/${calendar.calendar_id}`, calendar);
+export const updateCalendarOnServer = async (calendar: UpdateCalendar): Promise<Calendar> => {
+	const updatedCalendar = {...calendar, is_public: calendar.is_public as unknown as number == 1 ? true : false}
+	const response = await server.put(`/calendars/${calendar.calendar_id}`, calendar).catch(function (error) {
+		if (error.response) {
+			// The request was made and the server responded with a status code
+			// that falls out of the range of 2xx
+			console.log(error.response.data);
+			console.log(error.response.status);
+			console.log(error.response.headers);
+		} else if (error.request) {
+			// The request was made but no response was received
+			// `error.request` is an instance of XMLHttpRequest in the browser and an instance of
+			// http.ClientRequest in node.js
+			console.log(error.request);
+		} else {
+			// Something happened in setting up the request that triggered an Error
+			console.log("Error", error.message);
+		}
+		console.log(error.config);
+		throw error;
+	});
 	return response.data;
 };
 

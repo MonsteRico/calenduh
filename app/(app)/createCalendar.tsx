@@ -21,12 +21,8 @@ export default function CreateCalendar() {
 	const [notificationModalVisible, setNotificationModalVisible] = useState(false);
 	const [calendarDefaultNotification, setCalendarDefaultNotification] = useState("30 minutes before");
 	const [isPublic, setIsPublic] = useState(false);
-	const isConnected = useIsConnected();
 	const { mutate } = useCreateCalendar();
 
-	useEffect(() => {
-		setCalendarName("CONNECTED CHANGED")
-	}, [isConnected]);
 
 	return (
 		<View className="flex-1 bg-background">
@@ -90,8 +86,6 @@ export default function CreateCalendar() {
 						value={isPublic}
 					/>
 				</View>
-
-				<Text className="text-2xl text-primary">Is connected: {isConnected ? "Yes" : "No"}</Text>
 
 				<Button
 					onPress={() => {

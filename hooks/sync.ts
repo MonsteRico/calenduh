@@ -10,6 +10,7 @@ import {
 	updateCalendarOnServer,
 } from "@/lib/calendar.helpers";
 import { createEventOnServer, deleteEventOnServer, updateEventInDB, updateEventOnServer } from "@/lib/event.helpers";
+import { useSession } from "./authContext";
 
 export const SyncContext = createContext<{
 	syncing: boolean;
@@ -34,6 +35,11 @@ export function useSync() {
 	const isConnected = useIsConnected();
 	const { syncing, setSyncing } = useContext(SyncContext);
 
+	const { user } = useSession();
+	if (!user) {
+		throw new Error("User not found");
+	}
+
 	return useMutation({
 		mutationFn: async () => {
 			//TODO needs better conflict resolution, rn it always will use the device/local things as the source of truth
@@ -41,59 +47,56 @@ export function useSync() {
 			let numberSynced = 0;
 			// We only sync if we are connected and not in a web browser (web browsers will already be synced due to always being online)
 			if (isConnected && Platform.OS !== "web") {
-				try {
-					const mutations = await getMutationsFromDB();
-					console.log("mutations being synced", mutations);
-					for (const mutation of mutations) {
-						switch (mutation.mutation) {
-							case "CREATE_CALENDAR":
-								console.log("sync creating calendar");
-								const newCalendar = await createCalendarOnServer(JSON.parse(mutation.parameters));
-								if (mutation.calendar_id) {
-									console.log("sync updating calendar with new id");
-									await updateCalendarInDB(mutation.calendar_id, newCalendar);
-								}
-								break;
-							case "UPDATE_CALENDAR":
-								const updatedCalendar = await updateCalendarOnServer(JSON.parse(mutation.parameters));
-								if (mutation.calendar_id) {
-									await updateCalendarInDB(mutation.calendar_id, updatedCalendar);
-								}
-								break;
-							case "DELETE_CALENDAR":
-								await deleteCalendarOnServer(JSON.parse(mutation.parameters));
-								break;
-							case "CREATE_EVENT":
-								if (!mutation.calendar_id) {
-									console.error("Mutation has no calendar_id and was trying to create an event");
-									continue;
-								}
-								const newEvent = await createEventOnServer(mutation.calendar_id, JSON.parse(mutation.parameters));
-								updateEventInDB(newEvent);
-								break;
-							case "UPDATE_EVENT":
-								if (!mutation.calendar_id) {
-									console.error("Mutation has no calendar_id and was trying to update an event");
-									continue;
-								}
-								const updatedEvent = await updateEventOnServer(mutation.calendar_id, JSON.parse(mutation.parameters));
-								updateEventInDB(updatedEvent);
-								break;
-							case "DELETE_EVENT":
-								if (!mutation.calendar_id) {
-									console.error("Mutation has no calendar_id and was trying to delete an event");
-									continue;
-								}
-								await deleteEventOnServer(mutation.calendar_id, JSON.parse(mutation.parameters));
-								break;
-						}
-						await removeMutationFromQueue(mutation.number);
-						numberSynced++;
+				const mutations = await getMutationsFromDB();
+				console.log("mutations being synced", mutations);
+				for (const mutation of mutations) {
+					switch (mutation.mutation) {
+						case "CREATE_CALENDAR":
+							console.log("sync creating calendar");
+							const newCalendar = await createCalendarOnServer(JSON.parse(mutation.parameters));
+							if (mutation.calendar_id) {
+								console.log("sync updating calendar with new id");
+								await updateCalendarInDB(mutation.calendar_id, newCalendar, user.user_id);
+							}
+							break;
+						case "UPDATE_CALENDAR":
+							const updatedCalendar = await updateCalendarOnServer(JSON.parse(mutation.parameters));
+							if (mutation.calendar_id) {
+								await updateCalendarInDB(mutation.calendar_id, updatedCalendar, user.user_id);
+							}
+							break;
+						case "DELETE_CALENDAR":
+							await deleteCalendarOnServer(JSON.parse(mutation.parameters));
+							break;
+						case "CREATE_EVENT":
+							if (!mutation.calendar_id) {
+								console.error("Mutation has no calendar_id and was trying to create an event");
+								continue;
+							}
+							const newEvent = await createEventOnServer(mutation.calendar_id, JSON.parse(mutation.parameters));
+							updateEventInDB(newEvent);
+							break;
+						case "UPDATE_EVENT":
+							if (!mutation.calendar_id) {
+								console.error("Mutation has no calendar_id and was trying to update an event");
+								continue;
+							}
+							const updatedEvent = await updateEventOnServer(mutation.calendar_id, JSON.parse(mutation.parameters));
+							updateEventInDB(updatedEvent);
+							break;
+						case "DELETE_EVENT":
+							if (!mutation.calendar_id) {
+								console.error("Mutation has no calendar_id and was trying to delete an event");
+								continue;
+							}
+							await deleteEventOnServer(mutation.calendar_id, JSON.parse(mutation.parameters));
+							break;
 					}
-				} catch (error: any) {
-					return { error, numberSynced };
+					await removeMutationFromQueue(mutation.number);
+					numberSynced++;
 				}
 			}
+			console.log("I finished syncing");
 			return { numberSynced };
 		},
 		onError: (_err, _variables, context: any) => {
@@ -101,13 +104,17 @@ export function useSync() {
 			console.log("Number synced:", context.numberSynced);
 		},
 		onSuccess: (data, variables, context) => {
-			// Boom baby!
+
 		},
-		onSettled: async (data, error, variables, context: any) => {
+		onSettled: (data, error, variables, context: any) => {
 			// Refresh everything
-			console.log("Number synced:", context.numberSynced);
-			await queryClient.invalidateQueries({ queryKey: ["calendars"] });
-			await queryClient.invalidateQueries({ queryKey: ["events"] });
+			if (!data) {
+				console.log("no data, error?")
+				return
+			}
+			console.log("NUMBER SYNCED:", data.numberSynced);
+			queryClient.invalidateQueries({ queryKey: ["calendars"] });
+			queryClient.invalidateQueries({ queryKey: ["events"] });
 			setSyncing(false);
 		},
 	});

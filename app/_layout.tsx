@@ -13,20 +13,25 @@ import { SQLiteDatabase, SQLiteProvider, useSQLiteContext } from "expo-sqlite";
 import { migrateDbIfNeeded } from "@/lib/migrate";
 import * as Network from "expo-network";
 import { Text } from "react-native";
+import { useDrizzleStudio } from "expo-drizzle-studio-plugin";
+import * as SQLite from "expo-sqlite";
 // Create a client
 const queryClient = new QueryClient();
+const db = SQLite.openDatabaseSync("local.db");
 export default function RootLayout() {
-		const networkState = Network.useNetworkState();
+	const networkState = Network.useNetworkState();
 
 	const { colorScheme } = useColorScheme();
-	
+
+	useDrizzleStudio(db);
+
 	if (networkState.isConnected == undefined) {
 		return <Text>Loading...</Text>;
 	}
 
 	return (
-		<QueryClientProvider client={queryClient}>
-			<SQLiteProvider databaseName="local.db" onInit={migrateDbIfNeeded}>
+		<SQLite.SQLiteProvider databaseName={`local.db`} onInit={migrateDbIfNeeded}>
+			<QueryClientProvider client={queryClient}>
 				<GestureHandlerRootView>
 					<SessionProvider>
 						<SafeAreaProvider>
@@ -44,7 +49,7 @@ export default function RootLayout() {
 						</SafeAreaProvider>
 					</SessionProvider>
 				</GestureHandlerRootView>
-			</SQLiteProvider>
-		</QueryClientProvider>
+			</QueryClientProvider>
+		</SQLite.SQLiteProvider>
 	);
 }

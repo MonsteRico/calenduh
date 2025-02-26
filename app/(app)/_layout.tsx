@@ -12,9 +12,10 @@ import { useIsConnected } from "@/hooks/useIsConnected";
 import * as Network from "expo-network";
 import Storage from "expo-sqlite/kv-store"
 import { SyncContext } from "@/hooks/sync";
+
 export default function AppLayout() {
 	const networkState = Network.useNetworkState();
-	const { sessionId, isLoading } = useSession();
+	const { sessionId, isLoading, user } = useSession();
 	const { colorScheme } = useColorScheme();
 
 	const [dayBeingViewed, setDayBeingViewed] = useState(DateTime.now());
@@ -51,61 +52,66 @@ export default function AppLayout() {
 		return <Text>Loading...</Text>;
 	}
 
+	if (!user) {
+		return <Text>Loading...</Text>;
+	}
+
+
 	// This layout can be deferred because it's not the root layout.
 	return (
-		<SyncContext.Provider
-			value={{
-				syncing,
-				setSyncing: setIsSyncing,
-			}}
-		>
-			<DayBeingViewedContext.Provider
+			<SyncContext.Provider
 				value={{
-					value: dayBeingViewed,
-					setValue: setDayBeingViewed,
+					syncing,
+					setSyncing: setIsSyncing,
 				}}
 			>
-				<EnabledCalendarIdsContext.Provider
+				<DayBeingViewedContext.Provider
 					value={{
-						value: enabledCalendarIds,
-						setValue: setEnabledCalendarIds,
+						value: dayBeingViewed,
+						setValue: setDayBeingViewed,
 					}}
 				>
-					<Stack
-						screenOptions={{
-							headerShown: false,
-							contentStyle: { flex: 1, backgroundColor: colorScheme === "dark" ? "#030711" : "white" },
+					<EnabledCalendarIdsContext.Provider
+						value={{
+							value: enabledCalendarIds,
+							setValue: setEnabledCalendarIds,
 						}}
 					>
-						<Stack.Screen name="index" />
-						<Stack.Screen
-							name="createEvent"
-							options={{
-								presentation: "modal",
+						<Stack
+							screenOptions={{
+								headerShown: false,
+								contentStyle: { flex: 1, backgroundColor: colorScheme === "dark" ? "#030711" : "white" },
 							}}
-						/>
-						<Stack.Screen
-							name="calendarsList"
-							options={{
-								presentation: "modal",
-							}}
-						/>
-						<Stack.Screen
-							name="calendarInfoView"
-							options={{
-								presentation: "modal",
-							}}
-						/>
+						>
+							<Stack.Screen name="index" />
+							<Stack.Screen
+								name="createEvent"
+								options={{
+									presentation: "modal",
+								}}
+							/>
+							<Stack.Screen
+								name="calendarsList"
+								options={{
+									presentation: "modal",
+								}}
+							/>
+							<Stack.Screen
+								name="calendarInfoView"
+								options={{
+									presentation: "modal",
+								}}
+							/>
 
-						<Stack.Screen
-							name="createCalendar"
-							options={{
-								presentation: "modal",
-							}}
-						/>
-					</Stack>
-				</EnabledCalendarIdsContext.Provider>
-			</DayBeingViewedContext.Provider>
-		</SyncContext.Provider>
+							<Stack.Screen
+								name="createCalendar"
+								options={{
+									presentation: "modal",
+								}}
+							/>
+						</Stack>
+					</EnabledCalendarIdsContext.Provider>
+				</DayBeingViewedContext.Provider>
+			</SyncContext.Provider>
 	);
 }

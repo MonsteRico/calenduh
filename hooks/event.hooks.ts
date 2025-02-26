@@ -36,7 +36,6 @@ import { addMutationToQueue } from "@/lib/mutation.helpers";
 // 						await updateEventInDB(event);
 // 					}
 
-// 					queryClient.invalidateQueries({ queryKey: ["events"] });
 // 					return serverEvents;
 // 				} catch (error) {
 // 					console.error("Error fetching events from server:", error);
@@ -66,7 +65,6 @@ export const useEventsForCalendar = (calendar_id: string) => {
 						await updateEventInDB(event);
 					}
 
-					queryClient.invalidateQueries({ queryKey: ["events", calendar_id] });
 					return serverEvents;
 				} catch (error) {
 					console.error(`Error fetching events for calendar ${calendar_id} from server:`, error);
@@ -93,9 +91,7 @@ export const useEvent = (calendar_id: string, event_id: string) => {
 						throw new Error("Event not found on server");
 					}
 					await updateEventInDB(serverEvent);
-					queryClient.invalidateQueries({
-						queryKey: ["events", calendar_id, event_id],
-					});
+
 					return serverEvent;
 				} catch (error) {
 					console.error(`Error fetching event ${event_id} from server:`, error);

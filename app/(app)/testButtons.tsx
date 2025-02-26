@@ -7,6 +7,7 @@ import { useState } from "react";
 import { useQueryClient } from "@tanstack/react-query";
 import { useCalendars } from "@/hooks/calendar.hooks";
 import { useSQLiteContext } from "expo-sqlite";
+import { getCalendarsFromDB } from "@/lib/calendar.helpers";
 
 export default function TestButtons() {
 	const isPresented = router.canGoBack();
@@ -29,6 +30,10 @@ export default function TestButtons() {
 				<Button onPress={() => {}}>Create Calendar</Button>
 				<Button onPress={() => {}}>Update Calendar</Button>
 				<Button onPress={() => {}}>Delete Calendar</Button>
+				<Button onPress={async () => {
+					const localCalendars = await getCalendarsFromDB();
+					console.log("localCalendars", localCalendars);
+				}}>Log DB Calendars</Button>
 				<Button
 					onPress={() => {
 						queryClient.invalidateQueries({ queryKey: ["calendars"] });
