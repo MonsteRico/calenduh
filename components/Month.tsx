@@ -72,7 +72,7 @@ function Day({ day, currentMonth, bottomRow = false }: { day: DateTime<true>; cu
 	const isToday = day.hasSame(DateTime.now(), "day");
 
 	const onDoubleTap = () => {
-		router.navigate("/createEvent");
+		router.navigate("/createEvent?givenDate=" + day.toISODate());
 	};
 
 	return (
