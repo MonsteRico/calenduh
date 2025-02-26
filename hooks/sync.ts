@@ -69,20 +69,28 @@ export function useSync() {
 							await deleteCalendarOnServer(JSON.parse(mutation.parameters));
 							break;
 						case "CREATE_EVENT":
+							if (!mutation.event_id) {
+								console.error("Mutation has no event_id and was trying to create an event");
+								continue;
+							}
 							if (!mutation.calendar_id) {
 								console.error("Mutation has no calendar_id and was trying to create an event");
 								continue;
 							}
 							const newEvent = await createEventOnServer(mutation.calendar_id, JSON.parse(mutation.parameters));
-							updateEventInDB(newEvent);
+							updateEventInDB(mutation.event_id, newEvent, user.user_id);
 							break;
 						case "UPDATE_EVENT":
 							if (!mutation.calendar_id) {
 								console.error("Mutation has no calendar_id and was trying to update an event");
 								continue;
 							}
+							if (!mutation.event_id) {
+								console.error("Mutation has no event_id and was trying to create an event");
+								continue;
+							}
 							const updatedEvent = await updateEventOnServer(mutation.calendar_id, JSON.parse(mutation.parameters));
-							updateEventInDB(updatedEvent);
+							updateEventInDB(mutation.event_id, updatedEvent, user.user_id);
 							break;
 						case "DELETE_EVENT":
 							if (!mutation.calendar_id) {

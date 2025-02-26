@@ -4,7 +4,7 @@ import server from "@/constants/serverAxiosClient";
 import { Mutation, MutationTypes } from "@/types/mutation.types";
 
 
-export async function addMutationToQueue(mutation: MutationTypes, parameters: any, calendarId?: string) {
+export async function addMutationToQueue(mutation: MutationTypes, parameters: any, {calendarId, eventId} : {calendarId?:string, eventId?:string}) {
 	const db = await openDatabaseAsync("local.db");
 	try {
         if (calendarId) {
@@ -12,12 +12,19 @@ export async function addMutationToQueue(mutation: MutationTypes, parameters: an
                 "INSERT INTO mutations (mutation, timestamp, parameters, calendar_id) VALUES (?, ?, ?, ?)",
                 [mutation, Date.now(), JSON.stringify(parameters), calendarId]
             );
-        } else {
+        } else if (eventId) {
             await db.runAsync(
-                "INSERT INTO mutations (mutation, timestamp, parameters) VALUES (?, ?, ?)",
-                [mutation, Date.now(), JSON.stringify(parameters)]
+                "INSERT INTO mutations (mutation, timestamp, parameters, event_id) VALUES (?, ?, ?, ?)",
+                [mutation, Date.now(), JSON.stringify(parameters), eventId]
             );
         }
+		else {
+			await db.runAsync("INSERT INTO mutations (mutation, timestamp, parameters) VALUES (?, ?, ?)", [
+				mutation,
+				Date.now(),
+				JSON.stringify(parameters),
+			]);
+		}
 	} catch (error) {
 		console.error("Error inserting mutation:", error);
 		throw error;

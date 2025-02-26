@@ -14,18 +14,18 @@ export async function migrateDbIfNeeded(db: SQLiteDatabase) {
       user_id TEXT PRIMARY KEY,
       email TEXT NOT NULL UNIQUE,
       username TEXT NOT NULL
+      birthday TEXT,
     );
   `);
 
 		await db.execAsync(`
     CREATE TABLE IF NOT EXISTS calendars (
       calendar_id TEXT PRIMARY KEY,
-      user_id TEXT,
+      user_id TEXT NOT NULL,
       group_id TEXT,
       color TEXT NOT NULL DEFAULT '#fac805',
       title TEXT NOT NULL,
       is_public INTEGER NOT NULL DEFAULT 0,
-      FOREIGN KEY (user_id) REFERENCES users (user_id) ON DELETE CASCADE ON UPDATE CASCADE,
       CHECK ((user_id IS NOT NULL))
     );
   `);
@@ -33,6 +33,7 @@ export async function migrateDbIfNeeded(db: SQLiteDatabase) {
 		await db.execAsync(`
     CREATE TABLE IF NOT EXISTS events (
       event_id TEXT PRIMARY KEY,
+      user_id TEXT NOT NULL,
       calendar_id TEXT NOT NULL,
       name TEXT NOT NULL,
       location TEXT,
@@ -40,9 +41,10 @@ export async function migrateDbIfNeeded(db: SQLiteDatabase) {
       notification TEXT,
       frequency INTEGER,
       priority INTEGER,
-      start_time TEXT,
-      end_time TEXT,
+      start_time NUMBER,
+      end_time NUMBER,
       FOREIGN KEY (calendar_id) REFERENCES calendars (calendar_id) ON DELETE CASCADE ON UPDATE CASCADE
+      CHECK ((user_id IS NOT NULL))
     );
   `);
 
@@ -65,7 +67,8 @@ export async function migrateDbIfNeeded(db: SQLiteDatabase) {
         mutation TEXT NOT NULL,
         timestamp INTEGER NOT NULL,
         parameters TEXT NOT NULL,
-        calendar_id TEXT
+        calendar_id TEXT,
+        event_id TEXT
       );
       `);
 

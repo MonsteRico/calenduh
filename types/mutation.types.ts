@@ -4,6 +4,7 @@ export interface Mutation {
     timestamp: number;
     parameters: string;
     calendar_id?: string;
+	event_id?: string;
 }
 
 export type MutationTypes =
