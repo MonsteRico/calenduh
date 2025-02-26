@@ -77,13 +77,10 @@ export default function CreateEvent() {
                 searchicon={<FontAwesome name="search" size={12} color={globColor}/>}
                 closeicon={<FontAwesome name="stop" size={12} color={globColor}/>}
                 //All because this lovely component doesn't have className
-                boxStyles={{ color: colorScheme == "light" ? "black" : "white"}}
                 inputStyles={{ color: colorScheme == "light" ? "black" : "white"}}
-                dropdownStyles={{ color: colorScheme == "light" ? "black" : "white"}}
-                dropdownItemStyles={{ color: colorScheme == "light" ? "black" : "white"}}
+
                 dropdownTextStyles={{ color: colorScheme == "light" ? "black" : "white"}}
                 //In case disabled is needed
-                disabledItemStyles={{ color: colorScheme == "light" ? "black" : "white"}}
                 disabledTextStyles={{ color: colorScheme == "light" ? "black" : "white"}}
                 maxHeight={100}
             />
