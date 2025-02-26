@@ -67,7 +67,7 @@ export default function EditEvent() {
 
             <SelectList 
                 setSelected={(cal) => setSelected(cal)} 
-                data={userCals} 
+                data={userCals}
                 save="value"
                 //These icons for no reason don't use className :sob:
                 arrowicon={<FontAwesome  name="chevron-down" size={12} color={globColor}/>} 
