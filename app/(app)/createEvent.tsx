@@ -8,6 +8,7 @@ import { Input } from "@/components/Input";
 import { useColorScheme } from "nativewind";
 import DateTimePicker from 'react-native-ui-datepicker';
 import dayjs from 'dayjs';
+import { useLocalSearchParams } from 'expo-router';
 
 export default function CreateEvent() {
       const { colorScheme } = useColorScheme();
@@ -21,6 +22,8 @@ export default function CreateEvent() {
       const [notify, setNotif] = React.useState(''); //Text box
       const [cal, setSelected] = React.useState(""); //Single Select List
       const [freq, setFrequency] = React.useState(""); //Single Select List
+
+      const { givenDate } = useLocalSearchParams<{ givenDate: string }>();
 
       //REPLACE WITH USER'S CALENDARS
       const userCals = [
