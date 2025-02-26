@@ -8,6 +8,7 @@ import { Input } from "@/components/Input";
 import { useColorScheme } from "nativewind";
 import DateTimePicker from 'react-native-ui-datepicker';
 import dayjs from 'dayjs';
+import { useLocalSearchParams } from 'expo-router';
 
 export default function CreateEvent() {
       const { colorScheme } = useColorScheme();
@@ -21,6 +22,8 @@ export default function CreateEvent() {
       const [notify, setNotif] = React.useState(''); //Text box
       const [cal, setSelected] = React.useState(""); //Single Select List
       const [freq, setFrequency] = React.useState(""); //Single Select List
+
+      const { givenDate } = useLocalSearchParams<{ givenDate: string }>();
 
       //REPLACE WITH USER'S CALENDARS
       const userCals = [
@@ -77,13 +80,10 @@ export default function CreateEvent() {
                 searchicon={<FontAwesome name="search" size={12} color={globColor}/>}
                 closeicon={<FontAwesome name="stop" size={12} color={globColor}/>}
                 //All because this lovely component doesn't have className
-                boxStyles={{ color: colorScheme == "light" ? "black" : "white"}}
                 inputStyles={{ color: colorScheme == "light" ? "black" : "white"}}
-                dropdownStyles={{ color: colorScheme == "light" ? "black" : "white"}}
-                dropdownItemStyles={{ color: colorScheme == "light" ? "black" : "white"}}
+
                 dropdownTextStyles={{ color: colorScheme == "light" ? "black" : "white"}}
                 //In case disabled is needed
-                disabledItemStyles={{ color: colorScheme == "light" ? "black" : "white"}}
                 disabledTextStyles={{ color: colorScheme == "light" ? "black" : "white"}}
                 maxHeight={100}
             />

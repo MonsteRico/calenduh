@@ -40,7 +40,6 @@ export default function EditEvent() {
       const globColor = colorScheme == "light" ? "black" : "white"
 
     return (
-        
         <View>
             <View className="flex-row items-center m-2">
                 {isPresented && <Button onPress={() => {
@@ -68,7 +67,7 @@ export default function EditEvent() {
 
             <SelectList 
                 setSelected={(cal) => setSelected(cal)} 
-                data={userCals} 
+                data={userCals}
                 save="value"
                 //These icons for no reason don't use className :sob:
                 arrowicon={<FontAwesome  name="chevron-down" size={12} color={globColor}/>} 
@@ -76,15 +75,12 @@ export default function EditEvent() {
                 closeicon={<FontAwesome name="stop" size={12} color={globColor}/>}
 
                 defaultOption={{key:'1', value:'Calendar 1'}} //Update to whatever the user had on this event last
-
+                
                 //All because this lovely component doesn't have className
-                boxStyles={{ color: colorScheme == "light" ? "black" : "white"}}
                 inputStyles={{ color: colorScheme == "light" ? "black" : "white"}}
-                dropdownStyles={{ color: colorScheme == "light" ? "black" : "white"}}
-                dropdownItemStyles={{ color: colorScheme == "light" ? "black" : "white"}}
+
                 dropdownTextStyles={{ color: colorScheme == "light" ? "black" : "white"}}
                 //In case disabled is needed
-                disabledItemStyles={{ color: colorScheme == "light" ? "black" : "white"}}
                 disabledTextStyles={{ color: colorScheme == "light" ? "black" : "white"}}
                 maxHeight={100}
             />
