@@ -55,7 +55,7 @@ export default function CreateCalendar() {
 				</View>
 			</View>
 
-			<View className="mt-5 flex flex-col gap-5 px-8">
+			<View className="mt-5 flex flex-col gap-2 px-8">
 				<View className="flex-row">
 					<Text className="text-2xl text-primary">Name: </Text>
 					<TextInput

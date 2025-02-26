@@ -40,78 +40,95 @@ export default function EditEvent() {
       const globColor = colorScheme == "light" ? "black" : "white"
 
     return (
-        <View>
-            <View className="flex-row items-center m-2">
-                {isPresented && <Button onPress={() => {
-                router.back();
-                }} className="text-primary">
-                    Cancel
-                </Button>}
+			<View>
+				{/* header */}
+				<View className="m-2 flex-row items-center">
+					{isPresented && (
+						<Button
+							onPress={() => {
+								router.back();
+							}}
+							className="text-primary"
+						>
+							Cancel
+						</Button>
+					)}
 
-                <Text className="text-primary text-3xl font-bold pl-5 items-center">Edit Event</Text>
-            </View>
+					<Text className="items-center pl-5 text-3xl font-bold text-primary">Edit Event</Text>
+				</View>
 
-            <Text className="text-primary">Name:</Text>
-            <Input className="text-primary" value={name} onChangeText={setName} defaultValue={name} />
+				<View>
+					<Text className="text-primary">Name:</Text>
+					<Input className="text-primary" value={name} onChangeText={setName} defaultValue={name} />
 
-            <Text className="text-primary">Location:</Text>
-            <Input className="text-primary" value={location} onChangeText={setLocation} defaultValue={location} />
+					<Text className="text-primary">Location:</Text>
+					<Input className="text-primary" value={location} onChangeText={setLocation} defaultValue={location} />
 
-            <Text className="text-primary">Description:</Text>
-            <Input className="text-primary" value={description} onChangeText={setDescription} defaultValue={description} multiline={true} numberOfLines={4}/>
+					<Text className="text-primary">Description:</Text>
+					<Input
+						className="text-primary"
+						value={description}
+						onChangeText={setDescription}
+						defaultValue={description}
+						multiline={true}
+						numberOfLines={4}
+					/>
 
-            <Text className="text-primary">Notification:</Text>
-            <Input className="text-primary" value={notify} onChangeText={setNotif} defaultValue={notify} maxLength={100}/>
+					<Text className="text-primary">Notification:</Text>
+					<Input
+						className="text-primary"
+						value={notify}
+						onChangeText={setNotif}
+						defaultValue={notify}
+						maxLength={100}
+					/>
 
-            <Text className="text-primary">Calendar:</Text>
+					<Text className="text-primary">Calendar:</Text>
 
-            <SelectList 
-                setSelected={(cal) => setSelected(cal)} 
-                data={userCals}
-                save="value"
-                //These icons for no reason don't use className :sob:
-                arrowicon={<FontAwesome  name="chevron-down" size={12} color={globColor}/>} 
-                searchicon={<FontAwesome name="search" size={12} color={globColor}/>}
-                closeicon={<FontAwesome name="stop" size={12} color={globColor}/>}
+					<SelectList
+						setSelected={(cal) => setSelected(cal)}
+						data={userCals}
+						save="value"
+						//These icons for no reason don't use className :sob:
+						arrowicon={<FontAwesome name="chevron-down" size={12} color={globColor} />}
+						searchicon={<FontAwesome name="search" size={12} color={globColor} />}
+						closeicon={<FontAwesome name="stop" size={12} color={globColor} />}
+						defaultOption={{ key: "1", value: "Calendar 1" }} //Update to whatever the user had on this event last
+						//All because this lovely component doesn't have className
+						inputStyles={{ color: colorScheme == "light" ? "black" : "white" }}
+						dropdownTextStyles={{ color: colorScheme == "light" ? "black" : "white" }}
+						//In case disabled is needed
+						disabledTextStyles={{ color: colorScheme == "light" ? "black" : "white" }}
+						maxHeight={100}
+					/>
 
-                defaultOption={{key:'1', value:'Calendar 1'}} //Update to whatever the user had on this event last
-                
-                //All because this lovely component doesn't have className
-                inputStyles={{ color: colorScheme == "light" ? "black" : "white"}}
+					<Text className="text-primary">Start:</Text>
+					<View style={styles.container}>
+						<DateTimePicker
+							//Update to whatever the user had on this event last
+							mode="single"
+							date={startDate}
+							timePicker={true}
+							onChange={(params) => setStartDate(params.date)}
+						/>
 
-                dropdownTextStyles={{ color: colorScheme == "light" ? "black" : "white"}}
-                //In case disabled is needed
-                disabledTextStyles={{ color: colorScheme == "light" ? "black" : "white"}}
-                maxHeight={100}
-            />
+						<Text className="text-primary">End:</Text>
+						<DateTimePicker
+							//Update to whatever the user had on this event last
+							mode="single"
+							date={endDate}
+							timePicker={true}
+							onChange={(params) => setEndDate(params.date)}
+						/>
+					</View>
+				</View>
+				{/* Get this to send event to db */}
+				<Button>Update Event</Button>
 
-            <Text className="text-primary">Start:</Text>
-            <View style={styles.container}>
-                <DateTimePicker
-                //Update to whatever the user had on this event last
-                    mode="single"
-                    date={startDate}
-                    timePicker={true}
-                    onChange={(params) => setStartDate(params.date)}
-                />
-
-                <Text className="text-primary">End:</Text>
-                <DateTimePicker 
-                //Update to whatever the user had on this event last
-                    mode="single"
-                    date={endDate}
-                    timePicker={true}
-                    onChange={(params) => setEndDate(params.date)}
-                />
-            </View>
-
-            {/* Get this to send event to db */}
-            <Button>Update Event</Button>
-
-            {/* Get this to send event to db */}
-            <Button>Delete Event</Button>
-            
-        </View>)
+				{/* Get this to send event to db */}
+				<Button>Delete Event</Button>
+			</View>
+		);
 }
 
 const styles = StyleSheet.create({

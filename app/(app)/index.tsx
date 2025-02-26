@@ -27,6 +27,7 @@ import { EventViewModal } from '@/components/EventViewModal';
 import { useCalendars, useMyCalendars } from "@/hooks/calendar.hooks";
 import { useDbVersion } from "@/hooks/useDbVersion";
 import ForceSync from "@/components/ForceSync";
+import { Input } from "@/components/Input";
 
 export default function MonthScreen() {
 	const { data: calendars, isLoading } = useMyCalendars();
@@ -140,7 +141,12 @@ export default function MonthScreen() {
 				<CalendarsList toggleDrawer={toggleDrawer} />
 			</DrawerMenu>
 
-			<EventViewModal visible={isEventViewModalOpen} onClose={() => setIsEventViewModalOpen(false)} calendarId="" eventId="" />
+			<EventViewModal
+				visible={isEventViewModalOpen}
+				onClose={() => setIsEventViewModalOpen(false)}
+				calendarId=""
+				eventId=""
+			/>
 
 			<View className="flex w-full flex-row justify-between">
 				<Button
