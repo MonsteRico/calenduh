@@ -4,6 +4,8 @@ import React, { Fragment } from "react";
 import { Dimensions, Platform, Pressable, Text, View } from "react-native";
 import { Entypo } from "@expo/vector-icons";
 import { useCurrentViewedDay } from "@/hooks/useCurrentViewedDay";
+import { router } from "expo-router";
+import { TapGestureHandler } from "react-native-gesture-handler";
 
 function Month({ month, year }: { month: number; year: number }) {
     const screenWidth = Dimensions.get("window").width;
@@ -69,29 +71,35 @@ function Day({ day, currentMonth, bottomRow = false }: { day: DateTime<true>; cu
 	const dayIsSaturday = day.weekday === 6;
 	const isToday = day.hasSame(DateTime.now(), "day");
 
+	const onDoubleTap = () => {
+		router.navigate("/createEvent");
+	};
 
 	return (
-		<Pressable
-			className={cn(
-				"basis-1/7 relative flex w-full items-center justify-center border-l-4 border-t-4 border-muted text-2xl",
-				dayIsSaturday && "border-r-4",
-				bottomRow && "border-b-4"
-			)}
-			onPress={() => {
-				console.log("Day pressed", day.toISODate());
-			}}
-		>
-			<Text
+		<TapGestureHandler numberOfTaps={2} onActivated={onDoubleTap}>
+			<Pressable
 				className={cn(
-					"text-lg",
-					currentMonth ? "font-bold text-primary" : "text-muted-foreground",
-					isToday && "text-green-500"
+					"basis-1/7 relative flex w-full items-center justify-center border-l-4 border-t-4 border-muted text-2xl",
+					dayIsSaturday && "border-r-4",
+					bottomRow && "border-b-4"
 				)}
+				onPress={() => {
+					console.log("Day pressed", day.toISODate());
+				}}
+
 			>
-				{dayNumber}
-			</Text>
-			<Entypo className={cn("invisible")} name="dot-single" size={24} />
-		</Pressable>
+				<Text
+					className={cn(
+						"text-lg",
+						currentMonth ? "font-bold text-primary" : "text-muted-foreground",
+						isToday && "text-green-500"
+					)}
+				>
+					{dayNumber}
+				</Text>
+				<Entypo className={cn("invisible")} name="dot-single" size={24} />
+			</Pressable>
+		</TapGestureHandler>
 	);
 }
 
