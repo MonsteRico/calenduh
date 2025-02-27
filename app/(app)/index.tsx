@@ -23,15 +23,14 @@ import server from "@/constants/serverAxiosClient";
 import DrawerMenu from "@/components/DrawerMenu";
 import CalendarsList from "./calendarsList";
 import { useEnabledCalendarIds } from "@/hooks/useEnabledCalendarIds";
-import { EventViewModal } from '@/components/EventViewModal';
+import { EventViewModal } from "@/components/EventViewModal";
 import { useCalendars, useMyCalendars } from "@/hooks/calendar.hooks";
 import { useDbVersion } from "@/hooks/useDbVersion";
 import ForceSync from "@/components/ForceSync";
 import { Input } from "@/components/Input";
+import { useEventsForDay } from "@/hooks/event.hooks";
 
 export default function MonthScreen() {
-	const { data: calendars, isLoading } = useMyCalendars();
-
 	const dbVersion = useDbVersion();
 
 	const today = DateTime.now();
@@ -125,16 +124,15 @@ export default function MonthScreen() {
 	}
 
 	const [isDrawerOpen, setIsDrawerOpen] = useState(false);
-	const [isEventViewModalOpen, setIsEventViewModalOpen] = useState(false)
+	const [isEventViewModalOpen, setIsEventViewModalOpen] = useState(false);
 
 	const toggleDrawer = () => {
 		setIsDrawerOpen(!isDrawerOpen);
 	};
 
-	if (isLoading) return <Text>Loading...</Text>;
 
-	console.log("calendars", calendars);
-
+	console.log("rerendering");
+	
 	return (
 		<View className="flex min-h-screen w-full flex-col items-center p-1">
 			<DrawerMenu title="Calendars" isOpen={isDrawerOpen} onClose={toggleDrawer}>
@@ -238,3 +236,4 @@ export default function MonthScreen() {
 		</View>
 	);
 }
+

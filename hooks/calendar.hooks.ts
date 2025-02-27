@@ -190,7 +190,7 @@ export const useCreateCalendar = (options?: UseMutationOptions<Calendar, Error, 
 				queryClient.setQueryData<Calendar[]>(["calendars"], (old) => [...(old || []), optimisticCalendar]);
 
 				await insertCalendarIntoDB(optimisticCalendar, user.user_id);
-				addMutationToQueue("CREATE_CALENDAR", newCalendar, tempId);
+				addMutationToQueue("CREATE_CALENDAR", newCalendar, {calendarId: tempId});
 
 				return { previousCalendars, tempId };
 			},
@@ -250,7 +250,7 @@ export const useUpdateCalendar = (options?: UseMutationOptions<UpdateCalendar, E
 			);
 
 			await updateCalendarInDB(updatedCalendar.calendar_id, updatedCalendar, user.user_id);
-			await addMutationToQueue("UPDATE_CALENDAR", updatedCalendar, updatedCalendar.calendar_id);
+			await addMutationToQueue("UPDATE_CALENDAR", updatedCalendar, {calendarId:updatedCalendar.calendar_id});
 			return { previousCalendars };
 		},
 		onError: (err, updatedCalendar, context) => {
@@ -292,7 +292,7 @@ export const useDeleteCalendar = (options?: UseMutationOptions<void, Error, stri
 			);
 
 			await deleteCalendarFromDB(calendar_id);
-			await addMutationToQueue("DELETE_CALENDAR", calendar_id, calendar_id);
+			await addMutationToQueue("DELETE_CALENDAR", calendar_id, {calendarId: calendar_id});
 
 			return { previousCalendars };
 		},

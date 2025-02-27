@@ -6,12 +6,14 @@ import { Entypo } from "@expo/vector-icons";
 import { useCurrentViewedDay } from "@/hooks/useCurrentViewedDay";
 import { router } from "expo-router";
 import { TapGestureHandler } from "react-native-gesture-handler";
+import { useEventsForDay } from "@/hooks/event.hooks";
 
 function Month({ month, year }: { month: number; year: number }) {
     const screenWidth = Dimensions.get("window").width;
     const monthHeight = Platform.OS === "web" ? Dimensions.get("window").height - 150 : screenWidth * 0.9;
 
     const days = getDaysForMonth(DateTime.fromObject({ year, month }) as DateTime<true>);
+
 
 	return (
 		<View
@@ -71,9 +73,19 @@ function Day({ day, currentMonth, bottomRow = false }: { day: DateTime<true>; cu
 	const dayIsSaturday = day.weekday === 6;
 	const isToday = day.hasSame(DateTime.now(), "day");
 
+	const { dayBeingViewed, setDayBeingViewed } = useCurrentViewedDay();
+
 	const onDoubleTap = () => {
 		router.navigate(`/createEvent?givenDate=${day.toISODate()}`);
 	};
+
+	const {data: events, isLoading } = useEventsForDay(day);
+
+	if (isLoading || !events) {
+		return null;
+	}
+
+	// console.log("Events for", day.toISODate(), events);
 
 	return (
 		<TapGestureHandler numberOfTaps={2} onActivated={onDoubleTap}>
@@ -81,10 +93,12 @@ function Day({ day, currentMonth, bottomRow = false }: { day: DateTime<true>; cu
 				className={cn(
 					"basis-1/7 relative flex w-full items-center justify-center border-l-4 border-t-4 border-muted text-2xl",
 					dayIsSaturday && "border-r-4",
-					bottomRow && "border-b-4"
+					bottomRow && "border-b-4",
 				)}
 				onPress={() => {
 					console.log("Day pressed", day.toISODate());
+					setDayBeingViewed(day);
+					router.navigate(`/agenda`);
 				}}
 
 			>
@@ -92,7 +106,8 @@ function Day({ day, currentMonth, bottomRow = false }: { day: DateTime<true>; cu
 					className={cn(
 						"text-lg",
 						currentMonth ? "font-bold text-primary" : "text-muted-foreground",
-						isToday && "text-green-500"
+						isToday && "text-green-500",
+						dayBeingViewed.hasSame(day, "day") && "underline"
 					)}
 				>
 					{dayNumber}

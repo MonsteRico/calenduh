@@ -15,9 +15,11 @@ import {
 	deleteEventOnServer,
 	getEventFromDB,
 	upsertEventIntoDB,
+	getEventsForDayFromServer,
 } from "@/lib/event.helpers";
 import { addMutationToQueue, getMutationsFromDB } from "@/lib/mutation.helpers";
 import { useSession } from "./authContext";
+import { DateTime } from "luxon";
 
 // --- Queries ---
 
@@ -103,6 +105,66 @@ export const useEvent = (calendar_id: string, event_id: string) => {
 	});
 };
 
+export const useEventsForDay = (day: DateTime) => {
+	const queryClient = useQueryClient();
+	const isConnected = useIsConnected();
+
+	const { user } = useSession();
+	if (!user) {
+		throw new Error("User not found");
+	}
+
+	return useQuery<Event[], Error>({
+		queryKey: ["events", "day", day.toISODate()], // Cache key based on the date
+		queryFn: async () => {
+			const startOfDay = day.startOf("day").valueOf(); // Get the start of the day in milliseconds
+			const endOfDay = day.endOf("day").valueOf(); // Get the end of the day in milliseconds
+
+			if (isConnected) {
+				try {
+					const serverEvents = await getEventsForDayFromServer(startOfDay, endOfDay);
+					const mutations = await getMutationsFromDB(); // Get the mutations that happened offline since last sync
+					const deletedEventIds = mutations // Pull out any event ids that were deleted while offline
+						.filter((mutation) => mutation.mutation === "DELETE_EVENT")
+						.map((mutation) => mutation.event_id);
+
+					const filteredServerEvents = serverEvents.filter((event) => !deletedEventIds.includes(event.event_id)); // Remove any events that were deleted offline before they get deleted on the server
+
+					// Update local DB with server events
+					for (const event of filteredServerEvents) {
+						await upsertEventIntoDB(event, user.user_id);
+					}
+
+					return filteredServerEvents;
+				} catch (error) {
+					console.error("Error fetching events for day from server:", error);
+					// Fallback to local database if server fetch fails
+					const localEvents = await getEventsFromDB();
+
+					// Filter events that fall within the specified day
+					const eventsForDay = localEvents.filter((event) => {
+						const startTime = event.start_time.valueOf(); // Assuming start_time is a Date object
+						return startTime >= startOfDay && startTime <= endOfDay;
+					});
+
+					return eventsForDay;
+				}
+			} else {
+				// Offline: Fetch from local database
+				const localEvents = await getEventsFromDB();
+
+				// Filter events that fall within the specified day
+				const eventsForDay = localEvents.filter((event) => {
+					const startTime = event.start_time.valueOf(); // Assuming start_time is a Date object
+					return startTime >= startOfDay && startTime <= endOfDay;
+				});
+
+				return eventsForDay;
+			}
+		},
+	});
+};
+
 // --- Mutations --- (No changes needed in mutations)
 
 export const useCreateEvent = (
@@ -130,7 +192,7 @@ export const useCreateEvent = (
 			}
 		},
 		onMutate: async ({ newEvent, calendar_id }) => {
-			options?.onMutate?.({newEvent, calendar_id});
+			options?.onMutate?.({ newEvent, calendar_id });
 			await queryClient.cancelQueries({ queryKey: ["events", calendar_id] });
 			const previousEvents = queryClient.getQueryData<Event[]>(["events", calendar_id]) || [];
 
@@ -148,7 +210,7 @@ export const useCreateEvent = (
 			return { previousEvents, tempId };
 		},
 		onError: (err, { newEvent, calendar_id }, context) => {
-			options?.onError?.(err, {newEvent, calendar_id}, context);
+			options?.onError?.(err, { newEvent, calendar_id }, context);
 			console.error("Error creating event:", err);
 			queryClient.setQueryData<Event[]>(["events", calendar_id], context?.previousEvents);
 		},
@@ -166,6 +228,10 @@ export const useCreateEvent = (
 				}
 			}
 			await queryClient.invalidateQueries({ queryKey: ["events", variables.calendar_id] });
+			await queryClient.invalidateQueries({ queryKey: ["events", "day", variables.newEvent.start_time.toISODate()] });
+			if (variables.newEvent.start_time.toISODate() !== variables.newEvent.end_time.toISODate()) {
+				await queryClient.invalidateQueries({ queryKey: ["events", "day", variables.newEvent.end_time.toISODate()] });
+			}
 		},
 	});
 };
@@ -194,8 +260,8 @@ export const useUpdateEvent = (
 				return updatedEvent;
 			}
 		},
-		onMutate: async ({updatedEvent, calendar_id}) => {
-			options?.onMutate?.({updatedEvent, calendar_id});
+		onMutate: async ({ updatedEvent, calendar_id }) => {
+			options?.onMutate?.({ updatedEvent, calendar_id });
 			await queryClient.cancelQueries({ queryKey: ["events", calendar_id] });
 			const previousEvents = queryClient.getQueryData<Event[]>(["events", calendar_id]) || [];
 
@@ -208,10 +274,16 @@ export const useUpdateEvent = (
 				eventId: updatedEvent.event_id,
 				calendarId: calendar_id,
 			});
-			return { previousEvents };
+
+			const localEvent = await getEventFromDB(updatedEvent.event_id);
+			if (!localEvent) {
+				throw new Error("Event not found locally");
+			}
+
+			return { previousEvents, startTime: localEvent.start_time, endTime: localEvent.end_time };
 		},
-		onError: (err, {updatedEvent, calendar_id}, context) => {
-			options?.onError?.(err, {updatedEvent,calendar_id}, context);
+		onError: (err, { updatedEvent, calendar_id }, context) => {
+			options?.onError?.(err, { updatedEvent, calendar_id }, context);
 			console.error("Error updating event:", err);
 			queryClient.setQueryData<Event[]>(["events", calendar_id], context?.previousEvents);
 		},
@@ -219,10 +291,20 @@ export const useUpdateEvent = (
 			options?.onSuccess?.(data, variables, context);
 			// Boom baby!
 		},
-		onSettled: async (data, error, {updatedEvent, calendar_id}, context) => {
-			options?.onSettled?.(data, error, {updatedEvent, calendar_id}, context);
+		onSettled: async (data, error, { updatedEvent, calendar_id }, context) => {
+			options?.onSettled?.(data, error, { updatedEvent, calendar_id }, context);
 			await queryClient.invalidateQueries({ queryKey: ["events", calendar_id] });
 			await queryClient.invalidateQueries({ queryKey: ["event", calendar_id, updatedEvent.event_id] });
+			if (context?.startTime && context?.endTime) {
+				await queryClient.invalidateQueries({
+					queryKey: ["events", "day", context.startTime.toISODate()],
+				});
+				if (context.startTime.toISODate() !== context.endTime.toISODate()) {
+					await queryClient.invalidateQueries({
+						queryKey: ["events", "day", context.endTime.toISODate()],
+					});
+				}
+			}
 		},
 	});
 };
@@ -233,7 +315,7 @@ export const useDeleteEvent = (
 	const queryClient = useQueryClient();
 	const isConnected = useIsConnected();
 
-	return useMutation<void, Error, { event_id: string; calendar_id: string }, { previousEvents: Event[] }>({
+	return useMutation({
 		mutationFn: async ({ event_id, calendar_id }: { event_id: string; calendar_id: string }) => {
 			if (isConnected) {
 				return await deleteEventOnServer(calendar_id, event_id);
@@ -250,10 +332,15 @@ export const useDeleteEvent = (
 				old?.filter((event) => event.event_id !== event_id)
 			);
 
+			const localEvent = await getEventFromDB(event_id);
+			if (!localEvent) {
+				throw new Error("Event not found locally");
+			}
+
 			await deleteEventFromDB(event_id);
 			await addMutationToQueue("DELETE_EVENT", event_id, { eventId: event_id });
 
-			return { previousEvents };
+			return { previousEvents, startTime: localEvent.start_time, endTime: localEvent.end_time };
 		},
 		onError: (err, { event_id, calendar_id }, context) => {
 			options?.onError?.(err, { event_id, calendar_id }, context);
@@ -268,6 +355,16 @@ export const useDeleteEvent = (
 			options?.onSettled?.(data, error, { event_id, calendar_id }, context);
 			await queryClient.invalidateQueries({ queryKey: ["events", calendar_id] });
 			await queryClient.invalidateQueries({ queryKey: ["event", calendar_id, event_id] });
+			if (context?.startTime && context?.endTime) {
+				await queryClient.invalidateQueries({
+					queryKey: ["events", "day", context.startTime.toISODate()],
+				});
+				if (context.startTime.toISODate() !== context.endTime.toISODate()) {
+					await queryClient.invalidateQueries({
+						queryKey: ["events", "day", context.endTime.toISODate()],
+					});
+				}
+			}
 		},
 	});
 };

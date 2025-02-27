@@ -12,7 +12,11 @@ import { Calendar } from "@/types/calendar.types";
 import DateTimePicker from "@react-native-community/datetimepicker";
 import { DateTime } from "luxon";
 import Dropdown from "@/components/Dropdown";
+import { useCreateEvent } from "@/hooks/event.hooks";
+import { cn } from "@/lib/utils";
+import { useSession } from "@/hooks/authContext";
 export default function CreateEvent() {
+	const { user } = useSession();
 	const today = DateTime.now();
 	function minuteToNearest15MinuteInterval(minute: number) {
 		return Math.round(minute / 15) * 15;
@@ -42,9 +46,15 @@ export default function CreateEvent() {
 	//REPLACE WITH USER'S CALENDARS
 	const { data: calendars, isLoading } = useMyCalendars();
 
+	const {mutate:createEvent, isPending} = useCreateEvent({
+		onSuccess: () => {
+			router.back();
+		}
+	})
+
 	const globColor = colorScheme == "light" ? "black" : "white";
 
-	if (isLoading || !calendars) {
+	if (isLoading || !calendars || !user) {
 		return <Text className="text-primary">Loading...</Text>;
 	}
 
@@ -191,7 +201,27 @@ export default function CreateEvent() {
 				</View>
 
 				{/* Get this to send event to db */}
-				<Button>Create Event</Button>
+				<Button
+				className={cn(isPending && "opacity-50")}
+				 onPress={() => {
+					if (isPending || !eventCalendarId || !name || !startDate || !endDate) {
+						return;
+					}
+					createEvent({
+						newEvent: {
+							name,
+							start_time: startDate,
+							end_time: endDate,
+							calendar_id: eventCalendarId,
+							location: "",
+							description: "",
+							notification: "",
+							frequency: "",
+							priority: 0,
+						},
+						calendar_id: eventCalendarId,
+					});
+				}}>Create Event</Button>
 			</View>
 		</View>
 	);
