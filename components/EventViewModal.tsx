@@ -3,14 +3,17 @@ import { Button } from '@/components/Button';
 import { useState } from 'react';
 import { DateTime } from 'luxon';
 import Feather from '@expo/vector-icons/Feather';
+import { useColorScheme } from 'nativewind';
+import { router } from 'expo-router';
+import { useDeleteEvent } from '@/hooks/event.hooks';
 
 
 
 interface EventViewModalProps {
     visible: boolean;
     onClose: () => void;
-    calendarId: string;
-    eventId: string;
+    calendarId: string | null;
+    eventId: string | null;
 }
 
 type TimestampDisplayProps = {
@@ -34,72 +37,89 @@ function EventViewModal({ visible, onClose, calendarId, eventId }: EventViewModa
     const [notification, setNotification] = useState('Test Notification');
     const [description, setDescription] = useState('Test Description');
 
+    const {colorScheme} = useColorScheme();
+
+    function openEditPage() {
+        onClose();
+        router.navigate(`/updateEvent?eventId=${eventId}&calendarId=${calendarId}`);
+    }
+
+    const {mutate: deleteEvent, isPending: isDeleting} = useDeleteEvent({
+        onSuccess: () => {
+            onClose();
+        }
+    })
+
+
+    if (!calendarId || !eventId) {
+        return null;
+    }
+
     return (
-        <Modal
-            animationType='fade'
-            transparent={true}
-            visible={visible}
-            onRequestClose={onClose}
-        >
-            <View className='flex-1 justify-center items-center bg-black/50'>
-                <View className='bg-background rounded-lg w-[90vw] h-[80vh] shadow-lg overflow-hidden'>
-                    <View className='flex-row items-center p-4 border-b border-gray-200'>
-                        <TouchableOpacity onPress={onClose} className='p-2 w-16'>
-                            <Text className='text-secondary-foreground text-3xl'>✕</Text>
-                        </TouchableOpacity>
+			<Modal animationType="fade" transparent={true} visible={visible} onRequestClose={onClose}>
+				<View className="flex-1 items-center justify-center bg-black/50">
+					<View className="h-[80vh] w-[98vw] overflow-hidden rounded-lg bg-background shadow-lg">
+						<View className="flex-row items-center border-b border-gray-200 p-4">
+							<TouchableOpacity onPress={onClose} className="w-16 p-2">
+								<Text className="text-3xl text-secondary-foreground">✕</Text>
+							</TouchableOpacity>
 
-                        <View className='flex-1 items-center'>
-                            <Text className='text-foreground font-bold text-2xl text-center'>{eventName}</Text>
-                        </View>
+							<View className="flex-1 items-center">
+								<Text className="text-center text-2xl font-bold text-foreground">{eventName}</Text>
+							</View>
 
-                        <View className='flex-row w-16 justify-end gap-2'>
-                            <TouchableOpacity>
-                                <Feather name="edit-2" className="mt-[1]" size={24} color="black" />
-                            </TouchableOpacity>
-                            <TouchableOpacity>
-                                <Feather name="trash" size={24} color="black" />
-                            </TouchableOpacity>
-                        </View>
-                    </View>
+							<View className="w-16 flex-row justify-end gap-2">
+								<TouchableOpacity onPress={openEditPage}>
+									<Feather
+										name="edit-2"
+										className="mt-[1] text-primary"
+										size={24}
+										color={colorScheme == "dark" ? "white" : "black"}
+									/>
+								</TouchableOpacity>
+								<TouchableOpacity onPress={() => {
+                                    deleteEvent({event_id: eventId, calendar_id: calendarId});
+                                }}>
+									<Feather name="trash" size={24} color={"red"} />
+								</TouchableOpacity>
+							</View>
+						</View>
 
-                    <ScrollView
-                        className='p-6'
-                        contentContainerStyle={{ gap: 16 }}
-                    >
-                        <View className='flex-row items-center space-x-3'>
-                            <Text className='text-foreground font-medium text-xl w-32'>Start Time:</Text>
-                            <TimestampDisplay timestamp={startTime} />
-                        </View>
+						<ScrollView className="p-6" contentContainerStyle={{ gap: 16 }}>
+							<View className="flex-row items-center space-x-3">
+								<Text className="w-32 text-xl font-medium text-foreground">Start Time:</Text>
+								<TimestampDisplay timestamp={startTime} />
+							</View>
 
-                        <View className='flex-row items-center space-x-3'>
-                            <Text className='text-foreground font-medium text-xl w-32'>End Time:</Text>
-                            <TimestampDisplay timestamp={endTime} />
-                        </View>
+							<View className="flex-row items-center space-x-3">
+								<Text className="w-32 text-xl font-medium text-foreground">End Time:</Text>
+								<TimestampDisplay timestamp={endTime} />
+							</View>
 
-                        <View className='space-y-3'>
-                            <Text className='text-foreground font-medium text-xl'>Description:</Text>
-                            <Text className='text-foreground text-lg'>{description}</Text>
-                        </View>
+							<View className="space-y-3">
+								<Text className="text-xl font-medium text-foreground">Description:</Text>
+								<Text className="text-lg text-foreground">{description}</Text>
+							</View>
 
-                        <View className='flex-row items-center space-x-3'>
-                            <Text className='text-foreground font-medium text-xl w-32'>Location:</Text>
-                            <Text className='text-foreground text-lg'>{location}</Text>
-                        </View>
+							<View className="flex-row items-center space-x-3">
+								<Text className="w-32 text-xl font-medium text-foreground">Location:</Text>
+								<Text className="text-lg text-foreground">{location}</Text>
+							</View>
 
-                        <View className='flex-row items-center space-x-3'>
-                            <Text className='text-foreground font-medium text-xl w-32'>Notification:</Text>
-                            <Text className='text-foreground text-lg'>{notification}</Text>
-                        </View>
+							<View className="flex-row items-center space-x-3">
+								<Text className="w-32 text-xl font-medium text-foreground">Notification:</Text>
+								<Text className="text-lg text-foreground">{notification}</Text>
+							</View>
 
-                        <View className='flex-row items-center mt-4 py-4 border-t border-gray-200'>
-                            <View className='w-6 h-6 rounded-full mr-3' style={{ backgroundColor: calendarColor }} />
-                            <Text className='text-foreground text-lg'>{calendarName}</Text>
-                        </View>
-                    </ScrollView>
-                </View>
-            </View>
-        </Modal>
-    )
+							<View className="mt-4 flex-row items-center border-t border-gray-200 py-4">
+								<View className="mr-3 h-6 w-6 rounded-full" style={{ backgroundColor: calendarColor }} />
+								<Text className="text-lg text-foreground">{calendarName}</Text>
+							</View>
+						</ScrollView>
+					</View>
+				</View>
+			</Modal>
+		);
 }
 
 export { EventViewModal };

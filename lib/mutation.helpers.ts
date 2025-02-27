@@ -7,7 +7,13 @@ import { Mutation, MutationTypes } from "@/types/mutation.types";
 export async function addMutationToQueue(mutation: MutationTypes, parameters: any, {calendarId, eventId} : {calendarId?:string, eventId?:string}) {
 	const db = await openDatabaseAsync("local.db");
 	try {
-        if (calendarId) {
+		if (calendarId && eventId) {
+			await db.runAsync(
+				"INSERT INTO mutations (mutation, timestamp, parameters, calendar_id, event_id) VALUES (?, ?, ?, ?, ?)",
+				[mutation, Date.now(), JSON.stringify(parameters), calendarId, eventId]
+			);
+		}
+        else if (calendarId) {
             await db.runAsync(
                 "INSERT INTO mutations (mutation, timestamp, parameters, calendar_id) VALUES (?, ?, ?, ?)",
                 [mutation, Date.now(), JSON.stringify(parameters), calendarId]

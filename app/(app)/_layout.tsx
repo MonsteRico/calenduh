@@ -84,6 +84,7 @@ export default function AppLayout() {
 						}}
 					>
 						<Stack.Screen name="index" />
+						<Stack.Screen name="updateEvent" options={{ presentation: "modal" }} />
 						<Stack.Screen
 							name="createEvent"
 							options={{
@@ -98,12 +99,9 @@ export default function AppLayout() {
 						/>
 						<Stack.Screen
 							name="agenda"
-							options={{
-								presentation: "modal",
-							}}
 						/>
 						<Stack.Screen
-							name="calendarInfoView"
+							name="updateCalendar"
 							options={{
 								presentation: "modal",
 							}}
