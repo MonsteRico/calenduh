@@ -37,6 +37,10 @@ function Dropdown<T>({ options, renderItem, onSelect, label, defaultValue }: Dro
 		[onSelect, toggleModal]
 	);
 
+	useEffect(() => {
+        setSelectedItem(defaultValue);
+    }, [defaultValue]);
+
 	const selectedItemContent = useMemo(() => {
 		if (selectedItem) {
 			return renderItem(selectedItem);
