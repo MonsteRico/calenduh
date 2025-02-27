@@ -1,6 +1,6 @@
 import { Button } from "@/components/Button";
 import { router } from "expo-router";
-import { StyleSheet, Text, View } from "react-native";
+import { StyleSheet, Text, View, TouchableOpacity } from "react-native";
 import { SelectList } from "react-native-dropdown-select-list";
 import React, { useState } from "react";
 import { FontAwesome } from "@expo/vector-icons";
@@ -32,6 +32,12 @@ export default function CreateEvent() {
 	const [notify, setNotif] = useState(""); //Text box
 	const [eventCalendarId, setEventCalendarId] = useState<string>(""); //Single Select List
 	const [freq, setFrequency] = useState(""); //Single Select List
+
+	const [showStartDatePicker, setShowStartDatePicker] = useState(false);
+	const [showStartTimePicker, setShowStartTimePicker] = useState(false);
+	const [showEndDatePicker, setShowEndDatePicker] = useState(false);
+	const [showEndTimePicker, setShowEndTimePicker] = useState(false);
+
 
 	//REPLACE WITH USER'S CALENDARS
 	const { data: calendars, isLoading } = useMyCalendars();
@@ -108,50 +114,80 @@ export default function CreateEvent() {
 				</View>
 
 				<View className="flex-row items-center gap-2">
-					<Text className="text-primary">Start:</Text>
-					<DateTimePicker
-						value={startDate.toJSDate()}
-						mode={"date"}
-						onChange={(e, selectedDate) => {
-							if (!selectedDate) return;
-							const luxonDate = DateTime.fromJSDate(selectedDate);
-							setStartDate(luxonDate);
-						}}
-					/>
-					<DateTimePicker
-						value={startDate.toJSDate()}
-						is24Hour={false}
-						mode={"time"}
-						onChange={(e, selectedDate) => {
-							if (!selectedDate) return;
-							const luxonDate = DateTime.fromJSDate(selectedDate);
-							setStartDate(luxonDate);
-						}}
-					/>
+					<Text className='text-primary pr-[3]'>Start Time:</Text>
+					<TouchableOpacity
+						className='bg-gray-200 px-4 py-2 rounded-lg flex flex-row items-center space-x-2'
+						onPress={() => setShowStartDatePicker(true)}
+					>
+						<Text className='text-primary font-medium'>{startDate.toLocaleString(DateTime.DATETIME_MED)}</Text>
+					</TouchableOpacity>
+					{showStartDatePicker && (
+						<DateTimePicker
+							value={startDate.toJSDate()}
+							mode={"date"}
+							onChange={(e, selectedDate) => {
+								if (selectedDate) {
+									const luxonDate = DateTime.fromJSDate(selectedDate);
+									setStartDate(luxonDate);
+									setShowStartTimePicker(true);
+								}
+								setShowStartDatePicker(false);
+							}}
+						/>
+					)}
+					{showStartTimePicker && (
+						<DateTimePicker
+							value={startDate.toJSDate()}
+							is24Hour={false}
+							mode={"time"}
+							onChange={(e, selectedDate) => {
+								if (selectedDate) {
+									const luxonDate = DateTime.fromJSDate(selectedDate);
+									setStartDate(luxonDate);
+								}
+								setShowStartTimePicker(false);
+							}}
+						/>
+					)}
 				</View>
 
 				<View className="flex-row items-center gap-2">
-					<Text className="text-primary">End:</Text>
-					<DateTimePicker
-						value={endDate.toJSDate()}
-						is24Hour={false}
-						mode={"date"}
-						onChange={(e, selectedDate) => {
-							if (!selectedDate) return;
-							const luxonDate = DateTime.fromJSDate(selectedDate);
-							setEndDate(luxonDate);
-						}}
-					/>
-					<DateTimePicker
-						value={endDate.toJSDate()}
-						is24Hour={false}
-						mode={"time"}
-						onChange={(e, selectedDate) => {
-							if (!selectedDate) return;
-							const luxonDate = DateTime.fromJSDate(selectedDate);
-							setEndDate(luxonDate);
-						}}
-					/>
+					<Text className="text-primary pr-[9]">End Time:</Text>
+					<TouchableOpacity
+						className='bg-gray-200 px-4 py-2 rounded-lg flex flex-row items-center space-x-2'
+						onPress={() => setShowEndDatePicker(true)}
+					>
+						<Text className='text-primary font-medium'>{endDate.toLocaleString(DateTime.DATETIME_MED)}</Text>
+					</TouchableOpacity>
+					{showEndDatePicker && (
+						<DateTimePicker
+							value={endDate.toJSDate()}
+							is24Hour={false}
+							mode={"date"}
+							onChange={(e, selectedDate) => {
+								if (selectedDate) {
+									const luxonDate = DateTime.fromJSDate(selectedDate);
+									setEndDate(luxonDate);
+									setShowEndTimePicker(true);
+								}
+								setShowEndDatePicker(false);
+							}}
+						/>
+					)}
+					{showEndTimePicker && (
+						<DateTimePicker
+							value={endDate.toJSDate()}
+							is24Hour={false}
+							mode={"time"}
+							onChange={(e, selectedDate) => {
+								if (selectedDate) {
+									const luxonDate = DateTime.fromJSDate(selectedDate);
+									setEndDate(luxonDate);
+								}
+								setShowEndTimePicker(false);
+							}}
+						/>
+					)}
 				</View>
 
 				{/* Get this to send event to db */}
