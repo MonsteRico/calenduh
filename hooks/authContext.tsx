@@ -64,7 +64,6 @@ export function SessionProvider({ children }: PropsWithChildren) {
 	});
 
 	const queryClient = useQueryClient();
-	const { setEnabledCalendarIds } = useEnabledCalendarIds();
 
 	return (
 		<AuthContext.Provider
@@ -109,7 +108,6 @@ export function SessionProvider({ children }: PropsWithChildren) {
 						SecureStore.deleteItemAsync("user");
 					}
 					server.defaults.headers.Cookie = "";
-					setEnabledCalendarIds([]);
 					// navigate to sign in page
 					router.replace("/sign-in");
 				},

@@ -7,6 +7,9 @@ import { useCurrentViewedDay } from "@/hooks/useCurrentViewedDay";
 import { router } from "expo-router";
 import { TapGestureHandler } from "react-native-gesture-handler";
 import { useEventsForDay } from "@/hooks/event.hooks";
+import { useEnabledCalendarIds } from "@/hooks/useEnabledCalendarIds";
+import { useCalendar } from "@/hooks/calendar.hooks";
+	import { useMemo } from "react";
 
 function Month({ month, year }: { month: number; year: number }) {
     const screenWidth = Dimensions.get("window").width;
@@ -74,33 +77,47 @@ function Day({ day, currentMonth, bottomRow = false }: { day: DateTime<true>; cu
 	const isToday = day.hasSame(DateTime.now(), "day");
 
 	const { dayBeingViewed, setDayBeingViewed } = useCurrentViewedDay();
+	const { enabledCalendarIds } = useEnabledCalendarIds();
 
 	const onDoubleTap = () => {
 		router.navigate(`/createEvent?givenDate=${day.toISODate()}`);
 	};
 
-	const {data: events, isLoading } = useEventsForDay(day);
+	const { data: events, isLoading } = useEventsForDay(day);
 
 	if (isLoading || !events) {
 		return null;
 	}
 
-	// console.log("Events for", day.toISODate(), events);
+
+	const calendarsForShownEvents = useMemo(() => {
+		// Filter events based on enabled calendar IDs
+		const shownEvents = events.filter((event) => enabledCalendarIds.includes(event.calendar_id));
+
+		// Create a list of unique calendar IDs
+		return shownEvents
+			.map((event) => event.calendar_id)
+			.reduce((acc, curr) => {
+				if (!acc.includes(curr)) {
+					acc.push(curr);
+				}
+				return acc;
+			}, [] as string[]);
+	}, [enabledCalendarIds, events]); // Memoize based on changes to enabledCalendarIds or events
 
 	return (
 		<TapGestureHandler numberOfTaps={2} onActivated={onDoubleTap}>
 			<Pressable
 				className={cn(
-					"basis-1/7 relative flex w-full items-center justify-center border-l-4 border-t-4 border-muted text-2xl",
+					"relative flex w-full basis-1/7 items-center justify-center border-l-4 border-t-4 border-muted text-2xl",
 					dayIsSaturday && "border-r-4",
-					bottomRow && "border-b-4",
+					bottomRow && "border-b-4"
 				)}
 				onPress={() => {
 					console.log("Day pressed", day.toISODate());
 					setDayBeingViewed(day);
 					router.navigate(`/agenda`);
 				}}
-
 			>
 				<Text
 					className={cn(
@@ -112,10 +129,23 @@ function Day({ day, currentMonth, bottomRow = false }: { day: DateTime<true>; cu
 				>
 					{dayNumber}
 				</Text>
-				<Entypo className={cn("invisible")} name="dot-single" size={24} />
+				<View className="flex flex-row items-center justify-center">
+					{calendarsForShownEvents.map((calendarId) => (
+						<EventDot key={calendarId} calendarId={calendarId} />
+					))}
+					{calendarsForShownEvents.length === 0 && <Entypo className={cn("invisible")} name="dot-single" size={24} />}
+				</View>
 			</Pressable>
 		</TapGestureHandler>
 	);
+}
+
+function EventDot({ calendarId }: { calendarId: string }) {
+	const { data: calendar } = useCalendar(calendarId);
+	if (!calendar) {
+		return null;
+	}
+	return <Entypo name="dot-single" size={24} color={calendar.color} />;
 }
 
 export default Month;
