@@ -15,6 +15,7 @@ import * as Network from "expo-network";
 import { Text } from "react-native";
 import { useDrizzleStudio } from "expo-drizzle-studio-plugin";
 import * as SQLite from "expo-sqlite";
+import { IsConnected } from "@/hooks/useIsConnected";
 // Create a client
 const queryClient = new QueryClient();
 const db = SQLite.openDatabaseSync("local.db");
@@ -25,11 +26,14 @@ export default function RootLayout() {
 
 	useDrizzleStudio(db);
 
-	if (networkState.isConnected == undefined) {
+
+	if (Object.keys(networkState).length == 0 || networkState.isConnected == undefined) {
 		return <Text>Loading...</Text>;
 	}
 
+
 	return (
+		<IsConnected.Provider value={{value: networkState.isConnected}}>
 		<SQLite.SQLiteProvider databaseName={`local.db`} onInit={migrateDbIfNeeded}>
 			<QueryClientProvider client={queryClient}>
 				<GestureHandlerRootView>
@@ -44,5 +48,6 @@ export default function RootLayout() {
 				</GestureHandlerRootView>
 			</QueryClientProvider>
 		</SQLite.SQLiteProvider>
+		</IsConnected.Provider>
 	);
 }

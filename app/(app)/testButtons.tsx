@@ -8,11 +8,13 @@ import { useQueryClient } from "@tanstack/react-query";
 import { useCalendars } from "@/hooks/calendar.hooks";
 import { useSQLiteContext } from "expo-sqlite";
 import { getCalendarsFromDB } from "@/lib/calendar.helpers";
+import { useIsConnected } from "@/hooks/useIsConnected";
 
 export default function TestButtons() {
 	const isPresented = router.canGoBack();
 	const queryClient = useQueryClient();
 	const { data: calendars, isLoading } = useCalendars();
+	const isConnected = useIsConnected();
 	const db = useSQLiteContext();
 	return (
 		<View className="flex-1 bg-background">
@@ -30,10 +32,14 @@ export default function TestButtons() {
 				<Button onPress={() => {}}>Create Calendar</Button>
 				<Button onPress={() => {}}>Update Calendar</Button>
 				<Button onPress={() => {}}>Delete Calendar</Button>
-				<Button onPress={async () => {
-					const localCalendars = await getCalendarsFromDB();
-					console.log("localCalendars", localCalendars);
-				}}>Log DB Calendars</Button>
+				<Button
+					onPress={async () => {
+						const localCalendars = await getCalendarsFromDB();
+						console.log("localCalendars", localCalendars);
+					}}
+				>
+					Log DB Calendars
+				</Button>
 				<Button
 					onPress={() => {
 						queryClient.invalidateQueries({ queryKey: ["calendars"] });
@@ -53,6 +59,16 @@ export default function TestButtons() {
 				>
 					Reset DB COMPLETELY
 				</Button>
+				<View className="items-left flex-row flex-wrap gap-4">
+					<Button
+						onPress={() => {
+							console.log("isConnected", isConnected);
+						}}
+					>
+						Check is connected
+					</Button>
+					<Text className="text-red-500">{isConnected ? "Connected" : "Not Connected"}</Text>
+				</View>
 			</View>
 			{!isLoading && calendars && (
 				<View className="items-left flex-row flex-wrap gap-4">

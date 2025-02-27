@@ -37,7 +37,7 @@ export const useCalendars = () => {
 					return [];
 				}
 			} else {
-				console.log("You are offline, cannot fetch the calendars from the server");
+				console.error("You are offline, cannot fetch the calendars from the server");
 				return [];
 			}
 		},
@@ -118,6 +118,7 @@ export const useMyCalendars = () => {
 					return localCalendars;
 				}
 			} else {
+				console.log("You are offline, cannot fetch the calendars from the server");
 				return localCalendars;
 			}
 		},
@@ -154,7 +155,14 @@ export const useSubscribedCalendars = () => {
 
 // --- Mutations --- (No changes needed in mutations)
 
-export const useCreateCalendar = (options?: UseMutationOptions<Calendar, Error, Omit<Calendar, "calendar_id">, { previousCalendars: Calendar[]; tempId: string }>) => {
+export const useCreateCalendar = (
+	options?: UseMutationOptions<
+		Calendar,
+		Error,
+		Omit<Calendar, "calendar_id">,
+		{ previousCalendars: Calendar[]; tempId: string }
+	>
+) => {
 	const queryClient = useQueryClient();
 	const isConnected = useIsConnected();
 
@@ -190,8 +198,9 @@ export const useCreateCalendar = (options?: UseMutationOptions<Calendar, Error, 
 				queryClient.setQueryData<Calendar[]>(["calendars"], (old) => [...(old || []), optimisticCalendar]);
 
 				await insertCalendarIntoDB(optimisticCalendar, user.user_id);
-				addMutationToQueue("CREATE_CALENDAR", newCalendar, {calendarId: tempId});
-
+				if (!isConnected) {
+					addMutationToQueue("CREATE_CALENDAR", newCalendar, { calendarId: tempId });
+				}
 				return { previousCalendars, tempId };
 			},
 			onError: (err, newCalendar, context) => {
@@ -210,7 +219,7 @@ export const useCreateCalendar = (options?: UseMutationOptions<Calendar, Error, 
 				if (isConnected && newCalendar && context?.tempId && !error) {
 					try {
 						console.log(context);
-						await updateCalendarInDB(context.tempId, newCalendar, user .user_id);
+						await updateCalendarInDB(context.tempId, newCalendar, user.user_id);
 					} catch (error) {
 						console.error("Error syncing calendar to server:", error);
 					}
@@ -221,7 +230,9 @@ export const useCreateCalendar = (options?: UseMutationOptions<Calendar, Error, 
 	);
 };
 
-export const useUpdateCalendar = (options?: UseMutationOptions<UpdateCalendar, Error, UpdateCalendar, { previousCalendars: Calendar[] }>) => {
+export const useUpdateCalendar = (
+	options?: UseMutationOptions<UpdateCalendar, Error, UpdateCalendar, { previousCalendars: Calendar[] }>
+) => {
 	const queryClient = useQueryClient();
 	const isConnected = useIsConnected();
 
@@ -250,7 +261,9 @@ export const useUpdateCalendar = (options?: UseMutationOptions<UpdateCalendar, E
 			);
 
 			await updateCalendarInDB(updatedCalendar.calendar_id, updatedCalendar, user.user_id);
-			await addMutationToQueue("UPDATE_CALENDAR", updatedCalendar, {calendarId:updatedCalendar.calendar_id});
+			if (!isConnected) {
+				await addMutationToQueue("UPDATE_CALENDAR", updatedCalendar, { calendarId: updatedCalendar.calendar_id });
+			}
 			return { previousCalendars };
 		},
 		onError: (err, updatedCalendar, context) => {
@@ -262,17 +275,18 @@ export const useUpdateCalendar = (options?: UseMutationOptions<UpdateCalendar, E
 			options?.onSuccess?.(data, variables, context);
 			// Boom baby!
 		},
-		onSettled: async (data ,error, variables, context) => {
+		onSettled: async (data, error, variables, context) => {
 			options?.onSettled?.(data, error, variables, context);
 			await queryClient.invalidateQueries({ queryKey: ["calendars"] });
 		},
 	});
 };
 
-export const useDeleteCalendar = (options?: UseMutationOptions<void, Error, string, { previousCalendars: Calendar[] }>) => {
+export const useDeleteCalendar = (
+	options?: UseMutationOptions<void, Error, string, { previousCalendars: Calendar[] }>
+) => {
 	const queryClient = useQueryClient();
 	const isConnected = useIsConnected();
-
 
 	return useMutation<void, Error, string, { previousCalendars: Calendar[] }>({
 		mutationFn: async (calendar_id: string) => {
@@ -292,8 +306,9 @@ export const useDeleteCalendar = (options?: UseMutationOptions<void, Error, stri
 			);
 
 			await deleteCalendarFromDB(calendar_id);
-			await addMutationToQueue("DELETE_CALENDAR", calendar_id, {calendarId: calendar_id});
-
+			if (!isConnected) {
+				await addMutationToQueue("DELETE_CALENDAR", calendar_id, { calendarId: calendar_id });
+			}
 			return { previousCalendars };
 		},
 		onError: (err, calendar_id, context) => {

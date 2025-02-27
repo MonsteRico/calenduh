@@ -188,6 +188,7 @@ export const useCreateEvent = (
 			if (isConnected) {
 				return await createEventOnServer(calendar_id, newEvent);
 			} else {
+				console.log("not connected");
 				return { ...newEvent, event_id: Date.now().toString() } as Event;
 			}
 		},
@@ -205,8 +206,9 @@ export const useCreateEvent = (
 			queryClient.setQueryData<Event[]>(["events", calendar_id], (old) => [...(old || []), optimisticEvent]);
 
 			await insertEventIntoDB(optimisticEvent, user.user_id);
-			addMutationToQueue("CREATE_EVENT", newEvent, { eventId: tempId, calendarId: calendar_id });
-
+			if (!isConnected) {
+				addMutationToQueue("CREATE_EVENT", newEvent, { eventId: tempId, calendarId: calendar_id });
+			}
 			return { previousEvents, tempId };
 		},
 		onError: (err, { newEvent, calendar_id }, context) => {
@@ -270,10 +272,12 @@ export const useUpdateEvent = (
 			);
 
 			await updateEventInDB(updatedEvent.event_id, updatedEvent, user.user_id);
-			await addMutationToQueue("UPDATE_EVENT", updatedEvent, {
-				eventId: updatedEvent.event_id,
-				calendarId: calendar_id,
-			});
+			if (!isConnected) {
+				await addMutationToQueue("UPDATE_EVENT", updatedEvent, {
+					eventId: updatedEvent.event_id,
+					calendarId: calendar_id,
+				});
+			}
 
 			const localEvent = await getEventFromDB(updatedEvent.event_id);
 			if (!localEvent) {
@@ -338,7 +342,9 @@ export const useDeleteEvent = (
 			}
 
 			await deleteEventFromDB(event_id);
-			await addMutationToQueue("DELETE_EVENT", event_id, { eventId: event_id });
+			if (!isConnected) {
+				await addMutationToQueue("DELETE_EVENT", event_id, { eventId: event_id });
+			}
 
 			return { previousEvents, startTime: localEvent.start_time, endTime: localEvent.end_time };
 		},

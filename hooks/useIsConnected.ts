@@ -1,21 +1,16 @@
 import * as React from "react";
-import { Platform } from "react-native";
-import { addNetworkStateListener } from "expo-network";
-// Custom hook to check network connectivity
-export const useIsConnected = () => {
-  const [isConnected, setIsConnected] = React.useState(true); // Assume online by default
 
-  React.useEffect(() => {
-    if (Platform.OS !== "web") {
-      const subscription = addNetworkStateListener((state) => {
-        setIsConnected(state.isConnected === true);
-      });
+export const IsConnected = React.createContext({
+	value: false,
+});
 
-      return () => {
-        subscription.remove();
-      };
-    }
-  }, []);
+export function useIsConnected() {
+	const value = React.useContext(IsConnected);
+	if (process.env.NODE_ENV !== "production") {
+		if (!value) {
+			throw new Error("useIsConnected must be wrapped in a <IsConnectedProvider />");
+		}
+	}
 
-  return isConnected;
-};
+	return value.value
+}
