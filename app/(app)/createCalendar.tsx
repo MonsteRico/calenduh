@@ -18,7 +18,6 @@ export default function CreateCalendar() {
     const [calendarColorHex, setCalendarColor] = useState(getRandomItem(calendarColors).hex);
     const [isPublic, setIsPublic] = useState(false);
     const { mutate } = useCreateCalendar();
-
     const { user } = useSession();
 
     if (!user) {

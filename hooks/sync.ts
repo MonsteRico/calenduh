@@ -40,11 +40,18 @@ export function useSync() {
 		throw new Error("User not found");
 	}
 
+	const delay = (ms: number) => new Promise((resolve) => setTimeout(resolve, ms));
+
 	return useMutation({
 		mutationFn: async () => {
 			//TODO needs better conflict resolution, rn it always will use the device/local things as the source of truth
 			setSyncing(true);
 			let numberSynced = 0;
+
+			if (queryClient.isFetching() || queryClient.isMutating()) {
+				await delay(1000);
+			}
+
 			// We only sync if we are connected and not in a web browser (web browsers will already be synced due to always being online)
 			if (isConnected && Platform.OS !== "web") {
 				const mutations = await getMutationsFromDB();

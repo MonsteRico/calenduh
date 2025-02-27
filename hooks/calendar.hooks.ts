@@ -18,6 +18,7 @@ import {
 } from "@/lib/calendar.helpers";
 import { addMutationToQueue, getMutationsFromDB } from "@/lib/mutation.helpers";
 import { useSession } from "./authContext";
+import { useEnabledCalendarIds } from "./useEnabledCalendarIds";
 
 // --- Queries ---
 
@@ -165,7 +166,7 @@ export const useCreateCalendar = (
 ) => {
 	const queryClient = useQueryClient();
 	const isConnected = useIsConnected();
-
+	const {enabledCalendarIds, setEnabledCalendarIds} = useEnabledCalendarIds();
 	const { user } = useSession();
 	if (!user) {
 		throw new Error("User not found");
@@ -195,6 +196,8 @@ export const useCreateCalendar = (
 					calendar_id: tempId,
 				};
 
+				setEnabledCalendarIds([...enabledCalendarIds, tempId]);
+
 				queryClient.setQueryData<Calendar[]>(["calendars"], (old) => [...(old || []), optimisticCalendar]);
 
 				await insertCalendarIntoDB(optimisticCalendar, user.user_id);
@@ -220,11 +223,13 @@ export const useCreateCalendar = (
 					try {
 						console.log(context);
 						await updateCalendarInDB(context.tempId, newCalendar, user.user_id);
+						setEnabledCalendarIds([...enabledCalendarIds, newCalendar.calendar_id]);
 					} catch (error) {
 						console.error("Error syncing calendar to server:", error);
 					}
 				}
 				await queryClient.invalidateQueries({ queryKey: ["calendars"] });
+				
 			},
 		}
 	);
