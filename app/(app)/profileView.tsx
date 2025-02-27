@@ -8,6 +8,7 @@ import dayjs from 'dayjs';
 import React from "react";
 import Feather from '@expo/vector-icons/Feather'
 import { useColorScheme } from "nativewind";
+import { ConfirmDelete } from "@/components/ConfirmDelete";
 
 
 export default function ProfileView() {
@@ -57,9 +58,10 @@ export default function ProfileView() {
                     <TouchableOpacity onPress={handleEditToggle}>
                         <Feather name="edit-2" className="mt-[1]" size={24} color={globColor} />
                     </TouchableOpacity>
-                    <TouchableOpacity onPress={handleDelete} className='mr-4'>
+                    <ConfirmDelete onDelete={handleDelete} buttonClass='mr-4'/>
+                    {/*<TouchableOpacity onPress={handleDelete} className='mr-4'>
                         <Feather name="trash" size={24} color="red" />
-                    </TouchableOpacity>
+                    </TouchableOpacity>*/}
                 </View>
             </View>
     
@@ -104,7 +106,7 @@ export default function ProfileView() {
                         </View>
                     </View>
                 ) : (
-                    <View className="space-y-6">
+                    <View className="mt-4">
                         <View className="space-y-4">
                             <View className="flex-row border-b border-gray-200 p-2 ">
                                 <Text className="text-foreground text-xl font-medium w-1/3">Username</Text>
@@ -125,6 +127,10 @@ export default function ProfileView() {
                         </View>
                     </View>
                 )}
+            </View>
+
+            <View>
+                <Button className='m-8 mr-10 ml-10'>Sign-In</Button>
             </View>
         </View>
     );
