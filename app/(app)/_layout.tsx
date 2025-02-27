@@ -59,59 +59,65 @@ export default function AppLayout() {
 
 	// This layout can be deferred because it's not the root layout.
 	return (
-			<SyncContext.Provider
+		<SyncContext.Provider
+			value={{
+				syncing,
+				setSyncing: setIsSyncing,
+			}}
+		>
+			<DayBeingViewedContext.Provider
 				value={{
-					syncing,
-					setSyncing: setIsSyncing,
+					value: dayBeingViewed,
+					setValue: setDayBeingViewed,
 				}}
 			>
-				<DayBeingViewedContext.Provider
+				<EnabledCalendarIdsContext.Provider
 					value={{
-						value: dayBeingViewed,
-						setValue: setDayBeingViewed,
+						value: enabledCalendarIds,
+						setValue: setEnabledCalendarIds,
 					}}
 				>
-					<EnabledCalendarIdsContext.Provider
-						value={{
-							value: enabledCalendarIds,
-							setValue: setEnabledCalendarIds,
+					<Stack
+						screenOptions={{
+							headerShown: false,
+							contentStyle: { flex: 1, backgroundColor: colorScheme === "dark" ? "#030711" : "white" },
 						}}
 					>
-						<Stack
-							screenOptions={{
-								headerShown: false,
-								contentStyle: { flex: 1, backgroundColor: colorScheme === "dark" ? "#030711" : "white" },
+						<Stack.Screen name="index" />
+						<Stack.Screen
+							name="createEvent"
+							options={{
+								presentation: "modal",
 							}}
-						>
-							<Stack.Screen name="index" />
-							<Stack.Screen
-								name="createEvent"
-								options={{
-									presentation: "modal",
-								}}
-							/>
-							<Stack.Screen
-								name="calendarsList"
-								options={{
-									presentation: "modal",
-								}}
-							/>
-							<Stack.Screen
-								name="calendarInfoView"
-								options={{
-									presentation: "modal",
-								}}
-							/>
+						/>
+						<Stack.Screen
+							name="calendarsList"
+							options={{
+								presentation: "modal",
+							}}
+						/>
+						<Stack.Screen
+							name="agenda"
+							options={{
+								presentation: "modal",
+							}}
+						/>
+						<Stack.Screen
+							name="calendarInfoView"
+							options={{
+								presentation: "modal",
+							}}
+						/>
 
-							<Stack.Screen
-								name="createCalendar"
-								options={{
-									presentation: "modal",
-								}}
-							/>
-						</Stack>
-					</EnabledCalendarIdsContext.Provider>
-				</DayBeingViewedContext.Provider>
-			</SyncContext.Provider>
+						<Stack.Screen
+							name="createCalendar"
+							options={{
+								presentation: "modal",
+							}}
+						/>
+					</Stack>
+				</EnabledCalendarIdsContext.Provider>
+			</DayBeingViewedContext.Provider>
+		</SyncContext.Provider>
 	);
 }

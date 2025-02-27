@@ -33,18 +33,16 @@ export async function migrateDbIfNeeded(db: SQLiteDatabase) {
 		await db.execAsync(`
     CREATE TABLE IF NOT EXISTS events (
       event_id TEXT PRIMARY KEY,
-      user_id TEXT NOT NULL,
       calendar_id TEXT NOT NULL,
       name TEXT NOT NULL,
       location TEXT,
       description TEXT,
       notification TEXT,
-      frequency INTEGER,
+      frequency TEXT,
       priority INTEGER,
       start_time NUMBER,
       end_time NUMBER,
-      FOREIGN KEY (calendar_id) REFERENCES calendars (calendar_id) ON DELETE CASCADE ON UPDATE CASCADE,
-      CHECK (user_id IS NOT NULL)
+      FOREIGN KEY (calendar_id) REFERENCES calendars (calendar_id) ON DELETE CASCADE ON UPDATE CASCADE
     );
   `);
 

@@ -8,6 +8,7 @@ import { CalendarDefaultNotificationModal } from "@/components/CalendarDefaultNo
 import { Platform } from "react-native";
 import { useCreateCalendar } from "@/hooks/calendar.hooks";
 import { useIsConnected } from "@/hooks/useIsConnected";
+import { useSession } from "@/hooks/authContext";
 
 function getRandomItem<T>(list: T[]): T {
 	return list[Math.floor(Math.random() * list.length)];
@@ -23,6 +24,11 @@ export default function CreateCalendar() {
 	const [isPublic, setIsPublic] = useState(false);
 	const { mutate } = useCreateCalendar();
 
+	const {user} = useSession();
+
+	if (!user) {
+		return <Text className="text-primary">Loading...</Text>;
+	}
 
 	return (
 		<View className="flex-1 bg-background">
@@ -97,7 +103,7 @@ export default function CreateCalendar() {
 							title: calendarName,
 							color: calendarColorHex,
 							is_public: isPublic,
-							user_id: null,
+							user_id: user.user_id,
 						});
 						router.back();
 					}}
