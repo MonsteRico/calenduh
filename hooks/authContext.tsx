@@ -5,6 +5,7 @@ import * as SecureStore from "expo-secure-store";
 import server from "@/constants/serverAxiosClient";
 import { router } from "expo-router";
 import { User, Session } from "@/lib/types";
+import { useEnabledCalendarIds } from "./useEnabledCalendarIds";
 
 const AuthContext = createContext<{
 	signIn: (sessionId: string) => void;
@@ -63,6 +64,7 @@ export function SessionProvider({ children }: PropsWithChildren) {
 	});
 
 	const queryClient = useQueryClient();
+	const { setEnabledCalendarIds } = useEnabledCalendarIds();
 
 	return (
 		<AuthContext.Provider
@@ -107,6 +109,7 @@ export function SessionProvider({ children }: PropsWithChildren) {
 						SecureStore.deleteItemAsync("user");
 					}
 					server.defaults.headers.Cookie = "";
+					setEnabledCalendarIds([]);
 					// navigate to sign in page
 					router.replace("/sign-in");
 				},

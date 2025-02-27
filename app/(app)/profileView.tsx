@@ -1,15 +1,18 @@
 import { Button } from "@/components/Button";
 import { router } from "expo-router";
-import { StyleSheet, Text, View, TouchableOpacity, TextInput } from "react-native";
+import { StyleSheet, Text, View, TouchableOpacity, TextInput, Platform } from "react-native";
 import { Input } from "@/components/Input";
 import { useState } from "react";
-import DateTimePicker from 'react-native-ui-datepicker';
 import dayjs from 'dayjs';
 import React from "react";
 import Feather from '@expo/vector-icons/Feather'
 import { useColorScheme } from "nativewind";
 import { ConfirmDelete } from "@/components/ConfirmDelete";
 import { GuestSignInModal } from "@/components/GuestSignInModal";
+import { DateTime } from "luxon";
+import DateTimePicker from "@react-native-community/datetimepicker";
+import { useDeleteUser } from "@/hooks/user.hooks";
+import { useSession } from "@/hooks/authContext";
 
 
 export default function ProfileView() {
@@ -18,7 +21,7 @@ export default function ProfileView() {
     const [isEditing, setIsEditing] = useState(false);
     const [username, setUserName] = useState("");
     const [name, setName] = useState("");
-    const [birthday, setBirthday] = React.useState(dayjs());
+    const [birthday, setBirthday] = useState(DateTime.fromISO('1900-01-01T00:00:00.000Z'));
     const { colorScheme } = useColorScheme();
 
     const [tempUsername, setTempUserName] = useState(username);
@@ -26,6 +29,7 @@ export default function ProfileView() {
     const [tempBirthday, setTempBirthday] = useState(birthday);
 
     const [isModalVisible, setModalVisible] = useState(false);
+    const [showDatePicker, setShowDatePicker] = useState(false);
 
 
     const handleEditToggle = () => {
@@ -43,11 +47,16 @@ export default function ProfileView() {
         setTempBirthday(birthday);
     };
 
-    const handleDelete = () => {
-        console.log("Account deleted");
-    };
+    const { mutate: deleteUser, isPending: isDeleting } = useDeleteUser({});
+
     const globColor = colorScheme == "light" ? "black" : "white";
     const globColorInverse = colorScheme == "light" ? "white" : "black";
+
+    const { user } = useSession();
+    if (!user) {
+        return <Text className="text-primary">Loading...</Text>;
+    }
+
     return (
         <View>
             <GuestSignInModal
@@ -66,7 +75,7 @@ export default function ProfileView() {
                     <TouchableOpacity onPress={handleEditToggle}>
                         <Feather name="edit-2" className="mt-[1]" size={24} color={globColor} />
                     </TouchableOpacity>
-                    <ConfirmDelete onDelete={handleDelete} buttonClass='mr-4' />
+                    <ConfirmDelete onDelete={() => {deleteUser(user.user_id)}} buttonClass='mr-4' />
                 </View>
             </View>
 
@@ -126,9 +135,27 @@ export default function ProfileView() {
 
                                 <View className="flex-row border-b border-gray-200 p-2">
                                     <Text className="text-foreground text-xl font-medium w-1/3">Birthday</Text>
-                                    <Text className="text-foreground text-xl font-semibold">
-                                        {birthday?.format ? birthday.format("MM-DD-YYYY") : "N/A"}
-                                    </Text>
+                                    {Platform.OS === 'android' && (
+                                        <TouchableOpacity
+                                            className='bg-gray-200 px-4 py-2 rounded-lg flex flex-row items-center space-x-2'
+                                            onPress={() => setShowDatePicker(true)}
+                                        >
+                                            <Text className='text-primary font-medium'>{birthday.toLocaleString(DateTime.DATE_MED)}</Text>
+                                        </TouchableOpacity>
+                                    )}
+                                    {(showDatePicker || Platform.OS === "ios") && (
+                                        <DateTimePicker
+                                            value={birthday?.toJSDate()}
+                                            mode={"date"}
+                                            onChange={(e, selectedDate) => {
+                                                if (selectedDate && e.type === "set") {
+                                                    const luxonDate = DateTime.fromJSDate(selectedDate);
+                                                    setBirthday(luxonDate);
+                                                }
+                                                setShowDatePicker(false);
+                                            }}
+                                        />
+                                    )}
                                 </View>
                             </View>
                         </View>

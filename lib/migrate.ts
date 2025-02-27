@@ -21,12 +21,14 @@ export async function migrateDbIfNeeded(db: SQLiteDatabase) {
 		await db.execAsync(`
     CREATE TABLE IF NOT EXISTS calendars (
       calendar_id TEXT PRIMARY KEY,
-      user_id TEXT NOT NULL,
+      user_id TEXT,
       group_id TEXT,
       color TEXT NOT NULL DEFAULT '#fac805',
       title TEXT NOT NULL,
       is_public INTEGER NOT NULL DEFAULT 0,
-      CHECK (user_id IS NOT NULL)
+      CHECK (user_id IS NOT NULL OR group_id IS NOT NULL),
+      FOREIGN KEY (user_id) REFERENCES users (user_id) ON DELETE CASCADE ON UPDATE CASCADE,
+      FOREIGN KEY (group_id) REFERENCES groups (group_id) ON DELETE CASCADE ON UPDATE CASCADE
     );
   `);
 
