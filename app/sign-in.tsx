@@ -6,7 +6,7 @@ import * as AppleAuthentication from "expo-apple-authentication";
 import server from "@/constants/serverAxiosClient";
 import { Button } from "@/components/Button";
 import * as WebBrowser from "expo-web-browser";
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import * as AuthSession from "expo-auth-session";
 import * as Crypto from "expo-crypto";
 import { Feather } from '@expo/vector-icons'
@@ -31,7 +31,9 @@ export default function SignIn() {
     };
   }, []);
 
-  const [_googleRequest, googleResult, googleSignIn] = AuthSession.useAuthRequest(
+  const [googleResult, setGoogleResult] = useState<any>(null);
+
+  const [_googleRequest, _googleResult, googleSignIn] = AuthSession.useAuthRequest(
     {
       clientId: "calenduh",
       redirectUri,
@@ -42,7 +44,9 @@ export default function SignIn() {
     }
   );
 
-  const [_discordRequest, discordResult, discordSignIn] = AuthSession.useAuthRequest(
+  const [discordResult, setDiscordResult] = useState<any>(null);
+
+  const [_discordRequest, _discordResult, discordSignIn] = AuthSession.useAuthRequest(
     {
       clientId: "calenduh",
       redirectUri,
@@ -120,7 +124,7 @@ export default function SignIn() {
               size="lg"
               className="border border-gray-300 bg-white rounded-xl"
               labelClasses="text-primary"
-              onPress={() => {googleSignIn({showInRecents: true})}}
+              onPress={async () => {const response = await googleSignIn({showInRecents: true}); setGoogleResult(response)}}
             >
               <View className="flex-row items-center">
                 <Svg width={20} height={20} style={{ marginRight: 8, marginTop: 3 }} viewBox="0 0 24 24">
@@ -150,7 +154,7 @@ export default function SignIn() {
               size="lg"
               className="bg-white rounded-xl border border-gray-300"
               labelClasses="text-primary"
-              onPress={() => {discordSignIn({showInRecents: true})}}
+              onPress={async () => {const response = await discordSignIn({showInRecents: true}); setDiscordResult(response)}}
             >
               <View className="flex-row items-center">
               <FontAwesome6 name="discord" size={20} color="#7289DA" className="pt-1 pr-1"/>
