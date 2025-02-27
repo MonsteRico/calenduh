@@ -17,7 +17,6 @@ export default function CreateCalendar() {
     const [calendarName, setCalendarName] = useState("");
     const [calendarColorHex, setCalendarColor] = useState(getRandomItem(calendarColors).hex);
     const [isPublic, setIsPublic] = useState(false);
-    const [defaultNotification, setDefaultNotification] = useState("30 minutes before");
     const { mutate } = useCreateCalendar();
 
     const { user } = useSession();
