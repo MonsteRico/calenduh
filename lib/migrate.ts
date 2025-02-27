@@ -9,6 +9,9 @@ export async function migrateDbIfNeeded(db: SQLiteDatabase) {
 	}
 	if (currentDbVersion === 0) {
 		console.log("CREATING TABLES");
+    await db.execAsync("PRAGMA journal_mode = WAL");
+		await db.execAsync("PRAGMA foreign_keys = ON");
+
 		await db.execAsync(`
     CREATE TABLE IF NOT EXISTS users (
       user_id TEXT PRIMARY KEY,
@@ -26,9 +29,7 @@ export async function migrateDbIfNeeded(db: SQLiteDatabase) {
       color TEXT NOT NULL DEFAULT '#fac805',
       title TEXT NOT NULL,
       is_public INTEGER NOT NULL DEFAULT 0,
-      CHECK (user_id IS NOT NULL OR group_id IS NOT NULL),
-      CONSTRAINT user_id_fk FOREIGN KEY (user_id) REFERENCES users (user_id) ON DELETE CASCADE ON UPDATE CASCADE,
-      CONSTRAINT group_id_fk FOREIGN KEY (group_id) REFERENCES groups (group_id) ON DELETE CASCADE ON UPDATE CASCADE
+      CHECK (user_id IS NOT NULL OR group_id IS NOT NULL)
     );
   `);
 
