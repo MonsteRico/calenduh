@@ -24,6 +24,7 @@ function ConfirmDelete({
     ...props
 }: ConfirmDeleteProp) {
     const [modalVisible, setModalVisible] = useState(false);
+    const [deletedVisible, setDeletedVisible] = useState(false);
 
     return (
         <View>
@@ -72,6 +73,7 @@ function ConfirmDelete({
                                     onPress={() => {
                                         onDelete();
                                         setModalVisible(false);
+                                        setDeletedVisible(true);
                                     }}
                                     className="flex-1"
                                 >
@@ -80,6 +82,25 @@ function ConfirmDelete({
                             </View>
                         </View>
                     </TouchableOpacity>
+                </TouchableOpacity>
+            </Modal>
+            
+            <Modal
+                animationType='fade'
+                transparent={true}
+                visible={deletedVisible}
+                onRequestClose={() => setDeletedVisible(false)}
+            >
+                <TouchableOpacity
+                    activeOpacity={1}
+                    onPress={() => setDeletedVisible(false)}
+                    className="flex-1 justify-center items-center bg-black/50"
+                >
+                    <View className="bg-background rounded-lg p-4 m-4 w-5/6 shadow-lg">
+                        <Text className="text-green-500 font-bold text-lg text-center">
+                            Account deleted. Goodbye 😢
+                        </Text>
+                    </View>
                 </TouchableOpacity>
             </Modal>
         </View>
