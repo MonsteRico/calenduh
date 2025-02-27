@@ -1,6 +1,6 @@
 import { Button } from "@/components/Button";
 import { router } from "expo-router";
-import { StyleSheet, Text, View, TouchableOpacity, TextInput, Platform } from "react-native";
+import { Modal, Text, View, TouchableOpacity, TextInput, Platform, ScrollView } from "react-native";
 import { Input } from "@/components/Input";
 import { useState } from "react";
 import dayjs from 'dayjs';
@@ -13,6 +13,8 @@ import { DateTime } from "luxon";
 import DateTimePicker from "@react-native-community/datetimepicker";
 import { useDeleteUser } from "@/hooks/user.hooks";
 import { useSession } from "@/hooks/authContext";
+import { CalendarItem } from "./calendarsList";
+import { useMyCalendars } from "@/hooks/calendar.hooks";
 
 
 export default function ProfileView() {
@@ -28,8 +30,11 @@ export default function ProfileView() {
     const [tempName, setTempName] = useState(name);
     const [tempBirthday, setTempBirthday] = useState(birthday);
 
-    const [isModalVisible, setModalVisible] = useState(false);
+    const [signInModalVisible, setSignInModalVisible] = useState(false);
+    const [mergeCalendarModalVisible, setMergeCalendarModalVisible] = useState(false);
     const [showDatePicker, setShowDatePicker] = useState(false);
+
+    const { data: calendars, isLoading } = useMyCalendars();
 
 
     const handleEditToggle = () => {
@@ -57,12 +62,61 @@ export default function ProfileView() {
         return <Text className="text-primary">Loading...</Text>;
     }
 
+    
+    type MergeCalendarModalProps = {
+        visible: boolean;
+        onClose: () => void;
+    };
+
+    const MergeCalendarModal: React.FC<MergeCalendarModalProps> = ({ visible, onClose }) => {
+        return (
+            <Modal animationType='fade' transparent={false} visible={visible} onRequestClose={onClose}>
+                <View className='flex-1 justify-center items-center bg-black/50'>
+                    <View className='w-[90vw] max-h-[80vh] bg-background rounded-2xl p-6 shadow-lg'>
+                        <Text className='text-xl font-bold mb-3 text-center'>Merge Calendars</Text>
+
+                        <Text className='text-foreground mb-5 text-base text-center'>Select calendars to merge with your online account{"\n"}
+                        <Text className='text-red-600 font-medium'>(calendars not selected will be deleted)</Text>
+                        </Text>
+                        
+
+                        <ScrollView className='max-h-96' contentContainerClassName='pb-2'>
+                            <View className='flex-col space-y-3'>
+                                {calendars?.map((calendar, i) => (
+                                    <CalendarItem
+                                        checked={true}
+                                        key={calendar.calendar_id}
+                                        calendarName={calendar.title}
+                                        calendarColor={calendar.color}
+                                        editMode={false}
+                                        onPress={() => { }}
+                                    />
+                                ))}
+                            </View>
+                        </ScrollView>
+
+                        <View className='flex-row justify-between mt-6 space-x-3'>
+                            <Button labelClasses='font-secondary' onPress={onClose}>Cancel</Button>
+                            <Button labelClasses='font-secondary' onPress={onClose}>Merge Selected</Button>
+                        </View>
+                    </View>
+                </View>
+            </Modal>
+        );
+
+    }
+
     return (
         <View>
             <GuestSignInModal
-                visible={isModalVisible}
-                onClose={() => setModalVisible(false)}
+                visible={signInModalVisible}
+                onClose={() => setSignInModalVisible(false)}
             />
+
+            <MergeCalendarModal
+                visible={mergeCalendarModalVisible}
+                onClose={() => setMergeCalendarModalVisible(false)}
+                />
 
             <View className="flex-row justify-between items-center ml-1 mr-1">
                 {isPresented && (
@@ -160,8 +214,9 @@ export default function ProfileView() {
                             </View>
                         </View>
 
-                        <View>
-                            <Button className='m-8 mr-10 ml-10' onPress={() => setModalVisible(!isModalVisible)}>Sign-In</Button>
+                        <View className='flex-col items-center justify-center'>
+                            <Button className='m-8 mr-10 ml-10' onPress={() => setSignInModalVisible(!signInModalVisible)}>Sign-In</Button>
+                            <Button onPress={() => setMergeCalendarModalVisible(!mergeCalendarModalVisible)}>Merge Calendars</Button>
                         </View>
                     </View>
                 )}

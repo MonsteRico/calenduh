@@ -171,3 +171,5 @@ function CalendarItem({
 		</View>
 	);
 }
+
+export { CalendarItem };
