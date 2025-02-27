@@ -8,6 +8,7 @@ import { Input } from "@/components/Input";
 import { useColorScheme } from "nativewind";
 import DateTimePicker from 'react-native-ui-datepicker';
 import dayjs from 'dayjs';
+import { ConfirmDelete } from "@/components/ConfirmDelete";
 
 export default function EditEvent() {
       const { colorScheme } = useColorScheme();

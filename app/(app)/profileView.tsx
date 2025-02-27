@@ -9,11 +9,12 @@ import React from "react";
 import Feather from '@expo/vector-icons/Feather'
 import { useColorScheme } from "nativewind";
 import { ConfirmDelete } from "@/components/ConfirmDelete";
+import { GuestSignInModal } from "@/components/GuestSignInModal";
 
 
 export default function ProfileView() {
     const isPresented = router.canGoBack();
-    
+
     const [isEditing, setIsEditing] = useState(false);
     const [username, setUserName] = useState("");
     const [name, setName] = useState("");
@@ -23,6 +24,8 @@ export default function ProfileView() {
     const [tempUsername, setTempUserName] = useState(username);
     const [tempName, setTempName] = useState(name);
     const [tempBirthday, setTempBirthday] = useState(birthday);
+
+    const [isModalVisible, setModalVisible] = useState(false);
 
 
     const handleEditToggle = () => {
@@ -47,6 +50,11 @@ export default function ProfileView() {
     const globColorInverse = colorScheme == "light" ? "white" : "black";
     return (
         <View>
+            <GuestSignInModal
+                visible={isModalVisible}
+                onClose={() => setModalVisible(false)}
+            />
+
             <View className="flex-row justify-between items-center ml-1 mr-1">
                 {isPresented && (
                     <Button onPress={() => router.back()}>
@@ -58,13 +66,10 @@ export default function ProfileView() {
                     <TouchableOpacity onPress={handleEditToggle}>
                         <Feather name="edit-2" className="mt-[1]" size={24} color={globColor} />
                     </TouchableOpacity>
-                    <ConfirmDelete onDelete={handleDelete} buttonClass='mr-4'/>
-                    {/*<TouchableOpacity onPress={handleDelete} className='mr-4'>
-                        <Feather name="trash" size={24} color="red" />
-                    </TouchableOpacity>*/}
+                    <ConfirmDelete onDelete={handleDelete} buttonClass='mr-4' />
                 </View>
             </View>
-    
+
             <View className="bg-gray-50 rounded-xl p-6 shadow-md">
                 {isEditing ? (
                     <View className="space-y-4">
@@ -76,7 +81,7 @@ export default function ProfileView() {
                             onChangeText={setTempUserName}
                             placeholder="Username"
                         />
-    
+
                         <Text className="text-foreground font-medium text-base mt-2">Name</Text>
                         <TextInput
                             className="border border-gray-300 rounded-lg p-3 text-foreground"
@@ -85,19 +90,19 @@ export default function ProfileView() {
                             onChangeText={setTempName}
                             placeholder="Name"
                         />
-    
+
                         <Text className="text-foreground font-medium text-base mt-2">Birthday</Text>
                         <View className="border border-gray-300 rounded-lg" style={{ backgroundColor: globColorInverse }}>
                             <Text className="text-foreground font-medium text-base">Placeholder for Date Time Picker</Text>
                         </View>
-    
+
                         <View className='flex-row items-center gap-8 justify-center mt-10'>
                             <Button onPress={handleSave}
                                 labelClasses="text-background"
                             >
                                 Save Changes
                             </Button>
-    
+
                             <Button onPress={handleCancel}
                                 labelClasses="text-background"
                             >
@@ -106,31 +111,33 @@ export default function ProfileView() {
                         </View>
                     </View>
                 ) : (
-                    <View className="mt-4">
-                        <View className="space-y-4">
-                            <View className="flex-row border-b border-gray-200 p-2 ">
-                                <Text className="text-foreground text-xl font-medium w-1/3">Username</Text>
-                                <Text className="text-foreground text-xl font-semibold">{username}</Text>
+                    <View>
+                        <View className="mt-4">
+                            <View className="space-y-4">
+                                <View className="flex-row border-b border-gray-200 p-2 ">
+                                    <Text className="text-foreground text-xl font-medium w-1/3">Username</Text>
+                                    <Text className="text-foreground text-xl font-semibold">{username}</Text>
+                                </View>
+
+                                <View className="flex-row border-b border-gray-200 p-2">
+                                    <Text className="text-foreground text-xl font-medium w-1/3">Name</Text>
+                                    <Text className="text-foreground text-xl font-semibold">{name}</Text>
+                                </View>
+
+                                <View className="flex-row border-b border-gray-200 p-2">
+                                    <Text className="text-foreground text-xl font-medium w-1/3">Birthday</Text>
+                                    <Text className="text-foreground text-xl font-semibold">
+                                        {birthday?.format ? birthday.format("MM-DD-YYYY") : "N/A"}
+                                    </Text>
+                                </View>
                             </View>
-    
-                            <View className="flex-row border-b border-gray-200 p-2">
-                                <Text className="text-foreground text-xl font-medium w-1/3">Name</Text>
-                                <Text className="text-foreground text-xl font-semibold">{name}</Text>
-                            </View>
-    
-                            <View className="flex-row border-b border-gray-200 p-2">
-                                <Text className="text-foreground text-xl font-medium w-1/3">Birthday</Text>
-                                <Text className="text-foreground text-xl font-semibold">
-                                    {birthday?.format ? birthday.format("MM-DD-YYYY") : "N/A"}
-                                </Text>
-                            </View>
+                        </View>
+
+                        <View>
+                            <Button className='m-8 mr-10 ml-10' onPress={() => setModalVisible(!isModalVisible)}>Sign-In</Button>
                         </View>
                     </View>
                 )}
-            </View>
-
-            <View>
-                <Button className='m-8 mr-10 ml-10'>Sign-In</Button>
             </View>
         </View>
     );

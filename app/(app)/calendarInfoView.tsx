@@ -8,6 +8,7 @@ import Dropdown from '@/components/Dropdown';
 import { Input } from '@/components/Input';
 import FontAwesome from "@expo/vector-icons/FontAwesome";
 import { calendarColors } from "@/components/CalendarColorModal";
+import { ConfirmDelete } from "@/components/ConfirmDelete";
 
 
 export default function CalendarInfoView() {
@@ -63,15 +64,9 @@ export default function CalendarInfoView() {
 					</Button>
 				)}
 				<Text className="items-center pl-5 text-3xl font-bold text-primary">Edit Calendar</Text>
-				<Button
-					className={cn((isUpdating || isDeleting) && "opacity-70")}
-					onPress={() => {
-						deleteCalendar(calendarId);
-					}}
-					variant={"destructive"}
-				>
-					<FontAwesome name="trash" size={24} color="black" />
-				</Button>
+
+				<ConfirmDelete onDelete={() => deleteCalendar(calendarId)} buttonClass="mr-4 ml-6"/>
+				
 			</View>
 
 			<View className='mt-5 flex flex-col gap-2 px-8'>

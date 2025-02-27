@@ -24,8 +24,6 @@ const TimestampDisplay: React.FC<TimestampDisplayProps> = ({ timestamp }) => {
     );
 }
 
-
-
 function EventViewModal({ visible, onClose, calendarId, eventId }: EventViewModalProps) {
     const [eventName, setEventName] = useState('Test Event Name');
     const [calendarName, setCalendarName] = useState('Test Calendar Name');
