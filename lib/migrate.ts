@@ -27,8 +27,8 @@ export async function migrateDbIfNeeded(db: SQLiteDatabase) {
       title TEXT NOT NULL,
       is_public INTEGER NOT NULL DEFAULT 0,
       CHECK (user_id IS NOT NULL OR group_id IS NOT NULL),
-      FOREIGN KEY (user_id) REFERENCES users (user_id) ON DELETE CASCADE ON UPDATE CASCADE,
-      FOREIGN KEY (group_id) REFERENCES groups (group_id) ON DELETE CASCADE ON UPDATE CASCADE
+      CONSTRAINT user_id_fk FOREIGN KEY (user_id) REFERENCES users (user_id) ON DELETE CASCADE ON UPDATE CASCADE,
+      CONSTRAINT group_id_fk FOREIGN KEY (group_id) REFERENCES groups (group_id) ON DELETE CASCADE ON UPDATE CASCADE
     );
   `);
 
@@ -44,7 +44,11 @@ export async function migrateDbIfNeeded(db: SQLiteDatabase) {
       priority INTEGER,
       start_time NUMBER,
       end_time NUMBER,
-      FOREIGN KEY (calendar_id) REFERENCES calendars (calendar_id) ON DELETE CASCADE ON UPDATE CASCADE
+      CONSTRAINT event_calendar_id_fk
+        FOREIGN KEY (calendar_id)
+        REFERENCES calendars(calendar_id)
+        ON DELETE CASCADE
+        ON UPDATE CASCADE
     );
   `);
 
@@ -53,8 +57,8 @@ export async function migrateDbIfNeeded(db: SQLiteDatabase) {
       user_id TEXT NOT NULL,
       calendar_id TEXT NOT NULL,
       PRIMARY KEY (user_id, calendar_id),
-      FOREIGN KEY (user_id) REFERENCES users (user_id) ON DELETE CASCADE ON UPDATE CASCADE,
-      FOREIGN KEY (calendar_id) REFERENCES calendars (calendar_id) ON DELETE CASCADE ON UPDATE CASCADE
+      CONSTRAINT user_id_fk FOREIGN KEY (user_id) REFERENCES users (user_id) ON DELETE CASCADE ON UPDATE CASCADE,
+      CONSTRAINT calendar_id_fk FOREIGN KEY (calendar_id) REFERENCES calendars (calendar_id) ON DELETE CASCADE ON UPDATE CASCADE
     );
   `);
 		currentDbVersion++;

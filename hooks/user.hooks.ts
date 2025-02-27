@@ -4,27 +4,27 @@ import { deleteEventFromDB, deleteEventOnServer, getEventFromDB } from "@/lib/ev
 import { addMutationToQueue } from "@/lib/mutation.helpers";
 import { deleteUserFromDB, deleteUserFromServer } from "@/lib/user.helper";
 import { useSession } from "./authContext";
+import { useEnabledCalendarIds } from "./useEnabledCalendarIds";
 
-
-export const useDeleteUser = (
-	options?: UseMutationOptions<void, Error, string, unknown>
-) => {
+export const useDeleteUser = (options?: UseMutationOptions<void, Error, string, unknown>) => {
 	const queryClient = useQueryClient();
 	const isConnected = useIsConnected();
-    const { signOut } = useSession();
+	const { signOut } = useSession();
+	const { setEnabledCalendarIds } = useEnabledCalendarIds();
 
 	return useMutation({
 		mutationFn: async (user_id: string) => {
 			if (isConnected) {
-                try {
-                await deleteUserFromDB(user_id);
-                await deleteUserFromServer();
-                } catch (error) {
-                    console.error("Error deleting user from server:", error);
-                    throw error;
-                } 
+				try {
+					setEnabledCalendarIds([]);
+					await deleteUserFromDB(user_id);
+					await deleteUserFromServer();
+				} catch (error) {
+					console.error("Error deleting user from server:", error);
+					throw error;
+				}
 			} else {
-                console.error("User is not online, cannot delete user from server");
+				console.error("User is not online, cannot delete user from server");
 				return;
 			}
 		},
@@ -38,7 +38,7 @@ export const useDeleteUser = (
 		},
 		onSettled: async (data, error, variables, context) => {
 			options?.onSettled?.(data, error, variables, context);
-            signOut();
+			signOut();
 		},
 	});
 };
