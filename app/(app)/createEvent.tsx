@@ -1,6 +1,6 @@
 import { Button } from "@/components/Button";
 import { router } from "expo-router";
-import { StyleSheet, Text, View, TouchableOpacity } from "react-native";
+import { StyleSheet, Text, View, TouchableOpacity, Platform } from "react-native";
 import { SelectList } from "react-native-dropdown-select-list";
 import React, { useState } from "react";
 import { FontAwesome } from "@expo/vector-icons";
@@ -41,7 +41,6 @@ export default function CreateEvent() {
 	const [showStartTimePicker, setShowStartTimePicker] = useState(false);
 	const [showEndDatePicker, setShowEndDatePicker] = useState(false);
 	const [showEndTimePicker, setShowEndTimePicker] = useState(false);
-
 
 	//REPLACE WITH USER'S CALENDARS
 	const { data: calendars, isLoading } = useMyCalendars();
@@ -125,18 +124,20 @@ export default function CreateEvent() {
 
 				<View className="flex-row items-center gap-2">
 					<Text className='text-primary pr-[3]'>Start Time:</Text>
+					{Platform.OS === 'android' && (
 					<TouchableOpacity
 						className='bg-gray-200 px-4 py-2 rounded-lg flex flex-row items-center space-x-2'
 						onPress={() => setShowStartDatePicker(true)}
 					>
 						<Text className='text-primary font-medium'>{startDate.toLocaleString(DateTime.DATETIME_MED)}</Text>
 					</TouchableOpacity>
-					{showStartDatePicker && (
+					)}
+					{(showStartDatePicker || Platform.OS === "ios") && (
 						<DateTimePicker
 							value={startDate.toJSDate()}
 							mode={"date"}
 							onChange={(e, selectedDate) => {
-								if (selectedDate) {
+								if (selectedDate && e.type === "set") {
 									const luxonDate = DateTime.fromJSDate(selectedDate);
 									setStartDate(luxonDate);
 									setShowStartTimePicker(true);
@@ -145,13 +146,13 @@ export default function CreateEvent() {
 							}}
 						/>
 					)}
-					{showStartTimePicker && (
+					{(showStartTimePicker || Platform.OS === 'ios') && (
 						<DateTimePicker
 							value={startDate.toJSDate()}
 							is24Hour={false}
 							mode={"time"}
 							onChange={(e, selectedDate) => {
-								if (selectedDate) {
+								if (selectedDate && e.type === "set") {
 									const luxonDate = DateTime.fromJSDate(selectedDate);
 									setStartDate(luxonDate);
 								}
@@ -163,34 +164,37 @@ export default function CreateEvent() {
 
 				<View className="flex-row items-center gap-2">
 					<Text className="text-primary pr-[9]">End Time:</Text>
+					{Platform.OS === 'android' && (
 					<TouchableOpacity
 						className='bg-gray-200 px-4 py-2 rounded-lg flex flex-row items-center space-x-2'
 						onPress={() => setShowEndDatePicker(true)}
 					>
 						<Text className='text-primary font-medium'>{endDate.toLocaleString(DateTime.DATETIME_MED)}</Text>
 					</TouchableOpacity>
-					{showEndDatePicker && (
+					)}
+					{(showEndDatePicker || Platform.OS === 'ios') && (
 						<DateTimePicker
 							value={endDate.toJSDate()}
 							is24Hour={false}
 							mode={"date"}
 							onChange={(e, selectedDate) => {
-								if (selectedDate) {
+								if (selectedDate && e.type === "set") {
 									const luxonDate = DateTime.fromJSDate(selectedDate);
 									setEndDate(luxonDate);
 									setShowEndTimePicker(true);
-								}
+									
+								} 
 								setShowEndDatePicker(false);
 							}}
 						/>
 					)}
-					{showEndTimePicker && (
+					{(showEndTimePicker || Platform.OS == 'ios') && (
 						<DateTimePicker
 							value={endDate.toJSDate()}
 							is24Hour={false}
 							mode={"time"}
 							onChange={(e, selectedDate) => {
-								if (selectedDate) {
+								if (selectedDate && e.type === "set") {
 									const luxonDate = DateTime.fromJSDate(selectedDate);
 									setEndDate(luxonDate);
 								}
