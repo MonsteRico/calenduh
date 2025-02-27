@@ -59,7 +59,7 @@ function Dropdown<T>({ options, renderItem, onSelect, label, defaultValue }: Dro
 				<MaterialIcons name="arrow-drop-down" size={24} color="#64748b" />
 			</TouchableOpacity>
 
-			<Modal visible={isModalVisible} animationType="slide" transparent={true}>
+			<Modal visible={isModalVisible} animationType="fade" transparent={true}>
 				<TouchableWithoutFeedback onPress={toggleModal}>
 					<View className="flex-1 items-center justify-center bg-black/50">
 						<TouchableWithoutFeedback>
