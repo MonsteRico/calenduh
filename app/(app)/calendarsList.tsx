@@ -53,7 +53,7 @@ export default function CalendarsList({ toggleDrawer }: { toggleDrawer: () => vo
 						<CalendarItem
 							checked={enabledCalendarIds.includes(calendar.calendar_id)}
 							key={calendar.calendar_id}
-							calendarName={calendar.title + " " + calendar.calendar_id}
+							calendarName={calendar.title}
 							calendarColor={calendar.color}
 							editMode={editMode}
 							onPress={() => calendarOnPress(calendar.calendar_id) }
