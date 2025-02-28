@@ -102,7 +102,7 @@ export default function SignIn() {
 							className="rounded-xl border border-gray-300 bg-white"
 							labelClasses="text-primary"
 							onPress={async () => {
-								const response = await googleSignIn({ showInRecents: true });
+								const response = await googleSignIn();
 								console.log("we have a result");
 								console.log("result", response);
 								if (response.type !== "success") return;
@@ -139,7 +139,7 @@ export default function SignIn() {
 							className="rounded-xl border border-gray-300 bg-white"
 							labelClasses="text-primary"
 							onPress={async () => {
-								const response = await discordSignIn({ showInRecents: true });
+								const response = await discordSignIn();
 								console.log("we have a result");
 								console.log("result", response);
 								if (response.type !== "success") return;
