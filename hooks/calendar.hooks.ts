@@ -295,6 +295,7 @@ export const useDeleteCalendar = (
 ) => {
 	const queryClient = useQueryClient();
 	const isConnected = useIsConnected();
+	const { enabledCalendarIds, setEnabledCalendarIds } = useEnabledCalendarIds();
 	const { user, sessionId } = useSession();
 	if (!user || !sessionId) {
 		throw new Error("User not found or session not found");
@@ -329,6 +330,7 @@ export const useDeleteCalendar = (
 		},
 		onSuccess: (data, variables, context) => {
 			options?.onSuccess?.(data, variables, context);
+			setEnabledCalendarIds(enabledCalendarIds.filter((id) => id !== variables));
 			// Boom baby!
 		},
 		onSettled: async (data, error, calendar_id, context) => {

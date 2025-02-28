@@ -22,7 +22,7 @@ export default function CalendarsList({ toggleDrawer }: { toggleDrawer: () => vo
 	const { enabledCalendarIds, setEnabledCalendarIds } = useEnabledCalendarIds();
 
 	const editOnPress = (id: string) => {
-		router.navigate("/calendarInfoView?id=" + id);
+		router.navigate(`/updateCalendar?id=${id}`);
 		setEditMode(false);
 	};
 
@@ -53,7 +53,7 @@ export default function CalendarsList({ toggleDrawer }: { toggleDrawer: () => vo
 						<CalendarItem
 							checked={enabledCalendarIds.includes(calendar.calendar_id)}
 							key={calendar.calendar_id}
-							calendarName={calendar.title + " " + calendar.calendar_id}
+							calendarName={calendar.title}
 							calendarColor={calendar.color}
 							editMode={editMode}
 							onPress={() => calendarOnPress(calendar.calendar_id) }

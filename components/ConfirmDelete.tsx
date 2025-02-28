@@ -98,7 +98,7 @@ function ConfirmDelete({
                 >
                     <View className="bg-background rounded-lg p-4 m-4 w-5/6 shadow-lg">
                         <Text className="text-green-500 font-bold text-lg text-center">
-                            Account deleted. Goodbye 😢
+                            Item has been Deleted
                         </Text>
                     </View>
                 </TouchableOpacity>
