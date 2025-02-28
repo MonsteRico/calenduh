@@ -6,37 +6,30 @@ import Feather from '@expo/vector-icons/Feather';
 import { useColorScheme } from 'nativewind';
 import { router } from 'expo-router';
 import { useDeleteEvent } from '@/hooks/event.hooks';
+import { useEvent } from '@/hooks/event.hooks';
+import { useCalendar } from '@/hooks/calendar.hooks';
 
 
 
 interface EventViewModalProps {
     visible: boolean;
     onClose: () => void;
-    calendarId: string | null;
-    eventId: string | null;
+    calendarId: string;
+    eventId: string;
 }
 
 type TimestampDisplayProps = {
-    timestamp: string;
+    timestamp: DateTime;
 };
 const TimestampDisplay: React.FC<TimestampDisplayProps> = ({ timestamp }) => {
 
-    const formattedTime = DateTime.fromISO(timestamp).toLocaleString(DateTime.DATETIME_MED);
+    const formattedTime = timestamp.toLocaleString(DateTime.DATETIME_MED);
     return (
         <Text className='text-foreground text-l'>{formattedTime}</Text>
     );
 }
 
 function EventViewModal({ visible, onClose, calendarId, eventId }: EventViewModalProps) {
-    const [eventName, setEventName] = useState('Test Event Name');
-    const [calendarName, setCalendarName] = useState('Test Calendar Name');
-    const [calendarColor, setCalendarColor] = useState("#4B89AC");
-    const [startTime, setStartTime] = useState('2022-01-01T00:00:00.000Z');
-    const [endTime, setEndTime] = useState('2022-01-01T00:00:00.000Z');
-    const [location, setLocation] = useState('Test Location');
-    const [notification, setNotification] = useState('Test Notification');
-    const [description, setDescription] = useState('Test Description');
-
     const {colorScheme} = useColorScheme();
 
     function openEditPage() {
@@ -50,10 +43,12 @@ function EventViewModal({ visible, onClose, calendarId, eventId }: EventViewModa
         }
     })
 
+	const { data: event, isLoading } = useEvent(calendarId, eventId);
+	const { data: calendar, isLoading: isLoadingCalendar } = useCalendar(calendarId);
 
-    if (!calendarId || !eventId) {
-        return null;
-    }
+	if (isLoading || !event || !calendar) {
+		return <Text className="text-primary">Loading...</Text>;
+	}
 
     return (
 			<Modal animationType="fade" transparent={true} visible={visible} onRequestClose={onClose}>
@@ -65,7 +60,7 @@ function EventViewModal({ visible, onClose, calendarId, eventId }: EventViewModa
 							</TouchableOpacity>
 
 							<View className="flex-1 items-center">
-								<Text className="text-center text-2xl font-bold text-foreground">{eventName}</Text>
+								<Text className="text-center text-2xl font-bold text-foreground">{event.name}</Text>
 							</View>
 
 							<View className="w-16 flex-row justify-end gap-2">
@@ -88,32 +83,32 @@ function EventViewModal({ visible, onClose, calendarId, eventId }: EventViewModa
 						<ScrollView className="p-6" contentContainerStyle={{ gap: 16 }}>
 							<View className="flex-row items-center space-x-3">
 								<Text className="w-32 text-xl font-medium text-foreground">Start Time:</Text>
-								<TimestampDisplay timestamp={startTime} />
+								<TimestampDisplay timestamp={event.start_time} />
 							</View>
 
 							<View className="flex-row items-center space-x-3">
 								<Text className="w-32 text-xl font-medium text-foreground">End Time:</Text>
-								<TimestampDisplay timestamp={endTime} />
+								<TimestampDisplay timestamp={event.end_time} />
 							</View>
 
 							<View className="space-y-3">
 								<Text className="text-xl font-medium text-foreground">Description:</Text>
-								<Text className="text-lg text-foreground">{description}</Text>
+								<Text className="text-lg text-foreground">{event.description}</Text>
 							</View>
 
 							<View className="flex-row items-center space-x-3">
 								<Text className="w-32 text-xl font-medium text-foreground">Location:</Text>
-								<Text className="text-lg text-foreground">{location}</Text>
+								<Text className="text-lg text-foreground">{event.location}</Text>
 							</View>
 
 							<View className="flex-row items-center space-x-3">
 								<Text className="w-32 text-xl font-medium text-foreground">Notification:</Text>
-								<Text className="text-lg text-foreground">{notification}</Text>
+								<Text className="text-lg text-foreground">{event.notification}</Text>
 							</View>
 
 							<View className="mt-4 flex-row items-center border-t border-gray-200 py-4">
-								<View className="mr-3 h-6 w-6 rounded-full" style={{ backgroundColor: calendarColor }} />
-								<Text className="text-lg text-foreground">{calendarName}</Text>
+								<View className="mr-3 h-6 w-6 rounded-full" style={{ backgroundColor: calendar.color }} />
+								<Text className="text-lg text-foreground">{calendar.title}</Text>
 							</View>
 						</ScrollView>
 					</View>
