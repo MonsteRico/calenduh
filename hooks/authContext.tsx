@@ -143,7 +143,6 @@ export function SessionProvider({ children }: PropsWithChildren) {
 						SecureStore.deleteItemAsync("user");
 					}
 					server.defaults.headers.Cookie = "";
-					setEnabledCalendarIds([]);
 					// navigate to sign in page
 					router.replace("/sign-in");
 				},

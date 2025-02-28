@@ -39,7 +39,7 @@ export default function MonthScreen() {
 	const flashListRef = useRef<FlashList<any>>(null);
 	const { dayBeingViewed, setDayBeingViewed } = useCurrentViewedDay();
 
-	const { enabledCalendarIds } = useEnabledCalendarIds();
+	const { enabledCalendarIds, setEnabledCalendarIds } = useEnabledCalendarIds();
 
 	const previousMonth = dayBeingViewed.minus({ month: 1 });
 	const nextMonth = dayBeingViewed.plus({ month: 1 });
@@ -130,9 +130,8 @@ export default function MonthScreen() {
 		setIsDrawerOpen(!isDrawerOpen);
 	};
 
-
 	console.log("rerendering");
-	
+
 	return (
 		<View className="flex min-h-screen w-full flex-col items-center p-1">
 			<DrawerMenu title="Calendars" isOpen={isDrawerOpen} onClose={toggleDrawer}>
@@ -204,6 +203,7 @@ export default function MonthScreen() {
 				</Button>
 				<Button
 					onPress={() => {
+						setEnabledCalendarIds([]);
 						signOut();
 					}}
 				>
@@ -236,4 +236,3 @@ export default function MonthScreen() {
 		</View>
 	);
 }
-
