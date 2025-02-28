@@ -227,7 +227,7 @@ export default function ProfileView() {
 							<View className="space-y-4">
 								<View className="flex-row border-b border-gray-200 p-2">
 									<Text className="w-1/3 text-xl font-medium text-primary">Username</Text>
-									<Text className="text-xl font-semibold text-primary">{username}</Text>
+									<Text className="text-xl font-semibold text-primary">{user.username}</Text>
 								</View>
 
 								<View className="flex-row border-b border-gray-200 p-2">
