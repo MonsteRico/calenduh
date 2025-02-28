@@ -85,12 +85,10 @@ function Day({ day, currentMonth, bottomRow = false }: { day: DateTime<true>; cu
 
 	const { data: events, isLoading } = useEventsForDay(day);
 
-	if (isLoading || !events) {
-		return null;
-	}
-
-
 	const calendarsForShownEvents = useMemo(() => {
+		if (!events) {
+			return [];
+		}
 		// Filter events based on enabled calendar IDs
 		const shownEvents = events.filter((event) => enabledCalendarIds.includes(event.calendar_id));
 
@@ -104,6 +102,10 @@ function Day({ day, currentMonth, bottomRow = false }: { day: DateTime<true>; cu
 				return acc;
 			}, [] as string[]);
 	}, [enabledCalendarIds, events]); // Memoize based on changes to enabledCalendarIds or events
+
+	if (isLoading || !events) {
+		return null;
+	}
 
 	return (
 		<TapGestureHandler numberOfTaps={2} onActivated={onDoubleTap}>
