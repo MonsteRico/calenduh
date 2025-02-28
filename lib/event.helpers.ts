@@ -21,8 +21,8 @@ export const getEventsFromDB = async (user_id: string): Promise<Event[]> => {
 		);
 		return events.map((item) => ({
 			...item,
-			start_time: DateTime.fromJSDate(new Date(item.start_time)).toLocal(),
-			end_time: DateTime.fromJSDate(new Date(item.end_time)).toLocal(),
+			start_time: DateTime.fromJSDate(new Date(item.start_time)),
+			end_time: DateTime.fromJSDate(new Date(item.end_time)),
 		}));
 	} catch (error) {
 		console.error("Error fetching events:", error);
@@ -40,8 +40,8 @@ export const getEventsForCalendarFromDB = async (calendar_id: string): Promise<E
 		);
 		return events.map((item) => ({
 			...item,
-			start_time: DateTime.fromJSDate(new Date(item.start_time)).toLocal(),
-			end_time: DateTime.fromJSDate(new Date(item.end_time)).toLocal(),
+			start_time: DateTime.fromJSDate(new Date(item.start_time)),
+			end_time: DateTime.fromJSDate(new Date(item.end_time)),
 		}));
 	} catch (error) {
 		console.error("Error fetching events for calendar:", error);
@@ -61,8 +61,8 @@ export const getEventFromDB = async (event_id: string): Promise<Event | undefine
 		if (event) {
 			return {
 				...event,
-				start_time: DateTime.fromJSDate(new Date(event.start_time)).toLocal(),
-				end_time: DateTime.fromJSDate(new Date(event.end_time)).toLocal(),
+				start_time: DateTime.fromJSDate(new Date(event.start_time)),
+				end_time: DateTime.fromJSDate(new Date(event.end_time)),
 			};
 		}
 		return undefined;
@@ -88,8 +88,8 @@ export const insertEventIntoDB = async (event: EventUpsert, userId: string): Pro
 				event.notification || null,
 				event.frequency || null,
 				event.priority || null,
-				event.start_time.toUTC().valueOf().toString(),
-				event.end_time.toUTC().valueOf().toString(),
+				event.start_time.valueOf().toString(),
+				event.end_time.valueOf().toString(),
 			]
 		);
 	} catch (error) {
@@ -144,8 +144,8 @@ export const updateEventInDB = async (eventId: string, event: UpdateEvent, userI
 				event.notification ?? existingEvent.notification,
 				event.frequency ?? existingEvent.frequency,
 				event.priority ?? existingEvent.priority,
-				event.start_time?.toUTC().valueOf().toString() ?? existingEvent.start_time.toUTC().valueOf().toString(),
-				event.end_time?.toUTC().valueOf().toString() ?? existingEvent.end_time.toUTC().valueOf().toString(),
+				event.start_time?.valueOf().toString() ?? existingEvent.start_time.valueOf().toString(),
+				event.end_time?.valueOf().toString() ?? existingEvent.end_time.valueOf().toString(),
 				event.event_id,
 				eventId,
 			]
@@ -175,8 +175,8 @@ export const getEventsFromServer = async (): Promise<Event[]> => {
 	const events = response.data as (Event & { start_time: string; end_time: string })[];
 	return events.map((event: Event & { start_time: string; end_time: string }) => ({
 		...event,
-		start_time: DateTime.fromJSDate(new Date(event.start_time)).toLocal(),
-		end_time: DateTime.fromJSDate(new Date(event.end_time)).toLocal(),
+		start_time: DateTime.fromJSDate(new Date(event.start_time)),
+		end_time: DateTime.fromJSDate(new Date(event.end_time)),
 	}));
 };
 
@@ -185,8 +185,8 @@ export const getEventsForCalendarFromServer = async (calendar_id: string): Promi
 	const events = response.data as (Event & { start_time: string; end_time: string })[];
 	return events.map((event: Event & { start_time: string; end_time: string }) => ({
 		...event,
-		start_time: DateTime.fromJSDate(new Date(event.start_time)).toLocal(),
-		end_time: DateTime.fromJSDate(new Date(event.end_time)).toLocal(),
+		start_time: DateTime.fromJSDate(new Date(event.start_time)),
+		end_time: DateTime.fromJSDate(new Date(event.end_time)),
 	}));
 };
 
@@ -195,8 +195,8 @@ export const getEventsForDayFromServer = async (startMs: number, endMs: number):
 	const events = response.data as (Event & { start_time: string; end_time: string })[];
 	return events.map((event: Event & { start_time: string; end_time: string }) => ({
 		...event,
-		start_time: DateTime.fromJSDate(new Date(event.start_time)).toLocal(),
-		end_time: DateTime.fromJSDate(new Date(event.end_time)).toLocal(),
+		start_time: DateTime.fromJSDate(new Date(event.start_time)),
+		end_time: DateTime.fromJSDate(new Date(event.end_time)),
 	}));
 };
 
@@ -205,13 +205,19 @@ export const getEventFromServer = async (calendar_id: string, event_id: string):
 	const event = response.data as Event & { start_time: string; end_time: string };
 	return {
 		...event,
-		start_time: DateTime.fromJSDate(new Date(event.start_time)).toLocal(),
-		end_time: DateTime.fromJSDate(new Date(event.end_time)).toLocal(),
+		start_time: DateTime.fromJSDate(new Date(event.start_time)),
+		end_time: DateTime.fromJSDate(new Date(event.end_time)),
 	};
 };
 
 export const createEventOnServer = async (calendar_id: string, event: EventUpsert): Promise<Event> => {
-	const response = await server.post(`/events/${calendar_id}`, event).catch((error) => {
+	const modifiedEvent = {
+		...event,
+		start_time: event.start_time.toUTC().toISO(),
+		end_time: event.end_time.toUTC().toISO(),
+	}
+		console.log("Sending to server", modifiedEvent);
+	const response = await server.post(`/events/${calendar_id}`, modifiedEvent).catch((error) => {
 		if (error.response) {
 			// The request was made and the server responded with a status code
 			// that falls out of the range of 2xx
@@ -233,18 +239,31 @@ export const createEventOnServer = async (calendar_id: string, event: EventUpser
 	const createdEvent = response.data as Event & { start_time: string; end_time: string };
 	return {
 		...createdEvent,
-		start_time: DateTime.fromJSDate(new Date(createdEvent.start_time)).toLocal(),
-		end_time: DateTime.fromJSDate(new Date(createdEvent.end_time)).toLocal(),
+		start_time: DateTime.fromJSDate(new Date(createdEvent.start_time)),
+		end_time: DateTime.fromJSDate(new Date(createdEvent.end_time)),
 	};
 };
 
 export const updateEventOnServer = async (calendar_id: string, event: UpdateEvent): Promise<Event> => {
-	const response = await server.put(`/events/${calendar_id}/${event.event_id}`, event);
+	let modifiedEvent;
+	if (event.start_time) {
+		modifiedEvent = {
+			...event,
+			start_time: event.start_time.toUTC().toISO(),
+		};
+	}
+	if (event.end_time) {
+		modifiedEvent = {
+			...event,
+			end_time: event.end_time.toUTC().toISO(),
+		};
+	}
+	const response = await server.put(`/events/${calendar_id}/${event.event_id}`, modifiedEvent);
 	const updatedEvent = response.data as Event & { start_time: string; end_time: string };
 	return {
 		...updatedEvent,
-		start_time: DateTime.fromJSDate(new Date(updatedEvent.start_time)).toLocal(),
-		end_time: DateTime.fromJSDate(new Date(updatedEvent.end_time)).toLocal(),
+		start_time: DateTime.fromJSDate(new Date(updatedEvent.start_time)),
+		end_time: DateTime.fromJSDate(new Date(updatedEvent.end_time)),
 	};
 };
 
