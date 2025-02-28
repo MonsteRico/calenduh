@@ -231,8 +231,8 @@ export default function ProfileView() {
 								</View>
 
 								<View className="flex-row border-b border-gray-200 p-2">
-									<Text className="w-1/3 text-xl font-medium text-primary">Name</Text>
-									<Text className="text-xl font-semibold text-primary">{name}</Text>
+									<Text className="w-1/3 text-xl font-medium text-primary">User Id</Text>
+									<Text className="text-xl font-semibold text-primary">{user.user_id}</Text>
 								</View>
 
 								<View className="flex-row border-b border-gray-200 p-2">
