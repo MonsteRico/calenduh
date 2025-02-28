@@ -196,7 +196,7 @@ export default function MonthScreen() {
 				<Button
 					onPress={() => {
 						setEnabledCalendarIds([]);
-						Storage.setItemSync("enabledCalendarIds", JSON.stringify(enabledCalendarIds));
+						Storage.setItemSync("enabledCalendarIds", JSON.stringify([]));
 
 						signOut();
 					}}
