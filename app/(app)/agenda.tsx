@@ -17,7 +17,7 @@ export default function Agenda() {
 	return (
 		<View className="flex flex-col gap-4">
             <Button onPress={() => {router.back()}}>BACK</Button>
-			<EventViewModal
+			{eventIdToView && calendarIdToView && (<EventViewModal
 				visible={eventIdToView != null}
 				eventId={eventIdToView}
 				calendarId={calendarIdToView}
@@ -25,7 +25,7 @@ export default function Agenda() {
 					setEventIdToView(null);
 					setCalendarIdToView(null);
 				}}
-			/>
+			/>)}
 			<Text className="text-primary">Agenda</Text>
 			{events?.map((event) => (
 				<Button

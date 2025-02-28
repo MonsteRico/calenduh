@@ -9,6 +9,8 @@ import { useCalendars } from "@/hooks/calendar.hooks";
 import { useSQLiteContext } from "expo-sqlite";
 import { getCalendarsFromDB } from "@/lib/calendar.helpers";
 import { useIsConnected } from "@/hooks/useIsConnected";
+import { useEnabledCalendarIds } from "@/hooks/useEnabledCalendarIds";
+import { setEnabled } from "react-native/Libraries/Performance/Systrace";
 
 export default function TestButtons() {
 	const isPresented = router.canGoBack();
@@ -16,6 +18,8 @@ export default function TestButtons() {
 	const { data: calendars, isLoading } = useCalendars();
 	const isConnected = useIsConnected();
 	const db = useSQLiteContext();
+
+	const { setEnabledCalendarIds } = useEnabledCalendarIds();
 	return (
 		<View className="flex-1 bg-background">
 			{isPresented && (
@@ -29,7 +33,10 @@ export default function TestButtons() {
 				</Button>
 			)}
 			<View className="items-left flex-row flex-wrap gap-4">
-				<Button onPress={() => {}}>Create Calendar</Button>
+				<Button onPress={() => {setEnabledCalendarIds([])}}>Reset Enabled Ids</Button>
+
+
+
 				<Button onPress={() => {}}>Update Calendar</Button>
 				<Button onPress={() => {}}>Delete Calendar</Button>
 				<Button

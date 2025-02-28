@@ -65,7 +65,6 @@ export const insertCalendarIntoDB = async (calendar: CalendarUpsert, userId: str
 export const upsertCalendarIntoDB = async (calendar: CalendarUpsert, userId: string): Promise<void> => {
 	const db = await openDatabaseAsync("local.db");
 	let calendarInDB = false;
-	
 	if (calendar.calendar_id) {
 		const calendarFromDB = await getCalendarFromDB(calendar.calendar_id);
 		if (calendarFromDB) {
