@@ -7,12 +7,16 @@ import { Button } from "@/components/Button";
 import { cn } from "@/lib/utils";
 import Animated, { useSharedValue, useAnimatedStyle, withRepeat, withTiming, Easing } from "react-native-reanimated";
 import { useIsConnected } from "@/hooks/useIsConnected";
+import { useColorScheme } from "nativewind";
 
 export default function ForceSync() {
 	const { syncing } = useSyncing();
 	const { mutate: sync } = useSync();
 	const rotation = useSharedValue(0);
 	const isConnected = useIsConnected();
+	const { colorScheme } = useColorScheme();
+
+	const iconColor = colorScheme == "light" ? "white" : "black";
 
 	useEffect(() => {
 		if (syncing) {
@@ -54,7 +58,7 @@ export default function ForceSync() {
 			}}
 		>
 			<Animated.View style={animatedStyle}>
-				<FontAwesome name="refresh" size={18} color="black" />
+				<FontAwesome name="refresh" size={18} color={iconColor} />
 			</Animated.View>
 		</Button>
 	);
