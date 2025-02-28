@@ -28,6 +28,7 @@ import { useDbVersion } from "@/hooks/useDbVersion";
 import ForceSync from "@/components/ForceSync";
 import { Input } from "@/components/Input";
 import { useEventsForDay } from "@/hooks/event.hooks";
+import { Storage } from "expo-sqlite/kv-store";
 
 export default function MonthScreen() {
 	const dbVersion = useDbVersion();
@@ -195,6 +196,8 @@ export default function MonthScreen() {
 				<Button
 					onPress={() => {
 						setEnabledCalendarIds([]);
+						Storage.setItemSync("enabledCalendarIds", JSON.stringify(enabledCalendarIds));
+
 						signOut();
 					}}
 				>
