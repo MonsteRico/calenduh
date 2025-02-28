@@ -5,10 +5,11 @@ import { Calendar, CalendarUpsert, UpdateCalendar } from "@/types/calendar.types
 import { useSession } from "@/hooks/authContext";
 
 // Get all calendars from the local database
-export const getCalendarsFromDB = async (): Promise<Calendar[]> => {
+export const getCalendarsFromDB = async (user_id: string): Promise<Calendar[]> => {
 	const db = await openDatabaseAsync("local.db");
+
 	try {
-		const calendars = await db.getAllAsync<Omit<Calendar, "is_public"> & {is_public: number}>("SELECT * FROM calendars");
+		const calendars = await db.getAllAsync<Omit<Calendar, "is_public"> & {is_public: number}>("SELECT * FROM calendars WHERE user_id = ?", user_id);
 		// Convert INTEGER is_public to boolean
 		return calendars.map((item) => ({
 			...item,
@@ -51,7 +52,7 @@ export const insertCalendarIntoDB = async (calendar: CalendarUpsert, userId: str
 				calendar.group_id || null,
 				calendar.color || "#fac805",
 				calendar.title,
-				calendar.is_public ? true : false,
+				calendar.is_public ? 1 : 0,
 			]
 		);
 	} catch (error) {

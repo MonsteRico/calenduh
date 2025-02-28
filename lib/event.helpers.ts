@@ -6,11 +6,19 @@ import { DateTime } from "luxon";
 import { parse } from "path";
 
 // Get all events from the local database
-export const getEventsFromDB = async (): Promise<Event[]> => {
+export const getEventsFromDB = async (user_id: string): Promise<Event[]> => {
 	const db = await openDatabaseAsync("local.db");
 
 	try {
-		const events = await db.getAllAsync<Event & { start_time: string; end_time: string }>("SELECT * FROM events");
+		const events = await db.getAllAsync<Event & { start_time: string; end_time: string }>(
+			`
+    SELECT events.* 
+    FROM events
+    JOIN calendars ON events.calendar_id = calendars.calendar_id
+    WHERE calendars.user_id = ?
+`,
+			user_id
+		);
 		return events.map((item) => ({
 			...item,
 			start_time: DateTime.fromJSDate(new Date(item.start_time)),
@@ -222,7 +230,7 @@ export const createEventOnServer = async (calendar_id: string, event: EventUpser
 		console.log(error.config);
 		throw error;
 	});
-	const createdEvent= response.data as Event & { start_time: string; end_time: string };
+	const createdEvent = response.data as Event & { start_time: string; end_time: string };
 	return {
 		...createdEvent,
 		start_time: DateTime.fromJSDate(new Date(createdEvent.start_time)),

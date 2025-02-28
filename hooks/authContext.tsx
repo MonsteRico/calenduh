@@ -1,4 +1,4 @@
-import { useContext, createContext, type PropsWithChildren } from "react";
+import { useContext, createContext, type PropsWithChildren, useState, useEffect } from "react";
 import { Platform } from "react-native";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import * as SecureStore from "expo-secure-store";
@@ -9,12 +9,14 @@ import { useEnabledCalendarIds } from "./useEnabledCalendarIds";
 
 const AuthContext = createContext<{
 	signIn: (sessionId: string) => void;
+	partialSignIn: (sessionId: string) => void;
 	signOut: () => void;
 	sessionId?: string | null;
 	isLoading: boolean;
-	user?: User | null
+	user?: User | null;
 }>({
 	signIn: (sessionId: string) => null,
+	partialSignIn: (sessionId: string) => null,
 	signOut: () => null,
 	sessionId: null,
 	isLoading: false,
@@ -55,6 +57,7 @@ export function SessionProvider({ children }: PropsWithChildren) {
 					// set session-id cookie on server instance as a default header
 					server.defaults.headers.Cookie = `sessionId=${sessionId};`;
 					console.log("sessionId IN AUTH CONTEXT", sessionId);
+					console.log("user IN AUTH CONTEXT", user);
 					console.log(server.defaults.headers.Cookie);
 					return { sessionId, user };
 				}
@@ -63,17 +66,29 @@ export function SessionProvider({ children }: PropsWithChildren) {
 		},
 	});
 
+	useEffect(() => {
+		if (loginData) {
+			setQuerySessionId(loginData.sessionId);
+			setQueryUser(loginData.user);
+		}
+	}, [loginData]);
+
 	const queryClient = useQueryClient();
+
+	const [querySessionId, setQuerySessionId] = useState<string | null>(null);
+	const [queryUser, setQueryUser] = useState<User | null>(null);
+
+	const { setEnabledCalendarIds } = useEnabledCalendarIds();
 
 	return (
 		<AuthContext.Provider
 			value={{
 				signIn: async (sessionId: string) => {
-					if (sessionId === "test") {
-						const user = {
-							id: "test",
-							email: "test@test.com",
-							username: "test",
+					if (sessionId === "LOCAL_ONLY") {
+						const user: User = {
+							user_id: "localUser",
+							email: "local@local.com",
+							username: "localUser",
 						};
 						if (Platform.OS !== "web") {
 							SecureStore.setItem("sessionId", JSON.stringify(sessionId));
@@ -85,6 +100,7 @@ export function SessionProvider({ children }: PropsWithChildren) {
 							queryKey: ["loginData"],
 						});
 						router.replace("/");
+						return;
 					}
 					server.defaults.headers.Cookie = `sessionId=${sessionId};`;
 					const response = await server.get(`/users/@me`);
@@ -99,20 +115,40 @@ export function SessionProvider({ children }: PropsWithChildren) {
 					queryClient.invalidateQueries({
 						queryKey: ["loginData"],
 					});
+					queryClient.setQueryData(["loginData"], { sessionId, user });
 					router.replace("/");
+				},
+				partialSignIn: async (sessionId: string) => {
+					server.defaults.headers.Cookie = `sessionId=${sessionId};`;
+					const response = await server.get(`/users/@me`);
+					const user = response.data;
+					console.log("user", user);
+					if (Platform.OS !== "web") {
+						SecureStore.setItem("sessionId", JSON.stringify(sessionId));
+						SecureStore.setItem("user", JSON.stringify(user));
+					}
+					// session was set on server (since we received the session from the server)
+					// so we need to refresh the query to get the new session
+					queryClient.invalidateQueries({
+						queryKey: ["loginData"],
+					});
+
+					queryClient.setQueryData(["loginData"], { sessionId, user });
+					// UPDATE ALL CALENDARS IN DB WITH localUser to new user id
 				},
 				signOut: () => {
 					server.post("/auth/logout"); // TODO make this a react query mutation so it can run when reconnect to internet
-					if (Platform.OS !== "web")  {
+					if (Platform.OS !== "web") {
 						SecureStore.deleteItemAsync("session");
 						SecureStore.deleteItemAsync("user");
 					}
 					server.defaults.headers.Cookie = "";
+					setEnabledCalendarIds([]);
 					// navigate to sign in page
 					router.replace("/sign-in");
 				},
-				sessionId: loginData?.sessionId,
-				user: loginData?.user,
+				sessionId: querySessionId,
+				user: queryUser,
 				isLoading,
 			}}
 		>

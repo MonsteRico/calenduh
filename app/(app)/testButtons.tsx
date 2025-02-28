@@ -33,14 +33,6 @@ export default function TestButtons() {
 				<Button onPress={() => {}}>Update Calendar</Button>
 				<Button onPress={() => {}}>Delete Calendar</Button>
 				<Button
-					onPress={async () => {
-						const localCalendars = await getCalendarsFromDB();
-						console.log("localCalendars", localCalendars);
-					}}
-				>
-					Log DB Calendars
-				</Button>
-				<Button
 					onPress={() => {
 						queryClient.invalidateQueries({ queryKey: ["calendars"] });
 						queryClient.setQueryData(["calendars"], []);
@@ -55,6 +47,7 @@ export default function TestButtons() {
 						await db.execAsync(`DROP TABLE IF EXISTS events`);
 						await db.execAsync(`DROP TABLE IF EXISTS subscriptions`);
 						await db.execAsync(`DROP TABLE IF EXISTS mutations`);
+						console.log("DB RESET COMPLETELY, RELOAD THE APP");
 					}}
 				>
 					Reset DB COMPLETELY

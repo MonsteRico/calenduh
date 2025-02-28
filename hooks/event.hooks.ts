@@ -20,6 +20,7 @@ import {
 import { addMutationToQueue, getMutationsFromDB } from "@/lib/mutation.helpers";
 import { useSession } from "./authContext";
 import { DateTime } from "luxon";
+import * as Crypto from "expo-crypto";
 
 // --- Queries ---
 
@@ -27,8 +28,8 @@ export const useEventsForCalendar = (calendar_id: string) => {
 	const queryClient = useQueryClient();
 	const isConnected = useIsConnected();
 
-	const { user } = useSession();
-	if (!user) {
+	const { user, sessionId } = useSession();
+	if (!user || !sessionId) {
 		throw new Error("User not found");
 	}
 
@@ -37,7 +38,7 @@ export const useEventsForCalendar = (calendar_id: string) => {
 		queryFn: async () => {
 			const localEvents = await getEventsForCalendarFromDB(calendar_id);
 
-			if (isConnected) {
+			if (isConnected && user.user_id !== "localUser") {
 				try {
 					const serverEvents = await getEventsForCalendarFromServer(calendar_id);
 					const mutations = await getMutationsFromDB(); // Get the mutations that happened offline since last sync
@@ -67,15 +68,15 @@ export const useEvent = (calendar_id: string, event_id: string) => {
 	const queryClient = useQueryClient();
 	const isConnected = useIsConnected();
 
-	const { user } = useSession();
-	if (!user) {
+	const { user, sessionId } = useSession();
+	if (!user || !sessionId) {
 		throw new Error("User not found");
 	}
 
 	return useQuery<Event, Error>({
 		queryKey: ["events", calendar_id, event_id],
 		queryFn: async () => {
-			if (isConnected) {
+			if (isConnected && user.user_id !== "localUser") {
 				try {
 					const serverEvent = await getEventFromServer(calendar_id, event_id);
 					if (!serverEvent) {
@@ -109,8 +110,8 @@ export const useEventsForDay = (day: DateTime) => {
 	const queryClient = useQueryClient();
 	const isConnected = useIsConnected();
 
-	const { user } = useSession();
-	if (!user) {
+	const { user, sessionId } = useSession();
+	if (!user || !sessionId) {
 		throw new Error("User not found");
 	}
 
@@ -120,7 +121,7 @@ export const useEventsForDay = (day: DateTime) => {
 			const startOfDay = day.startOf("day").valueOf(); // Get the start of the day in milliseconds
 			const endOfDay = day.endOf("day").valueOf(); // Get the end of the day in milliseconds
 
-			if (isConnected) {
+			if (isConnected && user.user_id !== "localUser") {
 				try {
 					const serverEvents = await getEventsForDayFromServer(startOfDay, endOfDay);
 					const mutations = await getMutationsFromDB(); // Get the mutations that happened offline since last sync
@@ -139,7 +140,7 @@ export const useEventsForDay = (day: DateTime) => {
 				} catch (error) {
 					console.error("Error fetching events for day from server:", error);
 					// Fallback to local database if server fetch fails
-					const localEvents = await getEventsFromDB();
+					const localEvents = await getEventsFromDB(user.user_id);
 
 					// Filter events that fall within the specified day
 					const eventsForDay = localEvents.filter((event) => {
@@ -151,7 +152,7 @@ export const useEventsForDay = (day: DateTime) => {
 				}
 			} else {
 				// Offline: Fetch from local database
-				const localEvents = await getEventsFromDB();
+				const localEvents = await getEventsFromDB(user.user_id);
 
 				// Filter events that fall within the specified day
 				const eventsForDay = localEvents.filter((event) => {
@@ -178,18 +179,18 @@ export const useCreateEvent = (
 	const queryClient = useQueryClient();
 	const isConnected = useIsConnected();
 
-	const { user } = useSession();
-	if (!user) {
-		throw new Error("User not found");
+	const { user, sessionId } = useSession();
+	if (!user || !sessionId) {
+		throw new Error("User not found or session not found");
 	}
 
 	return useMutation({
 		mutationFn: async ({ newEvent, calendar_id }: { newEvent: Omit<Event, "event_id">; calendar_id: string }) => {
-			if (isConnected) {
+			if (isConnected && user.user_id !== "localUser") {
 				return await createEventOnServer(calendar_id, newEvent);
 			} else {
 				console.log("not connected");
-				return { ...newEvent, event_id: Date.now().toString() } as Event;
+				return { ...newEvent, event_id: "local-"+Crypto.randomUUID() } as Event;
 			}
 		},
 		onMutate: async ({ newEvent, calendar_id }) => {
@@ -197,7 +198,7 @@ export const useCreateEvent = (
 			await queryClient.cancelQueries({ queryKey: ["events", calendar_id] });
 			const previousEvents = queryClient.getQueryData<Event[]>(["events", calendar_id]) || [];
 
-			const tempId = Date.now().toString();
+			const tempId = "local-"+Crypto.randomUUID();
 			const optimisticEvent: Event = {
 				...newEvent,
 				event_id: tempId,
@@ -206,7 +207,7 @@ export const useCreateEvent = (
 			queryClient.setQueryData<Event[]>(["events", calendar_id], (old) => [...(old || []), optimisticEvent]);
 
 			await insertEventIntoDB(optimisticEvent, user.user_id);
-			if (!isConnected) {
+			if (!isConnected && user.user_id !== "localUser") {
 				addMutationToQueue("CREATE_EVENT", newEvent, { eventId: tempId, calendarId: calendar_id });
 			}
 			return { previousEvents, tempId };
@@ -222,7 +223,7 @@ export const useCreateEvent = (
 		},
 		onSettled: async (newEvent, error, variables, context) => {
 			options?.onSettled?.(newEvent, error, variables, context);
-			if (isConnected && newEvent && context?.tempId && !error) {
+			if (isConnected && newEvent && context?.tempId && !error && user.user_id !== "localUser") {
 				try {
 					await updateEventInDB(context.tempId, newEvent, user.user_id);
 				} catch (error) {
@@ -249,14 +250,14 @@ export const useUpdateEvent = (
 	const queryClient = useQueryClient();
 	const isConnected = useIsConnected();
 
-	const { user } = useSession();
-	if (!user) {
-		throw new Error("User not found");
+	const { user, sessionId } = useSession();
+	if (!user || !sessionId) {
+		throw new Error("User not found or session not found");
 	}
 
 	return useMutation({
 		mutationFn: async ({ updatedEvent, calendar_id }: { updatedEvent: UpdateEvent; calendar_id: string }) => {
-			if (isConnected) {
+			if (isConnected && user.user_id !== "localUser") {
 				return await updateEventOnServer(calendar_id, updatedEvent);
 			} else {
 				return updatedEvent;
@@ -272,7 +273,7 @@ export const useUpdateEvent = (
 			);
 
 			await updateEventInDB(updatedEvent.event_id, updatedEvent, user.user_id);
-			if (!isConnected) {
+			if (!isConnected && user.user_id !== "localUser") {
 				await addMutationToQueue("UPDATE_EVENT", updatedEvent, {
 					eventId: updatedEvent.event_id,
 					calendarId: calendar_id,
@@ -319,9 +320,14 @@ export const useDeleteEvent = (
 	const queryClient = useQueryClient();
 	const isConnected = useIsConnected();
 
+	const { user, sessionId } = useSession();
+	if (!user || !sessionId) {
+		throw new Error("User not found or session not found");
+	}
+
 	return useMutation({
 		mutationFn: async ({ event_id, calendar_id }: { event_id: string; calendar_id: string }) => {
-			if (isConnected) {
+			if (isConnected && user.user_id !== "localUser") {
 				return await deleteEventOnServer(calendar_id, event_id);
 			} else {
 				return;
@@ -342,7 +348,7 @@ export const useDeleteEvent = (
 			}
 
 			await deleteEventFromDB(event_id);
-			if (!isConnected) {
+			if (!isConnected && user.user_id !== "localUser") {
 				await addMutationToQueue("DELETE_EVENT", event_id, { eventId: event_id });
 			}
 

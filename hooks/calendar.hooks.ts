@@ -19,16 +19,20 @@ import {
 import { addMutationToQueue, getMutationsFromDB } from "@/lib/mutation.helpers";
 import { useSession } from "./authContext";
 import { useEnabledCalendarIds } from "./useEnabledCalendarIds";
+import * as Crypto from "expo-crypto";
 
 // --- Queries ---
 
 export const useCalendars = () => {
 	const isConnected = useIsConnected();
-
+	const {sessionId, user } = useSession();
+	if (!sessionId || !user) {
+		throw new Error("Session not found");
+	}
 	return useQuery<Calendar[], Error>({
 		queryKey: ["all_calendars"],
 		queryFn: async () => {
-			if (isConnected) {
+			if (isConnected && user.user_id !== "localUser") {
 				try {
 					const serverCalendars = await getCalendarsFromServer();
 
@@ -49,15 +53,15 @@ export const useCalendar = (calendar_id: string) => {
 	const queryClient = useQueryClient();
 	const isConnected = useIsConnected();
 
-	const { user } = useSession();
-	if (!user) {
+	const { user, sessionId } = useSession();
+	if (!user || !sessionId) {
 		throw new Error("User not found");
 	}
 
 	return useQuery<Calendar, Error>({
 		queryKey: ["calendars", calendar_id],
 		queryFn: async () => {
-			if (isConnected) {
+			if (isConnected && user.user_id !== "localUser") {
 				try {
 					const serverCalendar = await getCalendarFromServer(calendar_id);
 					if (!serverCalendar) {
@@ -90,16 +94,16 @@ export const useMyCalendars = () => {
 	const queryClient = useQueryClient();
 	const isConnected = useIsConnected();
 
-	const { user } = useSession();
-	if (!user) {
+	const { user, sessionId } = useSession();
+	if (!user || !sessionId) {
 		throw new Error("User not found");
 	}
 
 	return useQuery<Calendar[], Error>({
 		queryKey: ["calendars"],
 		queryFn: async () => {
-			const localCalendars = await getCalendarsFromDB();
-			if (isConnected) {
+			const localCalendars = await getCalendarsFromDB(user.user_id);
+			if (isConnected && user.user_id !== "localUser") {
 				try {
 					const serverCalendars = await getMyCalendarsFromServer();
 					const mutations = await getMutationsFromDB(); // Get the mutations that happened offline since last sync
@@ -119,7 +123,6 @@ export const useMyCalendars = () => {
 					return localCalendars;
 				}
 			} else {
-				console.log("You are offline, cannot fetch the calendars from the server");
 				return localCalendars;
 			}
 		},
@@ -130,15 +133,15 @@ export const useSubscribedCalendars = () => {
 	const queryClient = useQueryClient();
 	const isConnected = useIsConnected();
 
-	const { user } = useSession();
-	if (!user) {
+	const { user, sessionId } = useSession();
+	if (!user || !sessionId) {
 		throw new Error("User not found");
 	}
 
 	return useQuery<Calendar[], Error>({
 		queryKey: ["subscribedCalendars"],
 		queryFn: async () => {
-			if (isConnected) {
+			if (isConnected && user.user_id !== "localUser") {
 				try {
 					const serverCalendars = await getSubscribedCalendarsFromServer();
 					// Update local DB
@@ -166,22 +169,22 @@ export const useCreateCalendar = (
 ) => {
 	const queryClient = useQueryClient();
 	const isConnected = useIsConnected();
-	const {enabledCalendarIds, setEnabledCalendarIds} = useEnabledCalendarIds();
-	const { user } = useSession();
-	if (!user) {
-		throw new Error("User not found");
+	const { enabledCalendarIds, setEnabledCalendarIds } = useEnabledCalendarIds();
+	const { user, sessionId } = useSession();
+	if (!user || !sessionId) {
+		throw new Error("User not found or session not found");
 	}
 	console.log("user", user);
 
 	return useMutation<Calendar, Error, Omit<Calendar, "calendar_id">, { previousCalendars: Calendar[]; tempId: string }>(
 		{
 			mutationFn: async (newCalendar: Omit<Calendar, "calendar_id">) => {
-				if (isConnected) {
+				if (isConnected && user.user_id !== "localUser") {
 					console.log("creating calendar on server");
 					return await createCalendarOnServer(newCalendar);
 				} else {
 					// Optimistic update only, server sync will happen later
-					return { ...newCalendar, calendar_id: Date.now().toString() }; // Generate a temporary ID
+					return { ...newCalendar, calendar_id: "local-"+Crypto.randomUUID() }; // Generate a temporary ID
 				}
 			},
 			onMutate: async (newCalendar) => {
@@ -190,7 +193,7 @@ export const useCreateCalendar = (
 				await queryClient.cancelQueries({ queryKey: ["calendars"] });
 				const previousCalendars = queryClient.getQueryData<Calendar[]>(["calendars"]) || [];
 
-				const tempId = Date.now().toString();
+				const tempId = "local-"+Crypto.randomUUID();
 				const optimisticCalendar: Calendar = {
 					...newCalendar,
 					calendar_id: tempId,
@@ -201,7 +204,7 @@ export const useCreateCalendar = (
 				queryClient.setQueryData<Calendar[]>(["calendars"], (old) => [...(old || []), optimisticCalendar]);
 
 				await insertCalendarIntoDB(optimisticCalendar, user.user_id);
-				if (!isConnected) {
+				if (!isConnected && user.user_id !== "localUser") {
 					addMutationToQueue("CREATE_CALENDAR", newCalendar, { calendarId: tempId });
 				}
 				return { previousCalendars, tempId };
@@ -219,7 +222,7 @@ export const useCreateCalendar = (
 			onSettled: async (newCalendar, error, variables, context) => {
 				options?.onSettled?.(newCalendar, error, variables, context);
 				console.log("settled");
-				if (isConnected && newCalendar && context?.tempId && !error) {
+				if (isConnected && newCalendar && context?.tempId && !error && user.user_id !== "localUser") {
 					try {
 						console.log(context);
 						await updateCalendarInDB(context.tempId, newCalendar, user.user_id);
@@ -241,14 +244,14 @@ export const useUpdateCalendar = (
 	const queryClient = useQueryClient();
 	const isConnected = useIsConnected();
 
-	const { user } = useSession();
-	if (!user) {
-		throw new Error("User not found");
+	const { user, sessionId } = useSession();
+	if (!user || !sessionId) {
+		throw new Error("User not found or session not found");
 	}
 
 	return useMutation({
 		mutationFn: async (updatedCalendar: UpdateCalendar) => {
-			if (isConnected) {
+			if (isConnected && user.user_id !== "localUser") {
 				return await updateCalendarOnServer(updatedCalendar);
 			} else {
 				return updatedCalendar;
@@ -266,7 +269,7 @@ export const useUpdateCalendar = (
 			);
 
 			await updateCalendarInDB(updatedCalendar.calendar_id, updatedCalendar, user.user_id);
-			if (!isConnected) {
+			if (!isConnected && user.user_id !== "localUser") {
 				await addMutationToQueue("UPDATE_CALENDAR", updatedCalendar, { calendarId: updatedCalendar.calendar_id });
 			}
 			return { previousCalendars };
@@ -292,10 +295,13 @@ export const useDeleteCalendar = (
 ) => {
 	const queryClient = useQueryClient();
 	const isConnected = useIsConnected();
-
+	const { user, sessionId } = useSession();
+	if (!user || !sessionId) {
+		throw new Error("User not found or session not found");
+	}
 	return useMutation<void, Error, string, { previousCalendars: Calendar[] }>({
 		mutationFn: async (calendar_id: string) => {
-			if (isConnected) {
+			if (isConnected && user.user_id !== "localUser") {
 				return await deleteCalendarOnServer(calendar_id);
 			} else {
 				return;
@@ -311,7 +317,7 @@ export const useDeleteCalendar = (
 			);
 
 			await deleteCalendarFromDB(calendar_id);
-			if (!isConnected) {
+			if (!isConnected && user.user_id !== "localUser") {
 				await addMutationToQueue("DELETE_CALENDAR", calendar_id, { calendarId: calendar_id });
 			}
 			return { previousCalendars };

@@ -54,7 +54,6 @@ export default function SignIn() {
 		}
 	);
 
-
 	return (
 		<View className="flex-1">
 			<View className="flex-1 items-center justify-between px-6">
@@ -108,7 +107,8 @@ export default function SignIn() {
 								console.log("result", response);
 								if (response.type !== "success") return;
 								console.log("result was success", response);
-								signIn(response.params.sessionId);							}}
+								signIn(response.params.sessionId);
+							}}
 						>
 							<View className="flex-row items-center">
 								<Svg width={20} height={20} style={{ marginRight: 8, marginTop: 3 }} viewBox="0 0 24 24">
@@ -164,7 +164,7 @@ export default function SignIn() {
 							size="lg"
 							className="rounded-xl bg-gray-100"
 							labelClasses="text-gray-700"
-							onPress={() => signIn("test")}
+							onPress={() => signIn("LOCAL_ONLY")}
 						>
 							Continue as Guest
 						</Button>
