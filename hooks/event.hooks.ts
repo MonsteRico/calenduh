@@ -19,7 +19,7 @@ import {
 } from "@/lib/event.helpers";
 import { addMutationToQueue, getMutationsFromDB } from "@/lib/mutation.helpers";
 import { useSession } from "./authContext";
-import { DateTime } from "luxon";
+import { DateTime, Duration, Interval } from "luxon";
 import * as Crypto from "expo-crypto";
 
 // --- Queries ---
@@ -106,6 +106,77 @@ export const useEvent = (calendar_id: string, event_id: string) => {
 	});
 };
 
+export const useEventsForInterval = (interval: Interval<true>) => {
+	const queryClient = useQueryClient();
+	const isConnected = useIsConnected();
+
+	const { user, sessionId } = useSession();
+	if (!user || !sessionId) {
+		throw new Error("User not found");
+	}
+
+	return useQuery<Event[], Error>({
+		queryKey: ["events", "interval", interval.toISO()], // Cache key based on the date
+		queryFn: async () => {
+			const intervalStart = interval.start.valueOf(); // Get the start of the day in milliseconds
+			const intervalEnd = interval.end.valueOf(); // Get the end of the day in milliseconds
+
+			console.log("Fetching events between", interval.start.toISODate(), "and", interval.end.toISODate())
+
+			if (isConnected && user.user_id !== "localUser") {
+				try {
+					const serverEvents = await getEventsForDayFromServer(intervalStart, intervalEnd);
+					const mutations = await getMutationsFromDB(); // Get the mutations that happened offline since last sync
+					const deletedEventIds = mutations // Pull out any event ids that were deleted while offline
+						.filter((mutation) => mutation.mutation === "DELETE_EVENT")
+						.map((mutation) => mutation.event_id);
+
+					const filteredServerEvents = serverEvents.filter((event) => !deletedEventIds.includes(event.event_id)); // Remove any events that were deleted offline before they get deleted on the server
+
+					// Update local DB with server events
+					for (const event of filteredServerEvents) {
+						await upsertEventIntoDB(event, user.user_id);
+					}
+
+					// for each day in the interval, update the queryClient cache for that day
+					interval.splitBy({
+						day:1
+					}).forEach((dayInterval) => {
+						const day = dayInterval.start;
+						const daysEvents = filteredServerEvents.map((event) => dayInterval.contains(event.start_time) || dayInterval.contains(event.end_time) ? event : null).filter((event) => event != null)
+						queryClient.setQueryData(["events", "day", day?.toISODate()], daysEvents)
+					})
+
+					return filteredServerEvents;
+				} catch (error) {
+					console.error("Error fetching events for day from server:", error);
+					// Fallback to local database if server fetch fails
+					const localEvents = await getEventsFromDB(user.user_id);
+
+					// Filter events that fall within the specified day
+					const eventsForDay = localEvents.filter((event) => {
+						const startTime = event.start_time.valueOf(); // Assuming start_time is a Date object
+						return startTime >= intervalStart && startTime <= intervalEnd;
+					});
+
+					return eventsForDay;
+				}
+			} else {
+				// Offline: Fetch from local database
+				const localEvents = await getEventsFromDB(user.user_id);
+
+				// Filter events that fall within the specified day
+				const eventsForDay = localEvents.filter((event) => {
+					const startTime = event.start_time.valueOf(); // Assuming start_time is a Date object
+					return startTime >= intervalStart && startTime <= intervalEnd;
+				});
+
+				return eventsForDay;
+			}
+		},
+	});
+}
+
 export const useEventsForDay = (day: DateTime) => {
 	const queryClient = useQueryClient();
 	const isConnected = useIsConnected();
@@ -163,6 +234,7 @@ export const useEventsForDay = (day: DateTime) => {
 				return eventsForDay;
 			}
 		},
+		enabled:false,
 	});
 };
 

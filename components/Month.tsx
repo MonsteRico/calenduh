@@ -1,12 +1,12 @@
 import { cn } from "@/lib/utils";
-import { DateTime } from "luxon";
+import { DateTime, Interval } from "luxon";
 import React, { Fragment } from "react";
 import { Dimensions, Platform, Pressable, Text, View } from "react-native";
 import { Entypo } from "@expo/vector-icons";
 import { useCurrentViewedDay } from "@/hooks/useCurrentViewedDay";
 import { router } from "expo-router";
 import { TapGestureHandler } from "react-native-gesture-handler";
-import { useEventsForDay } from "@/hooks/event.hooks";
+import { useEventsForDay, useEventsForInterval } from "@/hooks/event.hooks";
 import { useEnabledCalendarIds } from "@/hooks/useEnabledCalendarIds";
 import { useCalendar } from "@/hooks/calendar.hooks";
 	import { useMemo } from "react";
@@ -15,8 +15,42 @@ function Month({ month, year }: { month: number; year: number }) {
     const screenWidth = Dimensions.get("window").width;
     const monthHeight = Platform.OS === "web" ? Dimensions.get("window").height - 150 : screenWidth * 0.9;
 
-    const days = getDaysForMonth(DateTime.fromObject({ year, month }) as DateTime<true>);
+	const thisMonth = DateTime.fromObject({year, month}) as DateTime<true>
 
+    const days = getDaysForMonth(thisMonth);
+
+	const firstDayOfMonth = days[0].startOf("day")
+	const lastDayOfMonth = days[days.length - 1].endOf("day")
+	console.log(firstDayOfMonth, lastDayOfMonth)
+	const {data:monthsEvents, isLoading} = useEventsForInterval(Interval.fromDateTimes(firstDayOfMonth, lastDayOfMonth) as Interval<true>);
+
+	if (isLoading) {
+		return (
+			<View
+				style={{
+					width: screenWidth,
+					height: monthHeight,
+				}}
+				className="my-auto flex flex-1 flex-col justify-center"
+			>
+				<Text className="text-blue-500">Loading...</Text>
+			</View>
+		);
+	}
+
+	if (!monthsEvents) {
+		return (
+			<View
+				style={{
+					width: screenWidth,
+					height: monthHeight,
+				}}
+				className="my-auto flex flex-1 flex-col justify-center"
+			>
+				<Text className="text-red-500">This shouldn't happen. Uh oh.</Text>
+			</View>
+		);
+	}
 
 	return (
 		<View
@@ -86,6 +120,7 @@ function Day({ day, currentMonth, bottomRow = false }: { day: DateTime<true>; cu
 	const { data: events, isLoading } = useEventsForDay(day);
 
 	const calendarsForShownEvents = useMemo(() => {
+		console.log("this is the problem")
 		if (!events) {
 			return [];
 		}

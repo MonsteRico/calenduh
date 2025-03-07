@@ -13,11 +13,12 @@ import { DateTime } from "luxon";
 import DateTimePicker from "@react-native-community/datetimepicker";
 import { useDeleteUser } from "@/hooks/user.hooks";
 import { useSession } from "@/hooks/authContext";
-import { CalendarItem } from "./calendarsList";
+import { CalendarItem } from "./(index)/calendarsList";
 import { useMyCalendars } from "@/hooks/calendar.hooks";
 import useStateWithCallbackLazy from "@/hooks/useStateWithCallbackLazy";
 import { migrateUserCalendarsInDB, migrateUserServer } from "@/lib/user.helper";
-
+import { useEnabledCalendarIds } from "@/hooks/useEnabledCalendarIds";
+import Storage from "expo-sqlite/kv-store";
 export default function ProfileView() {
 	const isPresented = router.canGoBack();
 
@@ -51,6 +52,7 @@ export default function ProfileView() {
 		setTempName(name);
 		setTempBirthday(birthday);
 	};
+	const { signOut } = useSession();
 
 	const { mutate: deleteUser, isPending: isDeleting } = useDeleteUser({});
 
@@ -120,7 +122,7 @@ export default function ProfileView() {
 									console.log("sessionId", sessionId);
 									console.log("user", user);
 									migrateUserCalendarsInDB(user.user_id);
-									migrateUserServer(user.user_id)
+									migrateUserServer(user.user_id);
 									onClose();
 								}}
 							>
@@ -135,6 +137,8 @@ export default function ProfileView() {
 
 	const delay = (ms: number) => new Promise((res) => setTimeout(res, ms));
 
+	const { enabledCalendarIds, setEnabledCalendarIds } = useEnabledCalendarIds();
+
 	return (
 		<View>
 			<GuestSignInModal
@@ -142,8 +146,12 @@ export default function ProfileView() {
 				onClose={() => setSignInModalVisible(false)}
 				onComplete={() => {
 					setSignInModalVisible(false, () => {
-						setTimeout(() => {setMergeCalendarModalVisible(true);}, 1000);
+						setTimeout(() => {
+							setMergeCalendarModalVisible(true);
+						}, 1000);
 					});
+					setEnabledCalendarIds([]);
+					Storage.setItemSync("enabledCalendarIds", JSON.stringify([]));
 
 					console.log("onComplete");
 				}}
@@ -152,7 +160,6 @@ export default function ProfileView() {
 			<MergeCalendarModal visible={mergeCalendarModalVisible} onClose={() => setMergeCalendarModalVisible(false)} />
 
 			<View className="ml-1 mr-1 flex-row items-center justify-between">
-				{isPresented && <Button onPress={() => router.back()}>Go Back</Button>}
 				<Text className="text-2xl font-bold text-primary">User Profile</Text>
 				<View className="w-16 flex-row justify-end gap-6">
 					<TouchableOpacity onPress={handleEditToggle}>
@@ -249,11 +256,19 @@ export default function ProfileView() {
 								<Button className="m-8 ml-10 mr-10" onPress={() => setSignInModalVisible(!signInModalVisible)}>
 									Sign-In
 								</Button>
-								<Button onPress={() => setMergeCalendarModalVisible(!mergeCalendarModalVisible)}>
-									Merge Calendars
-								</Button>
 							</View>
 						)}
+
+						<Button
+							onPress={() => {
+								setEnabledCalendarIds([]);
+								Storage.setItemSync("enabledCalendarIds", JSON.stringify([]));
+
+								signOut();
+							}}
+						>
+							Sign Out
+						</Button>
 					</View>
 				)}
 			</View>

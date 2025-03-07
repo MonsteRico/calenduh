@@ -131,6 +131,8 @@ export default function MonthScreen() {
 
 	console.log("rerendering");
 
+
+
 	return (
 		<View className="flex min-h-screen w-full flex-col items-center p-1">
 			<DrawerMenu title="Calendars" isOpen={isDrawerOpen} onClose={toggleDrawer}>
@@ -186,46 +188,6 @@ export default function MonthScreen() {
 			</View>
 			<Divider className="my-4" />
 			<View className="flex flex-row flex-wrap justify-center gap-4">
-				<Button
-					onPress={() => {
-						router.navigate("/profileView");
-					}}
-				>
-					Profile
-				</Button>
-				<Button
-					onPress={() => {
-						setEnabledCalendarIds([]);
-						Storage.setItemSync("enabledCalendarIds", JSON.stringify([]));
-
-						signOut();
-					}}
-				>
-					Sign Out
-				</Button>
-				<Button
-					onPress={() => {
-						router.navigate("/createEvent");
-					}}
-				>
-					Create Event
-				</Button>
-				<Button
-					onPress={() => {
-						router.navigate("/testButtons");
-					}}
-				>
-					Test Buttons
-				</Button>
-			</View>
-			<View className="flex flex-row justify-center gap-4">
-				<Text className="text-primary">Enabled Calendars: {enabledCalendarIds.length}</Text>
-				{enabledCalendarIds.map((calendarId) => (
-					<Text className="text-primary" key={calendarId}>
-						{calendarId}
-					</Text>
-				))}
-				<Text className="text-primary">Db Version: {dbVersion}</Text>
 			</View>
 		</View>
 	);

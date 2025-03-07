@@ -1,5 +1,5 @@
 import { Text, View } from "react-native";
-import { Redirect, Slot, Stack } from "expo-router";
+import { Redirect, Slot, Stack, Tabs } from "expo-router";
 import { useSession } from "@/hooks/authContext";
 import { useColorScheme } from "nativewind";
 import { cn } from "@/lib/utils";
@@ -10,16 +10,23 @@ import { DateTime } from "luxon";
 import { EnabledCalendarIdsContext } from "@/hooks/useEnabledCalendarIds";
 import { useIsConnected } from "@/hooks/useIsConnected";
 import * as Network from "expo-network";
-import Storage from "expo-sqlite/kv-store"
+import Storage from "expo-sqlite/kv-store";
 import { SyncContext } from "@/hooks/sync";
-
+import CustomTabBar from "@/components/CustomTabBar";
+import AntDesign from "@expo/vector-icons/AntDesign";
+import MaterialIcons from "@expo/vector-icons/MaterialIcons";
+import FontAwesome6 from "@expo/vector-icons/FontAwesome6";
+import FontAwesome from "@expo/vector-icons/FontAwesome";
+import MaterialCommunityIcons from "@expo/vector-icons/MaterialCommunityIcons";
 export default function AppLayout() {
 	const networkState = Network.useNetworkState();
 	const { sessionId, isLoading, user } = useSession();
 	const { colorScheme } = useColorScheme();
 
 	const [dayBeingViewed, setDayBeingViewed] = useState(DateTime.now());
-	const [enabledCalendarIds, setEnabledCalendarIds] = useState<string[]>(JSON.parse(Storage.getItemSync("enabledCalendarIds") ?? "[]"));
+	const [enabledCalendarIds, setEnabledCalendarIds] = useState<string[]>(
+		JSON.parse(Storage.getItemSync("enabledCalendarIds") ?? "[]")
+	);
 	const [syncing, setIsSyncing] = useState(false);
 	useEffect(() => {
 		console.log("sessionId", sessionId);
@@ -32,7 +39,6 @@ export default function AppLayout() {
 	useEffect(() => {
 		console.log("enabledCalendarIds", enabledCalendarIds);
 	}, [enabledCalendarIds]);
-
 
 	// You can keep the splash screen open, or render a loading screen like we do here.
 	if (isLoading) {
@@ -56,7 +62,6 @@ export default function AppLayout() {
 		return <Text>Loading...</Text>;
 	}
 
-
 	// This layout can be deferred because it's not the root layout.
 	return (
 		<SyncContext.Provider
@@ -77,43 +82,64 @@ export default function AppLayout() {
 						setValue: setEnabledCalendarIds,
 					}}
 				>
-					<Stack
+					<Tabs
 						screenOptions={{
 							headerShown: false,
-							contentStyle: { flex: 1, backgroundColor: colorScheme === "dark" ? "#030711" : "white" },
+							sceneStyle: { flex: 1, backgroundColor: colorScheme === "dark" ? "#030711" : "white" },
 						}}
+						tabBar={(props) => <CustomTabBar {...props} />}
 					>
-						<Stack.Screen name="index" />
-						<Stack.Screen name="updateEvent" options={{ presentation: "modal" }} />
-						<Stack.Screen
-							name="createEvent"
+						<Tabs.Screen
+							name="manageGroups"
 							options={{
-								presentation: "modal",
+								tabBarIcon: ({ focused }) => {
+									return <FontAwesome6 name="user-group" size={24} color={focused ? "blue" : "black"} />;
+								},
+								tabBarLabel: "",
 							}}
 						/>
-						<Stack.Screen
-							name="calendarsList"
+						<Tabs.Screen
+							name="browsePublicCalendars"
 							options={{
-								presentation: "modal",
+								tabBarIcon: ({ focused }) => {
+									return <MaterialCommunityIcons name="calendar-search" size={24} color={focused ? "blue" : "black"} />;
+								},
+								tabBarLabel: "",
 							}}
 						/>
-						<Stack.Screen
-							name="agenda"
-						/>
-						<Stack.Screen
-							name="updateCalendar"
+						<Tabs.Screen
+							name="(index)"
 							options={{
-								presentation: "modal",
-							}}
-						/>
+								popToTopOnBlur: true,
+								tabBarIcon: (props) => {
+									if (props.focused) {
+										return <MaterialIcons name="add-circle" size={48} color="blue" />;
+									}
 
-						<Stack.Screen
-							name="createCalendar"
-							options={{
-								presentation: "modal",
+									return <AntDesign name="calendar" size={24} color="black" />;
+								},
+								tabBarLabel: "",
 							}}
 						/>
-					</Stack>
+						<Tabs.Screen
+							name="profileView"
+							options={{
+								tabBarIcon: ({ focused }) => {
+									return <FontAwesome name="user-circle" size={24} color={focused ? "blue" : "black"} />;
+								},
+								tabBarLabel: "",
+							}}
+						/>
+						<Tabs.Screen
+							name="testButtons"
+							options={{
+								tabBarIcon: ({ focused }) => {
+									return <MaterialCommunityIcons name="test-tube" size={24} color={focused ? "blue" : "black"} />;
+								},
+								tabBarLabel: "",
+							}}
+						/>
+					</Tabs>
 				</EnabledCalendarIdsContext.Provider>
 			</DayBeingViewedContext.Provider>
 		</SyncContext.Provider>

@@ -160,7 +160,10 @@ function CalendarItem({
 				>
 					<Checkbox
 						checked={isChecked}
-						onCheck={setIsChecked}
+						onCheck={() => {
+							setIsChecked(!isChecked);
+							onPress();
+						}}
 						color={color}
 						checkSymbol={false}
 						checkboxClasses="border-2"

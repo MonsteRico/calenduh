@@ -22,16 +22,6 @@ export default function TestButtons() {
 	const { setEnabledCalendarIds } = useEnabledCalendarIds();
 	return (
 		<View className="flex-1 bg-background">
-			{isPresented && (
-				<Button
-					onPress={() => {
-						router.back();
-					}}
-					labelClasses="text-secondary"
-				>
-					Cancel
-				</Button>
-			)}
 			<View className="items-left flex-row flex-wrap gap-4">
 				<Button onPress={() => {setEnabledCalendarIds([])}}>Reset Enabled Ids</Button>
 
