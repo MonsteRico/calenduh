@@ -153,7 +153,8 @@ function Day({ day, currentMonth, bottomRow = false }: { day: DateTime<true>; cu
 				onPress={() => {
 					console.log("Day pressed", day.toISODate());
 					setDayBeingViewed(day);
-					router.navigate(`/agenda`);
+					router.navigate('/dayView');
+					//router.navigate(`/agenda`);
 				}}
 			>
 				<Text
