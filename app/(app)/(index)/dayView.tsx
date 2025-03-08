@@ -1,5 +1,5 @@
 import { Text, View, ScrollView, TouchableOpacity, Dimensions, StyleSheet, ViewStyle, DimensionValue } from 'react-native';
-import { useEffect, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { DateTime } from 'luxon';
 import { Button } from '@/components/Button';
 import { router } from 'expo-router';
@@ -8,6 +8,7 @@ import { useEventsForDay } from '@/hooks/event.hooks';
 import { EventViewModal } from '@/components/EventViewModal';
 import { useCurrentViewedDay } from '@/hooks/useCurrentViewedDay';
 import { Event } from "@/types/event.types";
+import { useEnabledCalendarIds } from '@/hooks/useEnabledCalendarIds';
 
 interface ProcessedEventType extends Event {
   width: number; 
@@ -242,53 +243,25 @@ export default function DayView() {
     const [eventIdToView, setEventIdToView] = useState<string | null>(null);
     const [calendarIdToView, setCalendarIdToView] = useState<string | null>(null);
 
-    
-    {/*useEffect(() => {
-        const sampleEvents: EventType[] = [
-            {
-                id: '1',
-                title: 'Morning Meeting',
-                description: 'Daily standup with the team',
-                startTime: new Date(new Date().setHours(9, 0, 0, 0)),
-                endTime: new Date(new Date().setHours(10, 0, 0, 0)),
-                color: '#3b82f6' // blue-500
-            },
-            {
-                id: '2',
-                title: 'Lunch with Client',
-                description: 'Discuss project requirements',
-                startTime: new Date(new Date().setHours(12, 0, 0, 0)),
-                endTime: new Date(new Date().setHours(13, 30, 0, 0)),
-                color: '#10b981' // emerald-500
-            },
-            {
-                id: '3',
-                title: 'Planning Session',
-                description: 'Sprint planning',
-                startTime: new Date(new Date().setHours(14, 0, 0, 0)),
-                endTime: new Date(new Date().setHours(15, 30, 0, 0)),
-                color: '#8b5cf6' // violet-500
-            },
-            {
-                id: '4',
-                title: 'Code Review',
-                description: 'Review PR #42',
-                startTime: new Date(new Date().setHours(14, 30, 0, 0)),
-                endTime: new Date(new Date().setHours(16, 0, 0, 0)),
-                color: '#f59e0b' // amber-500
-            },
-            {
-                id: '5',
-                title: 'Team Outing',
-                description: 'Team building event',
-                startTime: new Date(new Date().setHours(13, 59, 0, 0)),
-                endTime: new Date(new Date().setHours(14, 0, 0, 0)),
-                color: '#ef4444' // red-500
+    const { enabledCalendarIds } = useEnabledCalendarIds();
+
+    const calendarsForShownEvents = useMemo(() => {
+        if (!events) {
+            return [];
+        }
+        // Filter events based on enabled calendar IDs
+        const shownEvents = events.filter((event) => enabledCalendarIds.includes(event.calendar_id));
+
+        const uniqueEventsMap = new Map<string, Event>();
+
+        shownEvents.forEach((event) => {
+            if (!uniqueEventsMap.has(event.event_id)) {
+                uniqueEventsMap.set(event.event_id, event);
             }
-        ];
-        
-        setEvents(sampleEvents);
-    }, []);*/}
+        });
+
+        return Array.from(uniqueEventsMap.values());
+        }, [enabledCalendarIds, events]); // Memoize based on changes to enabledCalendarIds or events
 
     const handleEventPress = (event: Event) => {
         setEventIdToView(event.event_id)
@@ -358,7 +331,7 @@ export default function DayView() {
             )}
             
             <CalendarDayView
-                events={events}
+                events={calendarsForShownEvents}
                 date={dayBeingViewed}
                 onEventPress={handleEventPress}
                 hourHeight={60}
