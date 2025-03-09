@@ -31,6 +31,13 @@ export default function MainCalendarLayout() {
 					presentation: "modal",
 				}}
 			/>
+
+			<Stack.Screen
+				name="dayView"
+				options={{
+					presentation: "modal",
+				}}
+			/>
 		</Stack>
 	);
 }
