@@ -19,10 +19,6 @@ import useStateWithCallbackLazy from "@/hooks/useStateWithCallbackLazy";
 import { migrateUserCalendarsInDB, migrateUserServer } from "@/lib/user.helper";
 import { useEnabledCalendarIds } from "@/hooks/useEnabledCalendarIds";
 import Storage from "expo-sqlite/kv-store";
-import axios from 'axios';
-
-const EXPO_PUBLIC_SERVER_URL = process.env.EXPO_PUBLIC_SERVER_URL;
-
 export default function ProfileView() {
 	const isPresented = router.canGoBack();
 
@@ -45,29 +41,8 @@ export default function ProfileView() {
 	const handleEditToggle = () => {
 		setIsEditing(!isEditing);
 	};
-	
-	const { user } = useSession();
-	if (!user) {
-		return <Text className="text-primary">Loading...</Text>;
-	}
 
-	const handleSave = async () => {
-		// pass to function
-		const updatedUserData: UpdatedUserData = {
-			username: tempUsername,
-			name: tempName,
-			birthday: birthday,
-			profile_picture: null,
-			// email: email immutable?
-		};
-		try {
-			// Assuming you have the userID (from session or props)
-			await updateUser(user.user_id, updatedUserData); // Update user on the server
-			setIsEditing(false); // Hide the editing mode
-		} catch (error) {
-			// Handle any errors that occur during the update
-			console.error('Failed to update user:', error);
-		}
+	const handleSave = () => {
 		setIsEditing(false);
 	};
 
@@ -84,6 +59,10 @@ export default function ProfileView() {
 	const globColor = colorScheme == "light" ? "black" : "white";
 	const globColorInverse = colorScheme == "light" ? "white" : "black";
 
+	const { user } = useSession();
+	if (!user) {
+		return <Text className="text-primary">Loading...</Text>;
+	}
 
 	type MergeCalendarModalProps = {
 		visible: boolean;
@@ -159,57 +138,6 @@ export default function ProfileView() {
 	const delay = (ms: number) => new Promise((res) => setTimeout(res, ms));
 
 	const { enabledCalendarIds, setEnabledCalendarIds } = useEnabledCalendarIds();
-
-	interface UpdatedUserData {
-		// email?: string;
-		username?: string;
-		profile_picture?: string | null;
-		birthday?: DateTime;
-		name?: string;
-	}
-
-	const updateUser = async (userID: string, updatedUserData: UpdatedUserData): Promise<void> => {
-		console.log("test!");
-		try {
-			console.log("updating user:", userID);
-	
-			console.log("request body:", {
-				user_id: userID,
-				username: updatedUserData.username,
-				profile_picture: updatedUserData.profile_picture,
-				birthday: updatedUserData.birthday,
-				name: updatedUserData.name,
-			});
-		
-			const response = await fetch(`${EXPO_PUBLIC_SERVER_URL}/users/${userID}`, {
-				method: 'PUT',
-				headers: {
-					'Content-Type': 'application/json',
-					'Authorization': `Bearer ${userID}`,
-				},
-				body: JSON.stringify({
-					user_id: userID,
-					username: updatedUserData.username,
-					profile_picture: updatedUserData.profile_picture,
-					birthday: updatedUserData.birthday,
-					name: updatedUserData.name,
-				}),
-			});
-		
-			console.log("response status:", response.status);
-
-			if (!response.ok) {
-				const errorResponse = await response.text();
-				throw new Error(`failed to update user. status: ${response.status}, response: ${errorResponse}`);
-			}
-		
-			const data = await response.json();
-			console.log('user now updated: ', data);
-		} catch (error) {
-		  	console.error('error updating user:', error);
-		}
-	  };
-	  
 
 	return (
 		<View>
