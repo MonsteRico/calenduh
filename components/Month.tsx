@@ -117,7 +117,7 @@ function Day({ day, currentMonth, bottomRow = false }: { day: DateTime<true>; cu
 		router.navigate(`/createEvent?givenDate=${day.toISODate()}`);
 	};
 
-	const { data: events, isLoading } = useEventsForDay(day);
+	const { data: events, isLoading } = useEventsForDay(day, { enabled: false });
 
 	const calendarsForShownEvents = useMemo(() => {
 		if (!events) {

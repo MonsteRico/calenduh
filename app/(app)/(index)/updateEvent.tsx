@@ -165,6 +165,7 @@ export default function UpdateEvent() {
 						<DateTimePicker
 							value={startDate.toJSDate()}
 							mode={"date"}
+							is24Hour={false}
 							onChange={(e, selectedDate) => {
 								if (selectedDate && e.type === "set") {
 									const luxonDate = DateTime.fromJSDate(selectedDate);

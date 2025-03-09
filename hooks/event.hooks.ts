@@ -1,4 +1,4 @@
-import { useQuery, useMutation, useQueryClient, UseMutationOptions } from "@tanstack/react-query";
+import { useQuery, useMutation, useQueryClient, UseMutationOptions, QueryOptions } from "@tanstack/react-query";
 import { useIsConnected } from "@/hooks/useIsConnected"; // Adjust path
 import { Event, EventUpsert, UpdateEvent } from "@/types/event.types";
 import {
@@ -177,7 +177,7 @@ export const useEventsForInterval = (interval: Interval<true>) => {
 	});
 }
 
-export const useEventsForDay = (day: DateTime) => {
+export const useEventsForDay = (day: DateTime, options?: {enabled: boolean}) => {
 	const queryClient = useQueryClient();
 	const isConnected = useIsConnected();
 
@@ -234,7 +234,7 @@ export const useEventsForDay = (day: DateTime) => {
 				return eventsForDay;
 			}
 		},
-		enabled:false,
+		enabled: options?.enabled,
 	});
 };
 

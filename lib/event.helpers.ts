@@ -246,18 +246,26 @@ export const createEventOnServer = async (calendar_id: string, event: EventUpser
 
 export const updateEventOnServer = async (calendar_id: string, event: UpdateEvent): Promise<Event> => {
 	let modifiedEvent;
-	if (event.start_time) {
+	if (event.start_time && event.end_time) {
+		modifiedEvent = {
+			...event,
+			start_time: event.start_time.toUTC().toISO(),
+			end_time: event.end_time.toUTC().toISO(),
+		};
+	}
+	else if (event.start_time) {
 		modifiedEvent = {
 			...event,
 			start_time: event.start_time.toUTC().toISO(),
 		};
 	}
-	if (event.end_time) {
+	else if (event.end_time) {
 		modifiedEvent = {
 			...event,
 			end_time: event.end_time.toUTC().toISO(),
 		};
 	}
+	console.log("Updating on server", modifiedEvent);
 	const response = await server.put(`/events/${calendar_id}/${event.event_id}`, modifiedEvent);
 	const updatedEvent = response.data as Event & { start_time: string; end_time: string };
 	return {

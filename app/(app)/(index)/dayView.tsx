@@ -9,6 +9,7 @@ import { EventViewModal } from '@/components/EventViewModal';
 import { useCurrentViewedDay } from '@/hooks/useCurrentViewedDay';
 import { Event } from "@/types/event.types";
 import { useEnabledCalendarIds } from '@/hooks/useEnabledCalendarIds';
+import { useCalendar } from '@/hooks/calendar.hooks';
 
 interface ProcessedEventType extends Event {
   width: number; 
@@ -166,7 +167,12 @@ const CalendarDayView: React.FC<CalendarDayViewProps> = ({
     return processedEvents.map((event, index) => {
       const eventStyle = getEventStyle(event);
       //const borderColor = event.color || 'rgb(59, 130, 246)'; 
-      const borderColor = 'rgb(59, 130, 246)';
+      const {data: calendar} = useCalendar(event.calendar_id);
+      if (!calendar) {
+        return null;
+      } 
+      const borderColor = calendar.color
+      //const borderColor = 'rgb(59, 130, 246)';
       
       return (
         <TouchableOpacity 
@@ -182,11 +188,17 @@ const CalendarDayView: React.FC<CalendarDayViewProps> = ({
           className="rounded-r-md px-2 py-1 mr-1"
           onPress={() => onEventPress && onEventPress(event)}
         >
-          <Text className="font-bold text-xs">{event.name}</Text>
-          <Text className="text-xs text-gray-700">
-            {formatEventTime(event.start_time)} - {formatEventTime(event.end_time)}
-          </Text>
-          {event.description && <Text className="text-xs mt-1">{event.description}</Text>}
+           <Text className="font-bold text-xs">{event.name}</Text>
+          {/*check height of event and width*/}
+          {eventStyle.height as number > 50 && parseInt((eventStyle.width as string).substring(0, (eventStyle.width as string).length)) > 14 && (
+          <>
+           
+            <Text className="text-xs text-gray-700">
+              {formatEventTime(event.start_time)} - {formatEventTime(event.end_time)}
+            </Text>
+          </>
+        )}
+          
         </TouchableOpacity>
       );
     });
@@ -244,6 +256,8 @@ export default function DayView() {
     const [calendarIdToView, setCalendarIdToView] = useState<string | null>(null);
 
     const { enabledCalendarIds } = useEnabledCalendarIds();
+
+    const currentDate = DateTime.now();
 
     const calendarsForShownEvents = useMemo(() => {
         if (!events) {
@@ -335,7 +349,7 @@ export default function DayView() {
                 date={dayBeingViewed}
                 onEventPress={handleEventPress}
                 hourHeight={60}
-                showCurrentTime={true}
+                showCurrentTime={dayBeingViewed.hasSame(currentDate, 'day')}
             />
         </View>
     )
