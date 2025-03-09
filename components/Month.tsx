@@ -120,7 +120,6 @@ function Day({ day, currentMonth, bottomRow = false }: { day: DateTime<true>; cu
 	const { data: events, isLoading } = useEventsForDay(day);
 
 	const calendarsForShownEvents = useMemo(() => {
-		console.log("this is the problem")
 		if (!events) {
 			return [];
 		}
