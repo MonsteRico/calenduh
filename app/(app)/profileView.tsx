@@ -19,6 +19,8 @@ import useStateWithCallbackLazy from "@/hooks/useStateWithCallbackLazy";
 import { migrateUserCalendarsInDB, migrateUserServer } from "@/lib/user.helper";
 import { useEnabledCalendarIds } from "@/hooks/useEnabledCalendarIds";
 import Storage from "expo-sqlite/kv-store";
+import { useUpdateUser } from "@/hooks/profile.hooks";
+
 export default function ProfileView() {
 	const isPresented = router.canGoBack();
 
@@ -42,8 +44,25 @@ export default function ProfileView() {
 		setIsEditing(!isEditing);
 	};
 
+	const { mutate: updateUser, isPending: isUpdating } = useUpdateUser({
+		onSuccess: () => {
+			setIsEditing(false);
+			router.back(); // Navigate back after updating
+		},
+	});
+
+	const { user } = useSession();
+	if (!user) {
+		return <Text className="text-primary">Loading...</Text>;
+	}
+
 	const handleSave = () => {
-		setIsEditing(false);
+		updateUser({
+			user_id: user.user_id,
+			username: tempUsername,
+			name: tempName,
+			birthday: tempBirthday ? tempBirthday : undefined
+		});
 	};
 
 	const handleCancel = () => {
@@ -58,11 +77,6 @@ export default function ProfileView() {
 
 	const globColor = colorScheme == "light" ? "black" : "white";
 	const globColorInverse = colorScheme == "light" ? "white" : "black";
-
-	const { user } = useSession();
-	if (!user) {
-		return <Text className="text-primary">Loading...</Text>;
-	}
 
 	type MergeCalendarModalProps = {
 		visible: boolean;
@@ -219,9 +233,13 @@ export default function ProfileView() {
 						)}
 
 						<View className="mt-10 flex-row items-center justify-center gap-8">
-							<Button onPress={handleSave} labelClasses="text-background">
+							{/* <Button onPress={handleSave} labelClasses="text-background">
 								Save Changes
+							</Button> */}
+							<Button onPress={handleSave} labelClasses="text-background" disabled={isUpdating}>
+								{isUpdating ? "Updating..." : "Save Changes"}
 							</Button>
+
 
 							<Button onPress={handleCancel} labelClasses="text-background">
 								Cancel
