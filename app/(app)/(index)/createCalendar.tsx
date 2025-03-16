@@ -17,10 +17,15 @@ export default function CreateCalendar() {
     const [calendarName, setCalendarName] = useState("");
     const [calendarColorHex, setCalendarColor] = useState(getRandomItem(calendarColors).hex);
     const [isPublic, setIsPublic] = useState(false);
+    const [isGroup, setIsGroup] = useState(false);
+    const [groupID, setGroupID] = useState<string>(""); //Single Select List
     const { mutate } = useCreateCalendar();
     const { user } = useSession();
 
-    if (!user) {
+    //Need a way to get the groups that a user has
+    const { data: groups, isLoading } = useMyGroups();
+
+    if (isLoading || !user) {
         return <Text className="text-primary">Loading...</Text>;
     }
 
@@ -76,6 +81,38 @@ export default function CreateCalendar() {
                     />
                 </View>
 
+                <View className="flex-row items-center mt-2">
+                    <Text className="text-primary">For Group?:</Text>
+                    <Switch
+                        trackColor={{ false: "#767577", true: "#808080" }}
+                        thumbColor={isPublic ? "#FFFFFF" : "#F4F4F4"}
+                        onValueChange={() => setIsGroup(!isGroup)}
+                        value={isGroup}
+                        style={{ marginLeft: 10 }}
+                    />
+                </View>
+
+                {/* Might be throwing with this if, but also idk how we let the user identify a group */}
+                if (isGroup) {
+                    <View className="flex-col gap-2">
+                        <Text className="text-primary">Which Group?:</Text>
+
+                        <Dropdown<Group>
+                            options={groups}
+                            renderItem={(group) => {
+                                return (
+                                    <View className="flex flex-row items-center gap-2">
+                                        <Text className="text-primary">{group.name}</Text>
+                                    </View>
+                                );
+                            }}
+                            onSelect={(selectedGroup) => {
+                                setGroupID(selectedGroup.group_id);
+                            }}
+                        />
+				    </View>
+                }
+
                 <View className="mt-4">
                     <Button
                         onPress={() => {
@@ -87,6 +124,8 @@ export default function CreateCalendar() {
                                 title: calendarName,
                                 color: calendarColorHex,
                                 is_public: isPublic,
+                                isGroup: isGroup,
+                                group_id: groupID,
                                 user_id: user.user_id,
                             });
                             router.back();
