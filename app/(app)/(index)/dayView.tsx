@@ -13,7 +13,7 @@ import { useCalendar } from '@/hooks/calendar.hooks';
 
 interface ProcessedEventType extends Event {
   width: number; 
-  left: number;  
+  left: number;
 }
 
 interface CalendarDayViewProps {
@@ -105,12 +105,27 @@ const CalendarDayView: React.FC<CalendarDayViewProps> = ({
         eventConcurrency[events[k].event_id] = maxConcurrent;
         eventOverlapGroups[events[k].event_id] = overlapGroup;
     }
-
+  
+    const allDayEvents = events.filter(event => event.all_day);
+    const regularEvents = events.filter(event => !event.all_day);
+  
+    console.log("all day events: ", allDayEvents);
+    console.log("regular events: ", regularEvents);
+  
+    const processedEvents: ProcessedEventType[] = [];
+    allDayEvents.forEach(event => {
+      console.log("all day event: ", event);
+      processedEvents.push({
+        ...event,
+        width: 100, // Full width for all-day events
+        left: 0, // Positioned at the left edge
+      });
+    });
     
     // Process events with calculated concurrency
-    const processedEvents: ProcessedEventType[] = [];
-    
-    events.forEach(event => {
+    regularEvents.forEach(event => {
+      console.log("regular event: ", event);
+  
       const concurrentEvents = eventOverlapGroups[event.event_id];
       const eventCount = eventConcurrency[event.event_id];
       
@@ -164,45 +179,70 @@ const CalendarDayView: React.FC<CalendarDayViewProps> = ({
   const renderEvents = (): React.ReactNode => {
     const processedEvents = processEvents(events);
     
-    return processedEvents.map((event, index) => {
-      const eventStyle = getEventStyle(event);
-      //const borderColor = event.color || 'rgb(59, 130, 246)'; 
-      const {data: calendar} = useCalendar(event.calendar_id);
-      if (!calendar) {
-        return null;
-      } 
-      const borderColor = calendar.color
-      //const borderColor = 'rgb(59, 130, 246)';
-      
-      return (
-        <TouchableOpacity 
-          key={event.event_id || index.toString()}
-          style={[
-            eventStyle, 
-            { 
-              backgroundColor: `${borderColor}20`,
-              borderLeftWidth: 4,
-              borderLeftColor: borderColor
-            }
-          ]}
-          className="rounded-r-md px-2 py-1 mr-1"
-          onPress={() => onEventPress && onEventPress(event)}
-        >
-           <Text className="font-bold text-xs">{event.name}</Text>
-          {/*check height of event and width*/}
-          {eventStyle.height as number > 50 && parseInt((eventStyle.width as string).substring(0, (eventStyle.width as string).length)) > 14 && (
-          <>
-           
-            <Text className="text-xs text-gray-700">
-              {formatEventTime(event.start_time)} - {formatEventTime(event.end_time)}
-            </Text>
-          </>
+    // Separate all day and regular events
+    const allDayEvents = processedEvents.filter(event => event.all_day);
+    const regularEvents = processedEvents.filter(event => !event.all_day);
+    
+    return (
+      <>
+        {/* Render all day events */}
+        {allDayEvents.length > 0 && (
+          <View className="bg-gray-100 p-2 border-b border-gray-300">
+            <Text className="font-bold text-sm mb-1">All-Day Events</Text>
+            {allDayEvents.map((event, index) => {
+              const { data: calendar } = useCalendar(event.calendar_id);
+              if (!calendar) return null;
+  
+              const borderColor = calendar.color;
+              return (
+                <TouchableOpacity
+                  key={event.event_id || index.toString()}
+                  style={[
+                    { backgroundColor: `${borderColor}20`, borderLeftWidth: 4, borderLeftColor: borderColor }
+                  ]}
+                  className="rounded-md px-2 py-1 mr-1"
+                  onPress={() => onEventPress && onEventPress(event)}
+                >
+                  <Text className="font-bold text-xs">{event.name}</Text>
+                </TouchableOpacity>
+              );
+            })}
+          </View>
         )}
+  
+        {/* Render regular events */}
+        {regularEvents.map((event, index) => {
+          const eventStyle = getEventStyle(event);
+          const { data: calendar } = useCalendar(event.calendar_id);
+          if (!calendar) return null;
           
-        </TouchableOpacity>
-      );
-    });
+          const borderColor = calendar.color;
+          return (
+            <TouchableOpacity
+              key={event.event_id || index.toString()}
+              style={[
+                eventStyle,
+                { backgroundColor: `${borderColor}20`, borderLeftWidth: 4, borderLeftColor: borderColor }
+              ]}
+              className="rounded-r-md px-2 py-1 mr-1"
+              onPress={() => onEventPress && onEventPress(event)}
+            >
+              <Text className="font-bold text-xs">{event.name}</Text>
+  
+              {eventStyle.height as number > 50 &&
+                parseInt((eventStyle.width as string).substring(0, (eventStyle.width as string).length)) > 14 && (
+                  <Text className="text-xs text-gray-700">
+                    {formatEventTime(event.start_time)} - {formatEventTime(event.end_time)}
+                  </Text>
+                )}
+            </TouchableOpacity>
+          );
+        })}
+      </>
+    );
   };
+  
+  
 
   const getCurrentTimePosition = (): number => {
     const now = new Date();

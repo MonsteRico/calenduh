@@ -67,6 +67,8 @@ export default function CreateEvent() {
 			// workaround until i can store null in database
 			// setStartDate(PLACEHOLDER_DATE);
 			// setEndDate(PLACEHOLDER_DATE);
+			setStartDate((prev) => prev.startOf("day"));
+			setEndDate((prev) => prev.startOf("day"));
 		} else {
 			setStartDate(DateTime.now());
 			setEndDate(DateTime.now());
