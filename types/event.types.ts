@@ -11,6 +11,7 @@ export interface Event {
 	priority: number;
 	start_time: DateTime;
 	end_time: DateTime;
+	all_day: boolean;
 }
 
 export interface UpdateEvent {
@@ -24,6 +25,7 @@ export interface UpdateEvent {
 	priority?: number;
 	start_time?: DateTime;
 	end_time?: DateTime;
+	all_day?: boolean;
 }
 
 export type EventInstance = Event; // Alias for clarity

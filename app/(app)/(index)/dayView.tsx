@@ -180,7 +180,7 @@ const CalendarDayView: React.FC<CalendarDayViewProps> = ({
           style={[
             eventStyle, 
             { 
-              backgroundColor: `${borderColor}20`, 
+              backgroundColor: `${borderColor}20`,
               borderLeftWidth: 4,
               borderLeftColor: borderColor
             }
@@ -214,7 +214,7 @@ const CalendarDayView: React.FC<CalendarDayViewProps> = ({
       <View className="py-4 items-center border-b border-gray-200">
         <Text className="text-xl font-bold">{date.toFormat('EEEE, MMMM d, yyyy')}</Text>
       </View>
-      
+       
       <ScrollView className="flex-1">
         <View style={{ height: CONTAINER_HEIGHT, position: 'relative' }}>
           {renderHourIndicators()}

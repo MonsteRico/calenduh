@@ -1,6 +1,6 @@
 import { Button } from "@/components/Button";
 import { router } from "expo-router";
-import { StyleSheet, Text, View, TouchableOpacity, Platform } from "react-native";
+import { StyleSheet, Text, View, TouchableOpacity, Platform, Switch } from "react-native";
 import { SelectList } from "react-native-dropdown-select-list";
 import React, { useState } from "react";
 import { FontAwesome } from "@expo/vector-icons";
@@ -36,6 +36,7 @@ export default function CreateEvent() {
 	const [notify, setNotif] = useState(""); //Text box
 	const [eventCalendarId, setEventCalendarId] = useState<string>(""); //Single Select List
 	const [freq, setFrequency] = useState(""); //Single Select List
+	const [isAllDay, setIsAllDay] = useState(false);
 
 	const [showStartDatePicker, setShowStartDatePicker] = useState(false);
 	const [showStartTimePicker, setShowStartTimePicker] = useState(false);
@@ -55,6 +56,22 @@ export default function CreateEvent() {
 
 	if (isLoading || !calendars || !user) {
 		return <Text className="text-primary">Loading...</Text>;
+	}
+
+	const PLACEHOLDER_DATE = DateTime.fromObject({ year: 1899, month: 1, day: 1 });
+
+	const toggleAllDay = (value: boolean) => {
+		setIsAllDay(value);
+		if (value) {
+			// store as 1899 year so we know it is an all day event
+			// workaround until i can store null in database
+			// setStartDate(PLACEHOLDER_DATE);
+			// setEndDate(PLACEHOLDER_DATE);
+		} else {
+			setStartDate(DateTime.now());
+			setEndDate(DateTime.now());
+		}
+
 	}
 
 	return (
@@ -122,6 +139,15 @@ export default function CreateEvent() {
 					/>
 				</View>
 
+
+				<View className="flex-row items-center gap-2">
+					<Text className="text-primary pr-[9]">All Day</Text>
+					<Switch
+						value={isAllDay}
+						onValueChange={(value) => toggleAllDay(value)}
+					/>
+				</View>
+
 				<View className="flex-row items-center gap-2">
 					<Text className='text-primary pr-[3]'>Start Time:</Text>
 					{Platform.OS === 'android' && (
@@ -146,7 +172,7 @@ export default function CreateEvent() {
 							}}
 						/>
 					)}
-					{(showStartTimePicker || Platform.OS === 'ios') && (
+					{(!isAllDay && (showStartTimePicker || Platform.OS === 'ios')) && (
 						<DateTimePicker
 							value={startDate.toJSDate()}
 							is24Hour={false}
@@ -188,7 +214,7 @@ export default function CreateEvent() {
 							}}
 						/>
 					)}
-					{(showEndTimePicker || Platform.OS == 'ios') && (
+					{(!isAllDay && (showEndTimePicker || Platform.OS == 'ios')) && (
 						<DateTimePicker
 							value={endDate.toJSDate()}
 							is24Hour={false}
@@ -222,6 +248,7 @@ export default function CreateEvent() {
 							notification: notify,
 							frequency: freq,
 							priority: 0,
+							all_day: isAllDay,
 						},
 						calendar_id: eventCalendarId,
 					});
