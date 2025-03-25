@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "71023060758",
+    "project_id": "calenduh-fe6d9",
+    "storage_bucket": "calenduh-fe6d9.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:71023060758:android:91c06a9997655999821237",
+        "android_client_info": {
+          "package_name": "com.calenduh.calenduh"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyCRZy3hjZ-eQRHt43Xk3JvEMK_txgBYPFY"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

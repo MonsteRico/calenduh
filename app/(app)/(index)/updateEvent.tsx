@@ -15,6 +15,11 @@ import Dropdown from "@/components/Dropdown";
 import { useCreateEvent, useEvent, useUpdateEvent } from "@/hooks/event.hooks";
 import { cn } from "@/lib/utils";
 import { useSession } from "@/hooks/authContext";
+import { NotificationTimes } from "@/constants/notificationTimes";
+import { DismissKeyboardView } from "@/components/DismissKeyboardView";
+
+
+
 export default function UpdateEvent() {
 	const { eventId, calendarId } = useLocalSearchParams<{ eventId: string; calendarId: string }>();
 	const { user } = useSession();
@@ -33,7 +38,8 @@ export default function UpdateEvent() {
 	const [endDate, setEndDate] = useState<DateTime>(); //DateTimePicker
 	const [location, setLocation] = useState(""); //Text box
 	const [description, setDescription] = useState(""); //Text box
-	const [notify, setNotif] = useState(""); //Text box
+	const [firstNotification, setFirstNotification] = useState<number | null>(NotificationTimes.FIFTEEN_MINUTES_MS); //Text box
+	const [secondNotification, setSecondNotification] = useState<number | null>(null); //Text box
 	const [eventCalendarId, setEventCalendarId] = useState(""); //Single Select List
 	const [freq, setFrequency] = useState(""); //Single Select List
 
@@ -58,7 +64,8 @@ export default function UpdateEvent() {
 			setEndDate(event.end_time);
 			setLocation(event.location);
 			setDescription(event.description);
-			setNotif(event.notification);
+			setFirstNotification(event.firstNotification);
+			setSecondNotification(event.secondNotification);
 			setEventCalendarId(event.calendar_id);
 			setFrequency(event.frequency);
 		}
@@ -87,7 +94,7 @@ export default function UpdateEvent() {
 	}
 
 	return (
-		<View className="flex-1 bg-background">
+		<DismissKeyboardView className="flex-1 bg-background">
 			<View className="m-2 flex-row items-center">
 				{isPresented && (
 					<Button
@@ -123,15 +130,20 @@ export default function UpdateEvent() {
 					numberOfLines={4}
 				/>
 
-				<Input
-					label="Notification:"
-					className="text-primary"
-					value={notify}
-					onChangeText={setNotif}
-					placeholder="Notification"
-					maxLength={100}
+				<NotificationDropdown
+					handleSelect={(item: { label: string; value: number | null }) => {
+						setFirstNotification(item.value);
+					}}
+					defaultValue={firstNotification}
 				/>
 
+				<NotificationDropdown
+					handleSelect={(item: { label: string; value: number | null }) => {
+						setSecondNotification(item.value);
+					}}
+					defaultValue={secondNotification}
+				/>
+				
 				<View className="flex-col gap-2">
 					<Text className="text-primary">Calendar:</Text>
 
@@ -249,9 +261,10 @@ export default function UpdateEvent() {
 								calendar_id: eventCalendarId,
 								location,
 								description,
-								notification: notify,
-								frequency : freq,
+								frequency: freq,
 								priority: 0,
+								firstNotification,
+								secondNotification,
 							},
 							calendar_id: eventCalendarId,
 						});
@@ -260,6 +273,47 @@ export default function UpdateEvent() {
 					Update Event
 				</Button>
 			</View>
-		</View>
+		</DismissKeyboardView>
 	);
 }
+
+const NotificationDropdown = ({
+	handleSelect,
+	defaultValue,
+}: {
+	handleSelect: (
+		item:
+			| {
+					label: string;
+					value: number;
+			  }
+			| {
+					label: string;
+					value: null;
+			  }
+	) => void;
+	defaultValue?: number | null | undefined;
+}) => {
+	const options = [
+		{ label: "Time of event", value: NotificationTimes.TIME_OF_EVENT },
+		{ label: "15 minutes before", value: NotificationTimes.FIFTEEN_MINUTES_MS },
+		{ label: "30 minutes before", value: NotificationTimes.THIRTY_MINUTES_MS },
+		{ label: "1 hour before", value: NotificationTimes.ONE_HOUR_MS },
+		{ label: "1 day before", value: NotificationTimes.ONE_DAY_MS },
+		{ label: "None", value: NotificationTimes.NONE },
+	];
+
+	const renderItem = (item: (typeof options)[number]) => <Text className="text-primary">{item.label}</Text>;
+
+	return (
+		<View>
+			<Dropdown
+				options={options}
+				defaultValue={options.find((option) => option.value === defaultValue)}
+				renderItem={renderItem}
+				onSelect={handleSelect}
+				label="Notification Time"
+			/>
+		</View>
+	);
+};

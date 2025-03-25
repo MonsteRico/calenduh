@@ -7,6 +7,7 @@ import Dropdown from '@/components/Dropdown';
 import { useCreateCalendar } from "@/hooks/calendar.hooks";
 import { useSession } from "@/hooks/authContext";
 import { Input } from "@/components/Input";
+import { DismissKeyboardView } from "@/components/DismissKeyboardView";
 
 function getRandomItem<T>(list: T[]): T {
     return list[Math.floor(Math.random() * list.length)];
@@ -25,7 +26,7 @@ export default function CreateCalendar() {
     }
 
     return (
-        <View className="flex-1 bg-background">
+        <DismissKeyboardView className="flex-1 bg-background">
             <View className="m-2 flex-row items-center">
                 {isPresented && (
                     <Button
@@ -96,6 +97,6 @@ export default function CreateCalendar() {
                     </Button>
                 </View>
             </View>
-        </View>
+        </DismissKeyboardView>
     );
 }

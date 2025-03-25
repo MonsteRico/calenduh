@@ -1,7 +1,7 @@
 import { type SQLiteDatabase } from "expo-sqlite";
 
 export async function migrateDbIfNeeded(db: SQLiteDatabase) {
-	const DATABASE_VERSION = 2;
+	const DATABASE_VERSION = 3;
 	let result = await db.getFirstAsync<{ user_version: number }>("PRAGMA user_version");
 	let currentDbVersion = result ? result.user_version : 0;
 	if (currentDbVersion >= DATABASE_VERSION) {
@@ -9,7 +9,7 @@ export async function migrateDbIfNeeded(db: SQLiteDatabase) {
 	}
 	if (currentDbVersion === 0) {
 		console.log("CREATING TABLES");
-    await db.execAsync("PRAGMA journal_mode = WAL");
+		await db.execAsync("PRAGMA journal_mode = WAL");
 		await db.execAsync("PRAGMA foreign_keys = ON");
 
 		await db.execAsync(`
@@ -79,7 +79,26 @@ export async function migrateDbIfNeeded(db: SQLiteDatabase) {
 
 		currentDbVersion++;
 	}
+	if (currentDbVersion === 2) {
+		console.log("Migrating to version 3");
+		await db.execAsync(`
+        ALTER TABLE events ADD COLUMN first_notification INTEGER;
+      `);
+		await db.execAsync(`
+        ALTER TABLE events ADD COLUMN second_notification INTEGER;
+      `);
+		await db.execAsync(`
+        ALTER TABLE events ADD COLUMN first_notification_id TEXT;
+      `);
+		await db.execAsync(`
+        ALTER TABLE events ADD COLUMN second_notification_id TEXT;
+      `);
+		await db.execAsync(`
+        ALTER TABLE events DROP COLUMN notification;
+      `);
 
+		currentDbVersion++;
+	}
 
 	// if (currentDbVersion === 1) {
 	//   Add more migrations

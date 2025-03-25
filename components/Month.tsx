@@ -137,8 +137,8 @@ function Day({ day, currentMonth, bottomRow = false }: { day: DateTime<true>; cu
 			}, [] as string[]);
 	}, [enabledCalendarIds, events]); // Memoize based on changes to enabledCalendarIds or events
 
-	if (isLoading || !events) {
-		return null;
+	if (isLoading) {
+		return <Text className="text-primary">A</Text>;
 	}
 
 	return (

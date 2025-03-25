@@ -18,6 +18,7 @@ import MaterialIcons from "@expo/vector-icons/MaterialIcons";
 import FontAwesome6 from "@expo/vector-icons/FontAwesome6";
 import FontAwesome from "@expo/vector-icons/FontAwesome";
 import MaterialCommunityIcons from "@expo/vector-icons/MaterialCommunityIcons";
+import { usePushNotifications } from "@/hooks/usePushNotifications";
 export default function AppLayout() {
 	const networkState = Network.useNetworkState();
 	const { sessionId, isLoading, user } = useSession();
@@ -39,6 +40,9 @@ export default function AppLayout() {
 	useEffect(() => {
 		console.log("enabledCalendarIds", enabledCalendarIds);
 	}, [enabledCalendarIds]);
+
+
+
 
 	// You can keep the splash screen open, or render a loading screen like we do here.
 	if (isLoading) {

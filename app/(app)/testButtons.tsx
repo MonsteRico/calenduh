@@ -7,10 +7,12 @@ import { useState } from "react";
 import { useQueryClient } from "@tanstack/react-query";
 import { useCalendars } from "@/hooks/calendar.hooks";
 import { useSQLiteContext } from "expo-sqlite";
+import * as Notifications from "expo-notifications"
 import { getCalendarsFromDB } from "@/lib/calendar.helpers";
 import { useIsConnected } from "@/hooks/useIsConnected";
 import { useEnabledCalendarIds } from "@/hooks/useEnabledCalendarIds";
 import { setEnabled } from "react-native/Libraries/Performance/Systrace";
+import { useDbVersion } from "@/hooks/useDbVersion";
 
 export default function TestButtons() {
 	const isPresented = router.canGoBack();
@@ -18,7 +20,7 @@ export default function TestButtons() {
 	const { data: calendars, isLoading } = useCalendars();
 	const isConnected = useIsConnected();
 	const db = useSQLiteContext();
-
+	const dbVersion = useDbVersion()
 	const { setEnabledCalendarIds } = useEnabledCalendarIds();
 	return (
 		<View className="flex-1 bg-background">
@@ -44,11 +46,13 @@ export default function TestButtons() {
 						await db.execAsync(`DROP TABLE IF EXISTS events`);
 						await db.execAsync(`DROP TABLE IF EXISTS subscriptions`);
 						await db.execAsync(`DROP TABLE IF EXISTS mutations`);
+						await Notifications.cancelAllScheduledNotificationsAsync()
 						console.log("DB RESET COMPLETELY, RELOAD THE APP");
 					}}
 				>
 					Reset DB COMPLETELY
 				</Button>
+				<Text className="text-primary">DB Version: {dbVersion}</Text>
 				<View className="items-left flex-row flex-wrap gap-4">
 					<Button
 						onPress={() => {
