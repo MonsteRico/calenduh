@@ -16,11 +16,13 @@ import {
 	getEventFromDB,
 	upsertEventIntoDB,
 	getEventsForDayFromServer,
+	updateEventNotificationIds,
 } from "@/lib/event.helpers";
 import { addMutationToQueue, getMutationsFromDB } from "@/lib/mutation.helpers";
 import { useSession } from "./authContext";
 import { DateTime, Duration, Interval } from "luxon";
 import * as Crypto from "expo-crypto";
+import { cancelScheduledEventNotifications, scheduleEventNotifications } from "@/lib/notifications";
 
 // --- Queries ---
 
@@ -121,7 +123,7 @@ export const useEventsForInterval = (interval: Interval<true>) => {
 			const intervalStart = interval.start.valueOf(); // Get the start of the day in milliseconds
 			const intervalEnd = interval.end.valueOf(); // Get the end of the day in milliseconds
 
-			console.log("Fetching events between", interval.start.toISODate(), "and", interval.end.toISODate())
+			console.log("Fetching events between", interval.start.toISODate(), "and", interval.end.toISODate());
 
 			if (isConnected && user.user_id !== "localUser") {
 				try {
@@ -139,13 +141,19 @@ export const useEventsForInterval = (interval: Interval<true>) => {
 					}
 
 					// for each day in the interval, update the queryClient cache for that day
-					interval.splitBy({
-						day:1
-					}).forEach((dayInterval) => {
-						const day = dayInterval.start;
-						const daysEvents = filteredServerEvents.map((event) => dayInterval.contains(event.start_time) || dayInterval.contains(event.end_time) ? event : null).filter((event) => event != null)
-						queryClient.setQueryData(["events", "day", day?.toISODate()], daysEvents)
-					})
+					interval
+						.splitBy({
+							day: 1,
+						})
+						.forEach((dayInterval) => {
+							const day = dayInterval.start;
+							const daysEvents = filteredServerEvents
+								.map((event) =>
+									dayInterval.contains(event.start_time) || dayInterval.contains(event.end_time) ? event : null
+								)
+								.filter((event) => event != null);
+							queryClient.setQueryData(["events", "day", day?.toISODate()], daysEvents);
+						});
 
 					return filteredServerEvents;
 				} catch (error) {
@@ -175,9 +183,9 @@ export const useEventsForInterval = (interval: Interval<true>) => {
 			}
 		},
 	});
-}
+};
 
-export const useEventsForDay = (day: DateTime, options?: {enabled: boolean}) => {
+export const useEventsForDay = (day: DateTime, options?: { enabled: boolean }) => {
 	const queryClient = useQueryClient();
 	const isConnected = useIsConnected();
 
@@ -335,7 +343,7 @@ export const useCreateEvent = (
 				return await createEventOnServer(calendar_id, newEvent);
 			} else {
 				console.log("not connected");
-				return { ...newEvent, event_id: "local-"+Crypto.randomUUID() } as Event;
+				return { ...newEvent, event_id: "local-" + Crypto.randomUUID() } as Event;
 			}
 		},
 		onMutate: async ({ newEvent, calendar_id }) => {
@@ -343,7 +351,7 @@ export const useCreateEvent = (
 			await queryClient.cancelQueries({ queryKey: ["events", calendar_id] });
 			const previousEvents = queryClient.getQueryData<Event[]>(["events", calendar_id]) || [];
 
-			const tempId = "local-"+Crypto.randomUUID();
+			const tempId = "local-" + Crypto.randomUUID();
 			const optimisticEvent: Event = {
 				...newEvent,
 				event_id: tempId,
@@ -351,7 +359,9 @@ export const useCreateEvent = (
 
 			queryClient.setQueryData<Event[]>(["events", calendar_id], (old) => [...(old || []), optimisticEvent]);
 
+			const scheduledNotificationIds = await scheduleEventNotifications(optimisticEvent);
 			await insertEventIntoDB(optimisticEvent, user.user_id);
+			await updateEventNotificationIds(optimisticEvent.event_id, scheduledNotificationIds);
 			if (!isConnected && user.user_id !== "localUser") {
 				addMutationToQueue("CREATE_EVENT", newEvent, { eventId: tempId, calendarId: calendar_id });
 			}
@@ -386,9 +396,9 @@ export const useCreateEvent = (
 
 export const useUpdateEvent = (
 	options?: UseMutationOptions<
-		UpdateEvent,
+		Event,
 		Error,
-		{ updatedEvent: UpdateEvent; calendar_id: string },
+		{ updatedEvent: Event; calendar_id: string },
 		{ previousEvents: Event[] }
 	>
 ) => {
@@ -401,7 +411,7 @@ export const useUpdateEvent = (
 	}
 
 	return useMutation({
-		mutationFn: async ({ updatedEvent, calendar_id }: { updatedEvent: UpdateEvent; calendar_id: string }) => {
+		mutationFn: async ({ updatedEvent, calendar_id }: { updatedEvent: Event; calendar_id: string }) => {
 			if (isConnected && user.user_id !== "localUser") {
 				return await updateEventOnServer(calendar_id, updatedEvent);
 			} else {
@@ -417,7 +427,12 @@ export const useUpdateEvent = (
 				old?.map((event) => (event.event_id === updatedEvent.event_id ? { ...event, ...updatedEvent } : event))
 			);
 
+			const scheduledNotificationIds = await scheduleEventNotifications(updatedEvent);
+
 			await updateEventInDB(updatedEvent.event_id, updatedEvent, user.user_id);
+			if (scheduledNotificationIds.length > 0) {
+				await updateEventNotificationIds(updatedEvent.event_id, scheduledNotificationIds);
+			}
 			if (!isConnected && user.user_id !== "localUser") {
 				await addMutationToQueue("UPDATE_EVENT", updatedEvent, {
 					eventId: updatedEvent.event_id,
@@ -491,6 +506,8 @@ export const useDeleteEvent = (
 			if (!localEvent) {
 				throw new Error("Event not found locally");
 			}
+
+			await cancelScheduledEventNotifications(event_id)
 
 			await deleteEventFromDB(event_id);
 			if (!isConnected && user.user_id !== "localUser") {

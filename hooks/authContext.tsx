@@ -59,6 +59,9 @@ export function SessionProvider({ children }: PropsWithChildren) {
 					console.log("sessionId IN AUTH CONTEXT", sessionId);
 					console.log("user IN AUTH CONTEXT", user);
 					console.log(server.defaults.headers.Cookie);
+					setQuerySessionId(sessionId);
+					setQueryUser(user);
+					router.replace("/")
 					return { sessionId, user };
 				}
 				return null;
@@ -66,19 +69,10 @@ export function SessionProvider({ children }: PropsWithChildren) {
 		},
 	});
 
-	useEffect(() => {
-		if (loginData) {
-			setQuerySessionId(loginData.sessionId);
-			setQueryUser(loginData.user);
-		}
-	}, [loginData]);
-
 	const queryClient = useQueryClient();
 
 	const [querySessionId, setQuerySessionId] = useState<string | null>(null);
 	const [queryUser, setQueryUser] = useState<User | null>(null);
-
-	const { setEnabledCalendarIds } = useEnabledCalendarIds();
 
 	return (
 		<AuthContext.Provider
@@ -99,7 +93,6 @@ export function SessionProvider({ children }: PropsWithChildren) {
 						queryClient.invalidateQueries({
 							queryKey: ["loginData"],
 						});
-						router.replace("/");
 						return;
 					}
 					server.defaults.headers.Cookie = `sessionId=${sessionId};`;
@@ -115,8 +108,6 @@ export function SessionProvider({ children }: PropsWithChildren) {
 					queryClient.invalidateQueries({
 						queryKey: ["loginData"],
 					});
-					queryClient.setQueryData(["loginData"], { sessionId, user });
-					router.replace("/");
 				},
 				partialSignIn: async (sessionId: string) => {
 					server.defaults.headers.Cookie = `sessionId=${sessionId};`;
@@ -133,8 +124,7 @@ export function SessionProvider({ children }: PropsWithChildren) {
 						queryKey: ["loginData"],
 					});
 
-					queryClient.setQueryData(["loginData"], { sessionId, user });
-					// UPDATE ALL CALENDARS IN DB WITH localUser to new user id
+					// TODO UPDATE ALL CALENDARS IN DB WITH localUser to new user id
 				},
 				signOut: () => {
 					server.post("/auth/logout"); // TODO make this a react query mutation so it can run when reconnect to internet

@@ -1,8 +1,14 @@
+import { usePushNotifications } from "@/hooks/usePushNotifications";
 import { Stack } from "expo-router";
 import { useColorScheme } from "nativewind";
 
 export default function MainCalendarLayout() {
 	const { colorScheme } = useColorScheme()
+
+	const { expoPushToken, notification } = usePushNotifications();
+
+	console.log("EXPO PUSH TOKEN:", expoPushToken);
+
 	return (
 		<Stack
 			screenOptions={{

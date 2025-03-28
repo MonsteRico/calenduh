@@ -54,7 +54,7 @@ export const getEventFromDB = async (event_id: string): Promise<Event | undefine
 	const db = await openDatabaseAsync("local.db");
 
 	try {
-		const event = await db.getFirstAsync<Event & { start_time: string; end_time: string }>(
+		const event = await db.getFirstAsync<Event & { start_time: string; end_time: string}>(
 			"SELECT * FROM events WHERE event_id = ?",
 			event_id
 		);
@@ -78,14 +78,15 @@ export const insertEventIntoDB = async (event: EventUpsert, userId: string): Pro
 
 	try {
 		await db.runAsync(
-			"INSERT INTO events (event_id, calendar_id, name, location, description, notification, frequency, priority, start_time, end_time) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)",
+			"INSERT INTO events (event_id, calendar_id, name, location, description, first_notification, second_notification, frequency, priority, start_time, end_time) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)",
 			[
 				event.event_id || "",
 				event.calendar_id,
 				event.name,
 				event.location || null,
 				event.description || null,
-				event.notification || null,
+				event.firstNotification || null,
+				event.secondNotification || null,
 				event.frequency || null,
 				event.priority || null,
 				event.start_time.valueOf().toString(),
@@ -135,13 +136,14 @@ export const updateEventInDB = async (eventId: string, event: UpdateEvent, userI
 		}
 
 		await db.runAsync(
-			"UPDATE events SET calendar_id = ?, name = ?, location = ?, description = ?, notification = ?, frequency = ?, priority = ?, start_time = ?, end_time = ?, event_id = ? WHERE event_id = ?",
+			"UPDATE events SET calendar_id = ?, name = ?, location = ?, description = ?, first_notification = ?, second_notification = ?, frequency = ?, priority = ?, start_time = ?, end_time = ?, event_id = ? WHERE event_id = ?",
 			[
 				event.calendar_id ?? existingEvent.calendar_id,
 				event.name ?? existingEvent.name,
 				event.location ?? existingEvent.location,
 				event.description ?? existingEvent.description,
-				event.notification ?? existingEvent.notification,
+				event.firstNotification ?? existingEvent.firstNotification,
+				event.secondNotification ?? existingEvent.secondNotification,
 				event.frequency ?? existingEvent.frequency,
 				event.priority ?? existingEvent.priority,
 				event.start_time?.valueOf().toString() ?? existingEvent.start_time.valueOf().toString(),
@@ -155,6 +157,24 @@ export const updateEventInDB = async (eventId: string, event: UpdateEvent, userI
 		throw error;
 	}
 };
+
+export const updateEventNotificationIds = async (eventId: string, notificationIds: string[]) : Promise<void> => {
+	const db = await openDatabaseAsync("local.db");
+
+	try {
+		await db.runAsync(
+			"UPDATE events SET first_notification_id = ?, second_notification_id = ? WHERE event_id = ?",
+			[
+				notificationIds.at(0) ?? null,
+				notificationIds.at(1) ?? null,
+				eventId,
+			]
+		);
+	} catch (error) {
+		console.error("Error updating event notification ids:", error);
+		throw error;
+	}
+}
 
 // Delete an event from the local database
 export const deleteEventFromDB = async (event_id: string): Promise<void> => {

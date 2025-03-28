@@ -9,6 +9,7 @@ import { Input } from '@/components/Input';
 import FontAwesome from "@expo/vector-icons/FontAwesome";
 import { calendarColors } from "@/components/CalendarColorModal";
 import { ConfirmDelete } from "@/components/ConfirmDelete";
+import { DismissKeyboardView } from "@/components/DismissKeyboardView";
 
 
 export default function CalendarInfoView() {
@@ -50,7 +51,7 @@ export default function CalendarInfoView() {
 	}
 
 	return (
-		<View className='flex-1 bg-background'>
+		<DismissKeyboardView className='flex-1 bg-background'>
 
 			<View className="m-2 flex-row items-center justify-between">
 				{isPresented && (
@@ -130,6 +131,6 @@ export default function CalendarInfoView() {
 					<Text>Save Changes</Text>
 				</Button>
 			</View>
-		</View>
+		</DismissKeyboardView>
 	);
 }

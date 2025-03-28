@@ -15,6 +15,9 @@ import Dropdown from "@/components/Dropdown";
 import { useCreateEvent } from "@/hooks/event.hooks";
 import { cn } from "@/lib/utils";
 import { useSession } from "@/hooks/authContext";
+import { NotificationTimes } from "@/constants/notificationTimes";
+import { DismissKeyboardView } from "@/components/DismissKeyboardView";
+
 export default function CreateEvent() {
 	const { user } = useSession();
 	const today = DateTime.now();
@@ -33,7 +36,8 @@ export default function CreateEvent() {
 	const [endDate, setEndDate] = useState(eventDay.plus({ hours: 1 })); //DateTimePicker
 	const [location, setLocation] = useState(""); //Text box
 	const [description, setDescription] = useState(""); //Text box
-	const [notify, setNotif] = useState(""); //Text box
+	const [firstNotification, setFirstNotification] = useState<number | null>(NotificationTimes.FIFTEEN_MINUTES_MS); //Text box
+	const [secondNotification, setSecondNotification] = useState<number | null>(null); //Text box
 	const [eventCalendarId, setEventCalendarId] = useState<string>(""); //Single Select List
 	const [freq, setFrequency] = useState(""); //Single Select List
 
@@ -45,11 +49,11 @@ export default function CreateEvent() {
 	//REPLACE WITH USER'S CALENDARS
 	const { data: calendars, isLoading } = useMyCalendars();
 
-	const {mutate:createEvent, isPending} = useCreateEvent({
+	const { mutate: createEvent, isPending } = useCreateEvent({
 		onSuccess: () => {
 			router.back();
-		}
-	})
+		},
+	});
 
 	const globColor = colorScheme == "light" ? "black" : "white";
 
@@ -58,7 +62,7 @@ export default function CreateEvent() {
 	}
 
 	return (
-		<View className="flex-1 bg-background">
+		<DismissKeyboardView className="flex-1 bg-background">
 			<View className="m-2 flex-row items-center">
 				{isPresented && (
 					<Button
@@ -94,13 +98,18 @@ export default function CreateEvent() {
 					numberOfLines={4}
 				/>
 
-				<Input
-					label="Notification:"
-					className="text-primary"
-					value={notify}
-					onChangeText={setNotif}
-					placeholder="Notification"
-					maxLength={100}
+				<NotificationDropdown
+					handleSelect={(item: { label: string; value: number | null }) => {
+						setFirstNotification(item.value);
+					}}
+					defaultValue={firstNotification}
+				/>
+
+				<NotificationDropdown
+					handleSelect={(item: { label: string; value: number | null }) => {
+						setSecondNotification(item.value);
+					}}
+					defaultValue={secondNotification}
 				/>
 
 				<View className="flex-col gap-2">
@@ -123,14 +132,14 @@ export default function CreateEvent() {
 				</View>
 
 				<View className="flex-row items-center gap-2">
-					<Text className='text-primary pr-[3]'>Start Time:</Text>
-					{Platform.OS === 'android' && (
-					<TouchableOpacity
-						className='bg-gray-200 px-4 py-2 rounded-lg flex flex-row items-center space-x-2'
-						onPress={() => setShowStartDatePicker(true)}
-					>
-						<Text className='text-primary font-medium'>{startDate.toLocaleString(DateTime.DATETIME_MED)}</Text>
-					</TouchableOpacity>
+					<Text className="pr-[3] text-primary">Start Time:</Text>
+					{Platform.OS === "android" && (
+						<TouchableOpacity
+							className="flex flex-row items-center space-x-2 rounded-lg bg-gray-200 px-4 py-2"
+							onPress={() => setShowStartDatePicker(true)}
+						>
+							<Text className="font-medium text-primary">{startDate.toLocaleString(DateTime.DATETIME_MED)}</Text>
+						</TouchableOpacity>
 					)}
 					{(showStartDatePicker || Platform.OS === "ios") && (
 						<DateTimePicker
@@ -146,7 +155,7 @@ export default function CreateEvent() {
 							}}
 						/>
 					)}
-					{(showStartTimePicker || Platform.OS === 'ios') && (
+					{(showStartTimePicker || Platform.OS === "ios") && (
 						<DateTimePicker
 							value={startDate.toJSDate()}
 							is24Hour={false}
@@ -163,16 +172,16 @@ export default function CreateEvent() {
 				</View>
 
 				<View className="flex-row items-center gap-2">
-					<Text className="text-primary pr-[9]">End Time:</Text>
-					{Platform.OS === 'android' && (
-					<TouchableOpacity
-						className='bg-gray-200 px-4 py-2 rounded-lg flex flex-row items-center space-x-2'
-						onPress={() => setShowEndDatePicker(true)}
-					>
-						<Text className='text-primary font-medium'>{endDate.toLocaleString(DateTime.DATETIME_MED)}</Text>
-					</TouchableOpacity>
+					<Text className="pr-[9] text-primary">End Time:</Text>
+					{Platform.OS === "android" && (
+						<TouchableOpacity
+							className="flex flex-row items-center space-x-2 rounded-lg bg-gray-200 px-4 py-2"
+							onPress={() => setShowEndDatePicker(true)}
+						>
+							<Text className="font-medium text-primary">{endDate.toLocaleString(DateTime.DATETIME_MED)}</Text>
+						</TouchableOpacity>
 					)}
-					{(showEndDatePicker || Platform.OS === 'ios') && (
+					{(showEndDatePicker || Platform.OS === "ios") && (
 						<DateTimePicker
 							value={endDate.toJSDate()}
 							is24Hour={false}
@@ -182,13 +191,12 @@ export default function CreateEvent() {
 									const luxonDate = DateTime.fromJSDate(selectedDate);
 									setEndDate(luxonDate);
 									setShowEndTimePicker(true);
-									
-								} 
+								}
 								setShowEndDatePicker(false);
 							}}
 						/>
 					)}
-					{(showEndTimePicker || Platform.OS == 'ios') && (
+					{(showEndTimePicker || Platform.OS == "ios") && (
 						<DateTimePicker
 							value={endDate.toJSDate()}
 							is24Hour={false}
@@ -206,27 +214,72 @@ export default function CreateEvent() {
 
 				{/* Get this to send event to db */}
 				<Button
-				className={cn(isPending && "opacity-50")}
-				 onPress={() => {
-					if (isPending || !eventCalendarId || !name || !startDate || !endDate) {
-						return;
-					}
-					createEvent({
-						newEvent: {
-							name,
-							start_time: startDate,
-							end_time: endDate,
+					className={cn(isPending && "opacity-50")}
+					onPress={() => {
+						if (isPending || !eventCalendarId || !name || !startDate || !endDate) {
+							return;
+						}
+						createEvent({
+							newEvent: {
+								name,
+								start_time: startDate,
+								end_time: endDate,
+								calendar_id: eventCalendarId,
+								location: location,
+								firstNotification,
+								secondNotification,
+								description: description,
+								frequency: freq,
+								priority: 0,
+							},
 							calendar_id: eventCalendarId,
-							location: location,
-							description: description,
-							notification: notify,
-							frequency: freq,
-							priority: 0,
-						},
-						calendar_id: eventCalendarId,
-					});
-				}}>Create Event</Button>
+						});
+					}}
+				>
+					Create Event
+				</Button>
 			</View>
+		</DismissKeyboardView>
+	);
+}
+
+const NotificationDropdown = ({
+	handleSelect,
+	defaultValue,
+}: {
+	handleSelect: (
+		item:
+			| {
+					label: string;
+					value: number;
+			  }
+			| {
+					label: string;
+					value: null;
+			  }
+	) => void;
+	defaultValue?: number | null | undefined;
+}) => {
+	const options = [
+		{ label: "Time of event", value: NotificationTimes.TIME_OF_EVENT },
+		{ label: "15 minutes before", value: NotificationTimes.FIFTEEN_MINUTES_MS },
+		{ label: "30 minutes before", value: NotificationTimes.THIRTY_MINUTES_MS },
+		{ label: "1 hour before", value: NotificationTimes.ONE_HOUR_MS },
+		{ label: "1 day before", value: NotificationTimes.ONE_DAY_MS },
+		{ label: "None", value: NotificationTimes.NONE },
+	];
+
+	const renderItem = (item: (typeof options)[number]) => <Text className="text-primary">{item.label}</Text>;
+
+	return (
+		<View>
+			<Dropdown
+				options={options}
+				defaultValue={options.find((option) => option.value === defaultValue)}
+				renderItem={renderItem}
+				onSelect={handleSelect}
+				label="Notification Time"
+			/>
 		</View>
 	);
-} 
+};
