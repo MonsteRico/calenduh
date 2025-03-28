@@ -152,7 +152,8 @@ function Day({ day, currentMonth, bottomRow = false }: { day: DateTime<true>; cu
 				onPress={() => {
 					console.log("Day pressed", day.toISODate());
 					setDayBeingViewed(day);
-					router.navigate('/dayView');
+					router.navigate('/weekView');
+					//router.navigate('/dayView');
 					//router.navigate(`/agenda`);
 				}}
 			>

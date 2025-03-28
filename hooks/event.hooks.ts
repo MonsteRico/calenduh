@@ -238,6 +238,79 @@ export const useEventsForDay = (day: DateTime, options?: {enabled: boolean}) => 
 	});
 };
 
+export const useEventsForWeek = (day: DateTime, options?: {enabled: boolean}) => {
+	const queryClient = useQueryClient();
+	const isConnected = useIsConnected();
+
+	const { user, sessionId } = useSession();
+	if (!user || !sessionId) {
+		throw new Error("User not found");
+	}
+
+	return useQuery<Event[], Error>({
+		queryKey: ["events", "week", day.startOf('week').toISODate()], // Cache key based on the week
+		queryFn: async () => {
+			
+			var startOfWeek = day.startOf('week').minus({ days: 1 }).valueOf(); 
+			var endOfWeek = day.endOf('week').minus({ days: 1 }).valueOf(); 
+
+			if (day.weekday === 7) {
+				startOfWeek = day.plus({ days: 1 }).startOf('week').minus({ days: 1 }).valueOf(); 
+				endOfWeek = day.plus({ days: 1 }).endOf('week').minus({ days: 1 }).valueOf(); 
+			}
+			console.log("start of week:", DateTime.fromMillis(startOfWeek).toISODate());
+			console.log("end of week:", DateTime.fromMillis(endOfWeek).toISODate());
+			//adjusts for sunday not accounted for by part of week (re-assigns to)
+			if (day.weekday !== 7) {
+				const startOfWeek = day.startOf('week').minus({ days: 1 }).valueOf(); // Get the start of the week in milliseconds
+				const endOfWeek = day.endOf('week').minus({ days: 1 }).valueOf(); // Get the end of the week in milliseconds
+			} 
+			if (isConnected && user.user_id !== 'localUser') {
+				try {
+					const serverEvents = await getEventsForDayFromServer(startOfWeek, endOfWeek);
+					const mutations = await getMutationsFromDB(); // Get the mutations that happened offline since last sync
+					const deletedEventIds = mutations // Pull out any event ids that were deleted while offline
+						.filter((mutation) => mutation.mutation === 'DELETE_EVENT')
+						.map((mutation) => mutation.event_id);
+
+					const filteredServerEvents = serverEvents.filter((event) => !deletedEventIds.includes(event.event_id)); // Remove any events that were deleted offline before they get deleted on the server
+
+
+					// Update local DB with server events
+					for (const event of filteredServerEvents) {
+						await upsertEventIntoDB(event, user.user_id);
+					}
+
+					return filteredServerEvents;
+				} catch (error) {
+					console.error("Error fetching events for week from server:", error);
+					// Fallback to local database if server fetch fails
+					const localEvents = await getEventsFromDB(user.user_id);
+
+					const eventsForWeek = localEvents.filter((event) => {
+						const startTime = event.start_time.valueOf(); // Assuming start_time is a Date object
+						return startTime >= startOfWeek && startTime <= endOfWeek;
+					});
+
+					return eventsForWeek;
+				}
+			} else {
+				// Offline: Fetch from local database
+				const localEvents = await getEventsFromDB(user.user_id);
+
+				// Filter events that fall within the specified week
+				const eventsForWeek = localEvents.filter((event) => {
+					const startTime = event.start_time.valueOf(); // Assuming start_time is a Date object
+					return startTime >= startOfWeek && startTime <= endOfWeek;
+				});
+
+				return eventsForWeek;
+			}
+		},
+		enabled: options?.enabled,
+	});
+};
+
 // --- Mutations --- (No changes needed in mutations)
 
 export const useCreateEvent = (

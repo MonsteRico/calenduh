@@ -38,6 +38,13 @@ export default function MainCalendarLayout() {
 					presentation: "modal",
 				}}
 			/>
+
+			<Stack.Screen
+				name="weekView"
+				options={{
+					presentation: "modal",
+				}}
+			/>
 		</Stack>
 	);
 }
