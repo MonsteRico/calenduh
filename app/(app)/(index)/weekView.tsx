@@ -6,12 +6,15 @@ import { EventViewModal } from '@/components/EventViewModal';
 import { Event } from '@/types/event.types';
 import { useEnabledCalendarIds } from '@/hooks/useEnabledCalendarIds';
 import { useCalendar, useMultipleCalendars } from '@/hooks/calendar.hooks';
+import { useColorScheme } from 'nativewind'
 
 import { router } from 'expo-router';
 import { useSession } from '@/hooks/authContext';
 import { useCurrentViewedDay } from '@/hooks/useCurrentViewedDay';
 import { useEventsForWeek } from '@/hooks/event.hooks';
 import { Calendar } from '@/types/calendar.types';
+import Entypo from '@expo/vector-icons/Entypo';
+
 
 interface ProcessedEventType extends Event {
   width: number;
@@ -26,6 +29,8 @@ interface CalendarWeekViewProps {
   showCurrentTime?: boolean;
   showHours?: boolean;
   numDays?: number;
+  navigateToPreviousWeek?: () => void;
+  navigateToNextWeek?: () => void;
 }
 
 const CalendarWeekView: React.FC<CalendarWeekViewProps> = ({
@@ -35,7 +40,9 @@ const CalendarWeekView: React.FC<CalendarWeekViewProps> = ({
   hourHeight = 60,
   showCurrentTime = true,
   showHours = true,
-  numDays = 7
+  numDays = 7,
+  navigateToPreviousWeek,
+  navigateToNextWeek,
 }) => {
   const HOURS_IN_DAY = 24;
   const HOUR_HEIGHT = hourHeight;
@@ -43,6 +50,8 @@ const CalendarWeekView: React.FC<CalendarWeekViewProps> = ({
   const CONTAINER_HEIGHT = HOURS_IN_DAY * HOUR_HEIGHT;
   const screenWidth = Dimensions.get('window').width;
   const dayWidth = (screenWidth - TIME_LABEL_WIDTH) / numDays;
+
+  const { colorScheme } = useColorScheme();
 
   // Group events by day
   const eventsByDay = useMemo(() => {
@@ -296,12 +305,21 @@ const CalendarWeekView: React.FC<CalendarWeekViewProps> = ({
 
   return (
     <View className="flex-1 bg-white">
-      <View className="py-4 items-center border-b border-gray-300">
-        <Text className="text-xl font-bold">
-          {startDate.toFormat('MMM d')} - {startDate.plus({ days: numDays - 1 }).toFormat('MMM d, yyyy')}
-        </Text>
-      </View>
+      <View className="items-center border-b border-gray-300">
+        <View className="flex-row items-center justify-center w-full px-4 py-2">
+          <TouchableOpacity onPress={navigateToPreviousWeek} className="pr-3 translate-y-[1px]">
+            <Entypo name="chevron-left" size={28} color={colorScheme === 'dark' ? 'white' : 'black'} />
+          </TouchableOpacity>
 
+          <Text className="text-xl font-bold">
+            {startDate.toFormat('MMM d')} - {startDate.plus({ days: numDays - 1 }).toFormat('MMM d, yyyy')}
+          </Text>
+
+          <TouchableOpacity onPress={navigateToNextWeek} className="pl-3 translate-y-[1px]">
+            <Entypo name="chevron-right" size={28} color={colorScheme === 'dark' ? 'white' : 'black'} />
+          </TouchableOpacity>
+        </View>
+      </View>
       {renderDayHeader()}
 
       <ScrollView className="flex-1">
@@ -419,23 +437,17 @@ export default function WeekView() {
 
         <View className="flex-row items-center">
           <Button
-            onPress={navigateToPreviousWeek}
-            className="text-primary"
-          >
-            Previous
-          </Button>
-          <Button
             onPress={() => setDayBeingViewed(DateTime.now())}
             className="text-primary mx-2"
           >
             Today
           </Button>
-          <Button
-            onPress={navigateToNextWeek}
-            className="text-primary"
-          >
-            Next
-          </Button>
+          <Button 
+            onPress={() => router.replace('/dayView')}
+            className="text-primary mx-2"
+            >
+              Week
+            </Button>
         </View>
       </View>
 
@@ -457,6 +469,8 @@ export default function WeekView() {
         onEventPress={handleEventPress}
         hourHeight={60}
         showCurrentTime={true}
+        navigateToPreviousWeek={navigateToPreviousWeek}
+        navigateToNextWeek={navigateToNextWeek}
       />
     </View>
   );
