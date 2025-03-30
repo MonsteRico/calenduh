@@ -1,4 +1,4 @@
-import { useQuery, useMutation, useQueryClient, UseMutationOptions } from "@tanstack/react-query";
+import { useQuery, useMutation, useQueryClient, UseMutationOptions, useQueries } from "@tanstack/react-query";
 import { useIsConnected } from "@/hooks/useIsConnected"; // Adjust path
 import { Calendar, CalendarUpsert, UpdateCalendar } from "@/types/calendar.types";
 import {
@@ -25,7 +25,7 @@ import * as Crypto from "expo-crypto";
 
 export const useCalendars = () => {
 	const isConnected = useIsConnected();
-	const {sessionId, user } = useSession();
+	const { sessionId, user } = useSession();
 	if (!sessionId || !user) {
 		throw new Error("Session not found");
 	}
@@ -87,6 +87,49 @@ export const useCalendar = (calendar_id: string) => {
 				}
 			}
 		},
+	});
+};
+
+export const useMultipleCalendars = (calendarIds: string[]) => {
+	const queryClient = useQueryClient();
+	const isConnected = useIsConnected();
+	const { user, sessionId } = useSession();
+
+	if (!user || !sessionId) {
+		throw new Error("User not found");
+	}
+
+	return useQueries({
+		queries: calendarIds.map(calendarId => ({
+			queryKey: ["calendars", calendarId],
+			queryFn: async () => {
+				if (isConnected && user.user_id !== "localUser") {
+					try {
+						const serverCalendar = await getCalendarFromServer(calendarId);
+						if (!serverCalendar) {
+							throw new Error("Calendar not found on server");
+						}
+						await updateCalendarInDB(serverCalendar.calendar_id, serverCalendar, user.user_id);
+						return serverCalendar;
+					} catch (error) {
+						console.error(`Error fetching calendar ${calendarId} from server:`, error);
+						const localCalendar = await getCalendarFromDB(calendarId);
+						if (localCalendar) {
+							return localCalendar;
+						} else {
+							throw new Error("Calendar not found locally or on server");
+						}
+					}
+				} else {
+					const localCalendar = await getCalendarFromDB(calendarId);
+					if (localCalendar) {
+						return localCalendar;
+					} else {
+						throw new Error("Calendar not found locally");
+					}
+				}
+			},
+		})),
 	});
 };
 
@@ -184,7 +227,7 @@ export const useCreateCalendar = (
 					return await createCalendarOnServer(newCalendar);
 				} else {
 					// Optimistic update only, server sync will happen later
-					return { ...newCalendar, calendar_id: "local-"+Crypto.randomUUID() }; // Generate a temporary ID
+					return { ...newCalendar, calendar_id: "local-" + Crypto.randomUUID() }; // Generate a temporary ID
 				}
 			},
 			onMutate: async (newCalendar) => {
@@ -193,7 +236,7 @@ export const useCreateCalendar = (
 				await queryClient.cancelQueries({ queryKey: ["calendars"] });
 				const previousCalendars = queryClient.getQueryData<Calendar[]>(["calendars"]) || [];
 
-				const tempId = "local-"+Crypto.randomUUID();
+				const tempId = "local-" + Crypto.randomUUID();
 				const optimisticCalendar: Calendar = {
 					...newCalendar,
 					calendar_id: tempId,
@@ -232,7 +275,7 @@ export const useCreateCalendar = (
 					}
 				}
 				await queryClient.invalidateQueries({ queryKey: ["calendars"] });
-				
+
 			},
 		}
 	);

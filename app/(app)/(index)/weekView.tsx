@@ -5,12 +5,13 @@ import { Button } from '@/components/Button';
 import { EventViewModal } from '@/components/EventViewModal';
 import { Event } from '@/types/event.types';
 import { useEnabledCalendarIds } from '@/hooks/useEnabledCalendarIds';
-import { useCalendar } from '@/hooks/calendar.hooks';
-import { CalendarDayView } from '@/components/CalendarDayView';
+import { useCalendar, useMultipleCalendars } from '@/hooks/calendar.hooks';
+
 import { router } from 'expo-router';
 import { useSession } from '@/hooks/authContext';
 import { useCurrentViewedDay } from '@/hooks/useCurrentViewedDay';
 import { useEventsForWeek } from '@/hooks/event.hooks';
+import { Calendar } from '@/types/calendar.types';
 
 interface ProcessedEventType extends Event {
   width: number;
@@ -213,13 +214,28 @@ const CalendarWeekView: React.FC<CalendarWeekViewProps> = ({
     const dayEvents = eventsByDay[day.toISODate() || ''] || [];
     const processedEvents = processEvents(dayEvents);
 
+    //get all calendars at once with one hook call then create a map of calendarIds to calendar data
+    //prevents react rendering errors caused by a variablle number of hooks called
+    const calendar_ids = Array.from(new Set(processedEvents.map(event => event.calendar_id)));
+    const calendars = useMultipleCalendars(calendar_ids);
+    const calendarMap: Record<string, Calendar | undefined> = calendar_ids.reduce((acc, id, index) => {
+      const result = calendars[index];
+      if (result.isSuccess && result.data) {
+        acc[id] = result.data;
+      } else {
+        acc[id] = undefined;
+      }
+      return acc;
+    }, {} as Record<string, Calendar | undefined>);
+
     return processedEvents.map((event, index) => {
       const eventStyle = getEventStyle(event);
-      const calendar = useCalendar(event.calendar_id).data;
+      //const calendar = useCalendar(event.calendar_id).data;
+      const calendar = calendarMap[event.calendar_id];
       if (!calendar) {
         return null;
       }
-      const borderColor = calendar.color;
+      const borderColor = calendar?.color;
 
       return (
         <TouchableOpacity
