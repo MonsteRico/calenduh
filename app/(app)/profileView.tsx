@@ -189,9 +189,11 @@ export default function ProfileView() {
 			<View className="ml-1 mr-1 flex-row items-center justify-center relative">
 				<Text className="text-2xl font-bold text-primary">User Profile</Text>
 				<View className="absolute right-0 flex-row gap-6">
-					<TouchableOpacity onPress={handleEditToggle}>
-						<Feather name="edit-2" className="mt-[1]" size={24} color={globColor} />
-					</TouchableOpacity>
+					{!isEditing && (
+						<TouchableOpacity onPress={handleEditToggle}>
+							<Feather name="edit-2" className="mt-[1]" size={24} color={globColor} />
+						</TouchableOpacity>
+					)}
 					<ConfirmDelete
 						onDelete={() => {
 							deleteUser(user.user_id);
@@ -203,60 +205,62 @@ export default function ProfileView() {
 
 			<View className="">
 				{isEditing ? (
-					<View className="space-y-4">
-						<Text className="text-sm font-medium text-muted-foreground">Username</Text>
-						<TextInput
-							className="rounded-lg border border-gray-300 p-3 text-primary"
-							style={{ backgroundColor: globColorInverse }}
-							value={tempUsername}
-							onChangeText={setTempUserName}
-							placeholder="Username"
-						/>
-
-						<Text className="text-sm font-medium text-muted-foreground">Name</Text>
-						<TextInput
-							className="rounded-lg border border-gray-300 p-3 text-primary"
-							style={{ backgroundColor: globColorInverse }}
-							value={tempName}
-							onChangeText={setTempName}
-							placeholder="Name"
-						/>
-
-						<Text className="text-sm font-medium text-muted-foreground">Birthday</Text>
-						{Platform.OS === "android" && (
-							<TouchableOpacity
-								className="flex flex-row items-center space-x-2 rounded-lg bg-gray-200 px-4 py-2"
-								onPress={() => setShowDatePicker(true)}
-							>
-								<Text className="font-medium text-primary">{birthday.toLocaleString(DateTime.DATE_MED)}</Text>
-							</TouchableOpacity>
-						)}
-						{(showDatePicker || Platform.OS === "ios") && (
-							<DateTimePicker
-								value={tempBirthday?.toJSDate()}
-								mode={"date"}
-								onChange={(e, selectedDate) => {
-									if (selectedDate && e.type === "set") {
-										const luxonDate = DateTime.fromJSDate(selectedDate);
-										setTempBirthday(luxonDate);
-									}
-									setShowDatePicker(false);
-								}}
+					<View className="rounded-xl border border-gray-300 p-4">
+						<View className="space-y-4">
+							<Text className="text-sm font-medium text-muted-foreground">Username</Text>
+							<TextInput
+								className="rounded-lg border border-gray-300 p-3 text-primary"
+								style={{ backgroundColor: globColorInverse }}
+								value={tempUsername}
+								onChangeText={setTempUserName}
+								placeholder="Username"
 							/>
-						)}
 
-						<View className="mt-10 flex-row items-center justify-center gap-8">
-							{/* <Button onPress={handleSave} labelClasses="text-background">
-								Save Changes
-							</Button> */}
-							<Button onPress={handleSave} labelClasses="text-background" disabled={isUpdating}>
-								{isUpdating ? "Updating..." : "Save Changes"}
-							</Button>
+							<Text className="text-sm font-medium text-muted-foreground">Name</Text>
+							<TextInput
+								className="rounded-lg border border-gray-300 p-3 text-primary"
+								style={{ backgroundColor: globColorInverse }}
+								value={tempName}
+								onChangeText={setTempName}
+								placeholder="Name"
+							/>
+
+							<Text className="text-sm font-medium text-muted-foreground">Birthday</Text>
+							{Platform.OS === "android" && (
+								<TouchableOpacity
+									className="flex flex-row items-center space-x-2 rounded-lg bg-gray-200 px-4 py-2"
+									onPress={() => setShowDatePicker(true)}
+								>
+									<Text className="font-medium text-primary">{birthday.toLocaleString(DateTime.DATE_MED)}</Text>
+								</TouchableOpacity>
+							)}
+							{(showDatePicker || Platform.OS === "ios") && (
+								<DateTimePicker
+									value={tempBirthday?.toJSDate()}
+									mode={"date"}
+									onChange={(e, selectedDate) => {
+										if (selectedDate && e.type === "set") {
+											const luxonDate = DateTime.fromJSDate(selectedDate);
+											setTempBirthday(luxonDate);
+										}
+										setShowDatePicker(false);
+									}}
+								/>
+							)}
+
+							<View className="mt-10 flex-row items-center justify-center gap-8">
+								{/* <Button onPress={handleSave} labelClasses="text-background">
+									Save Changes
+								</Button> */}
+								<Button onPress={handleSave} labelClasses="text-background" disabled={isUpdating}>
+									{isUpdating ? "Updating..." : "Save Changes"}
+								</Button>
 
 
-							<Button onPress={handleCancel} labelClasses="text-background">
-								Cancel
-							</Button>
+								<Button onPress={handleCancel} labelClasses="text-background">
+									Cancel
+								</Button>
+							</View>
 						</View>
 					</View>
 				) : (
