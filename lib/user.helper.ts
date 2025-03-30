@@ -47,7 +47,7 @@ export const migrateUserServer  = async (userId: string) => {
 export const getUserFromDB = async (userId: string): Promise<User | undefined> => {
     const db = await openDatabaseAsync("local.db");
     try {
-        const user = await db.getFirstAsync<{ user_id: string; username: string; email: string; birthday: DateTime; name: string }>("SELECT * FROM users WHERE user_id = ?", userId);
+        const user = await db.getFirstAsync<{ user_id: string; username: string; email: string; birthday: string; name: string }>("SELECT * FROM users WHERE user_id = ?", userId);
         if (user) {
             return {
                 user_id: user.user_id,
@@ -78,7 +78,7 @@ export const updateUserInDB = async (user_id: string, user: UpdateUser): Promise
             [
                 // user.email ?? existingUser.email,
                 user.username ?? existingUser.username,
-                user.birthday ? user.birthday.toISO() : existingUser.birthday?.toISO(),
+                user.birthday ? DateTime.fromISO(user.birthday).toISO() : existingUser.birthday ? DateTime.fromISO(existingUser.birthday).toISO() : null,
                 user.name ?? existingUser.name,
                 user_id,
             ]

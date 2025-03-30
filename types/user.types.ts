@@ -4,7 +4,7 @@ export interface User {
     user_id: string;
     email: string;
     username: string;
-    birthday: DateTime;
+    birthday: string;
     name: string;
     // profile_picture: ?;
 }
@@ -13,7 +13,7 @@ export interface UpdateUser {
     user_id: string;
     // email?: string; cannot edit email
     username?: string;
-    birthday?: DateTime;
+    birthday?: string;
     name?: string;
     // profile_picture?: ?;
 }

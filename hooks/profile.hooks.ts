@@ -19,6 +19,7 @@ export const useUpdateUser = (
 
 	return useMutation({
 		mutationFn: async (updatedUser: UpdateUser) => {
+			// await updateUserInDB(updatedUser.user_id, updatedUser); // Update the user in the local database
 			if (isConnected && user.user_id !== "localUser") {
 				return await updateUserOnServer(updatedUser);
 			} else {
