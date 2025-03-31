@@ -40,7 +40,7 @@ export default function ManageGroups() {
 
 				<Button
 					labelClasses='text-secondary'
-					onPress={() => {setOpenCreateGroup(true)}}
+					onPress={() => {router.navigate(`/updateCalendar?id`);}}
 				>
 					Create Group
 				</Button>
