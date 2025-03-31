@@ -11,6 +11,7 @@ import { getCalendarsFromDB } from "@/lib/calendar.helpers";
 import { useIsConnected } from "@/hooks/useIsConnected";
 import { useEnabledCalendarIds } from "@/hooks/useEnabledCalendarIds";
 import { setEnabled } from "react-native/Libraries/Performance/Systrace";
+import { DismissKeyboardView } from "@/components/DismissKeyboardView";
 
 export default function ManageGroups() {
 	const isPresented = router.canGoBack();
@@ -19,11 +20,32 @@ export default function ManageGroups() {
 	const isConnected = useIsConnected();
 	const db = useSQLiteContext();
 
+	const [openCreateGroup, setOpenCreateGroup] = useState(false);
+	const [openJoinGroup, setOpenJoinGroup] = useState(false);
+
 	const { setEnabledCalendarIds } = useEnabledCalendarIds();
 	return (
-		<View className="flex-1 bg-background">
+		<DismissKeyboardView className="flex-1 bg-background">
+			<View className='m-2 flex-row items-center justify-between'>
+				<Text className='text-3xl font-bold text-primary'>Groups</Text>
+
+				<Button
+					labelClasses='text-secondary'
+					onPress={() => {setOpenCreateGroup(true)}}
+				>
+					Create Group
+				</Button>
+
+				<Button
+					labelClasses='text-secondary'
+					onPress={() => {setOpenJoinGroup(true)}}
+				>
+					Join Group
+				</Button>
+			</View>
 
 			
-		</View>
+			
+		</DismissKeyboardView>
 	);
 }

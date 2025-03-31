@@ -13,6 +13,7 @@ import { DismissKeyboardView } from "@/components/DismissKeyboardView";
 
 
 export default function CalendarInfoView() {
+	//TODO: Display groups name if there is one (can't change group though)
 	const isPresented = router.canGoBack();
 	const params = useLocalSearchParams();
 	const { data: calendar, isLoading } = useCalendar(params.id as string);

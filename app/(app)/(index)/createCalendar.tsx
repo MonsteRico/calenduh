@@ -14,10 +14,14 @@ function getRandomItem<T>(list: T[]): T {
 }
 
 export default function CreateCalendar() {
+    //TODO: Actually get group data and make group get saved when creating calendar
     const isPresented = router.canGoBack();
     const [calendarName, setCalendarName] = useState("");
     const [calendarColorHex, setCalendarColor] = useState(getRandomItem(calendarColors).hex);
     const [isPublic, setIsPublic] = useState(false);
+    const [userGroups, setUserGroups] = useState<{ id: string; name: string }[]>([]); // Replace with actual user groups
+    const [isGroup, setIsGroup] = useState(false);
+    const [selectedGroup, setSelectedGroup] = useState<{ id: string; name: string } | null>(null);
     const { mutate } = useCreateCalendar();
     const { user } = useSession();
 
@@ -42,17 +46,17 @@ export default function CreateCalendar() {
             </View>
 
             <View className="mt-5 flex flex-col gap-2 px-8">
-                <Input 
-                    label="Name:" 
-                    className="text-primary" 
-                    value={calendarName} 
-                    onChangeText={setCalendarName} 
-                    placeholder="Calendar Name" 
+                <Input
+                    label="Name:"
+                    className="text-primary"
+                    value={calendarName}
+                    onChangeText={setCalendarName}
+                    placeholder="Calendar Name"
                 />
-                  
+
                 <View className="flex-col gap-1">
                     <Text className="text-primary">Color:</Text>
-                    <Dropdown<{hex: string, name: string}>
+                    <Dropdown<{ hex: string, name: string }>
                         options={calendarColors}
                         renderItem={(calendarColor) => (
                             <View className="flex flex-row items-center gap-2">
@@ -77,7 +81,40 @@ export default function CreateCalendar() {
                     />
                 </View>
 
-                <View className="mt-4">
+                <View className='flex-row items-center mt-2'>
+                    <Text className='text-primary'>Group Calendar:</Text>
+                    <Switch
+                        trackColor={{ false: '#767577', true: '#808080' }}
+                        thumbColor={isGroup ? '#FFFFFF' : '#F4F4F4'}
+                        onValueChange={() => {
+                            setIsGroup(!isGroup);
+                            if (!isGroup) {
+                                setSelectedGroup(null);
+                            }
+                        }}
+                        value={isGroup}
+                        style={{ marginLeft: 10 }}
+                    />
+
+                </View>
+
+
+                {isGroup &&
+                    <View className='mt-5 flex flex-col gap-2'>
+                        <Text className='text-primary'>Group Name:</Text>
+                        <Dropdown<{ id: string, name: string }>
+                            options={userGroups}
+                            renderItem={(group) => (
+                                <Text className='text-primary'>{group.name}</Text>
+                            )}
+                            onSelect={(selectedGroup) => {
+                                setSelectedGroup(selectedGroup);
+                            }}
+                        />
+                    </View>
+                }
+
+                <View className="mt-6">
                     <Button
                         onPress={() => {
                             if (calendarName.trim() === "") {
