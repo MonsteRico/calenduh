@@ -12,6 +12,7 @@ import { useIsConnected } from "@/hooks/useIsConnected";
 import { useEnabledCalendarIds } from "@/hooks/useEnabledCalendarIds";
 import { setEnabled } from "react-native/Libraries/Performance/Systrace";
 import { DismissKeyboardView } from "@/components/DismissKeyboardView";
+import { JoinGroupModal } from "@/components/JoinGroupModal";
 
 export default function ManageGroups() {
 	const isPresented = router.canGoBack();
@@ -26,6 +27,14 @@ export default function ManageGroups() {
 	const { setEnabledCalendarIds } = useEnabledCalendarIds();
 	return (
 		<DismissKeyboardView className="flex-1 bg-background">
+			<JoinGroupModal
+				visible={openJoinGroup}
+				onClose={() => setOpenJoinGroup(false)}
+				setGroupCode={(code) => {
+					//TODO: Handle group joining with code - also might want to move this logic into the modal
+					console.log(code);
+				}}
+			/>
 			<View className='m-2 flex-row items-center justify-between'>
 				<Text className='text-3xl font-bold text-primary'>Groups</Text>
 
