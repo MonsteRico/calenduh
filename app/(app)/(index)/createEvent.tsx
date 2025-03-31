@@ -136,6 +136,7 @@ export default function CreateEvent() {
 
 					<Dropdown<Calendar>
 						options={calendars}
+						defaultValue={user.default_calendar_id ? calendars.find((cal) => cal.calendar_id == user.default_calendar_id): undefined}
 						renderItem={(calendar) => {
 							return (
 								<View className="flex flex-row items-center gap-2">
