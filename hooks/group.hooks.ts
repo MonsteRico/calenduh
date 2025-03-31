@@ -6,6 +6,7 @@ import {
     getGroupsFromServer,
     getGroupFromServer,
     createGroupOnServer,
+    getMyGroupsFromServer,
     //insertGroupIntoDB,
     //updateGroupInDB,
     //deleteGroupFromDB,
@@ -15,8 +16,6 @@ import { addMutationToQueue } from "@/lib/mutation.helpers";
 import { useSession } from "./authContext";
 
 // --- Queries ---
-
-// Fetches all groups the current user belongs to
 export const useMyGroups = () => {
     const queryClient = useQueryClient();
     const isConnected = useIsConnected();
@@ -26,29 +25,22 @@ export const useMyGroups = () => {
         throw new Error("User not found");
     }
 
-    return useQuery<Group[], Error>({
+    return useQuery({
         queryKey: ["groups"],
         queryFn: async () => {
-            const localGroups = await getGroupsFromDB(user.user_id);
             if (isConnected && user.user_id !== "localUser") {
                 try {
-                    const serverGroups = await getGroupsFromServer();
-                    for (const group of serverGroups) {
-                        await insertGroupIntoDB(group, user.user_id);
-                    }
+                    const serverGroups = await getMyGroupsFromServer();
                     return serverGroups;
                 } catch (error) {
-                    console.error("Error fetching groups from server:", error);
-                    return localGroups; // Return local groups in case of an error
+                    console.error("Error fetching groupsf rom server:", error);
+                    throw new Error("Error fetching groups from server");
                 }
-            } else {
-                return localGroups; // Return local groups when offline
             }
         },
     });
 };
 
-// Fetches a single group by its ID
 export const useGroup = (group_id: string) => {
     const queryClient = useQueryClient();
     const isConnected = useIsConnected();
@@ -58,37 +50,24 @@ export const useGroup = (group_id: string) => {
         throw new Error("User not found");
     }
 
-    return useQuery<Group, Error>({
-        queryKey: ["groups", group_id],
-        queryFn: async () => {
+    return useQuery({
+        queryKey: ['groups', group_id],
+        queryFn: async  () => {
             if (isConnected && user.user_id !== "localUser") {
                 try {
                     const serverGroup = await getGroupFromServer(group_id);
                     if (!serverGroup) {
                         throw new Error("Group not found on server");
                     }
-                    await updateGroupInDB(serverGroup.group_id, serverGroup, user.user_id);
                     return serverGroup;
                 } catch (error) {
                     console.error(`Error fetching group ${group_id} from server:`, error);
-                    const localGroup = await getGroupFromDB(group_id);
-                    if (localGroup) {
-                        return localGroup;
-                    } else {
-                        throw new Error("Group not found locally or on server");
-                    }
-                }
-            } else {
-                const localGroup = await getGroupFromDB(group_id);
-                if (localGroup) {
-                    return localGroup;
-                } else {
-                    throw new Error("Group not found locally");
+                    throw new Error(`Error fetching group ${group_id} from server:`, error)
                 }
             }
-        },
-    });
-};
+        }
+    })
+}
 
 // --- Mutations ---
 

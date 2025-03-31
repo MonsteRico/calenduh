@@ -97,6 +97,11 @@ export const getGroupFromServer = async (group_id: string): Promise<Group> => {
     return response.data;
 };
 
+export const getMyGroupsFromServer = async (): Promise<Group []> => {
+    const response = await server.get(`groups/@me`);
+    return response.data;
+}
+
 // Create a new group on the server
 export const createGroupOnServer = async (group: Omit<Group, "group_id">): Promise<Group> => {
     const response = await server.post("/groups/", group);

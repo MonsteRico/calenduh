@@ -1,6 +1,7 @@
 export interface Group {
 	group_id: string;
     name: string;
+    invite_code: string;
     calendar_ids: string[] | null;
 }
 

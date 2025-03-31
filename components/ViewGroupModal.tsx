@@ -56,7 +56,7 @@ function ViewGroupModal({ visible, onClose, group, openEditGroup }: ViewGroupMod
                             >
                                 <Text className='text-xl text-foreground'>✕</Text>
                             </TouchableOpacity>
-                            <Text className='flex-1 text-center text-xl font-bold text-foreground'>{groupName}</Text>
+                            <Text className='flex-1 text-center text-xl font-bold text-foreground'>{group.name}</Text>
                             <TouchableOpacity
                                 onPress={openEditModal}
                                 className='h-8 w-8 items-center justify-center rounded-full'
@@ -72,7 +72,7 @@ function ViewGroupModal({ visible, onClose, group, openEditGroup }: ViewGroupMod
                         <View className='p-6 space-y-6'>
                             <View className='bg-muted/30 rounded-lg p-4'>
                                 <Text className='text-sm text-foreground/60 mb-1'>Group Share Code</Text>
-                                <Text className='text-xl font-semibold text-foreground'>{groupShareCode}</Text>
+                                <Text className='text-xl font-semibold text-foreground'>{group.invite_code}</Text>
                             </View>
 
                             <View className='space-y-2'>
