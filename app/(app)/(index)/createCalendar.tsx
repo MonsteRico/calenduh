@@ -92,9 +92,7 @@ export default function CreateCalendar() {
                     />
                 </View>
 
-                {/* Might be throwing with this if, but also idk how we let the user identify a group */}
-                if (isGroup) {
-                    <View className="flex-col gap-2">
+                <View className="flex-col gap-2">
                         <Text className="text-primary">Which Group?:</Text>
 
                         <Dropdown<Group>
@@ -110,8 +108,8 @@ export default function CreateCalendar() {
                                 setGroupID(selectedGroup.group_id);
                             }}
                         />
-				    </View>
-                }
+                        
+				</View>
 
                 <View className="mt-4">
                     <Button
