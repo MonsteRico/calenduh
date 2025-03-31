@@ -6,7 +6,7 @@ import { useState } from "react";
 import { useSession } from "@/hooks/authContext";
 import { Input } from "@/components/Input";
 import { DismissKeyboardView } from "@/components/DismissKeyboardView";
-import * as Clipboard from 'expo-clipboard';
+//import * as Clipboard from 'expo-clipboard';
 
 
 export default function CreateGroup() {
@@ -54,9 +54,9 @@ export default function CreateGroup() {
                             //     group_id: id,
                             //     groupName: groupName,
                             // });
-                            Clipboard.setStringAsync(id).then(() => {
-                                alert(`Group ID: ${id} has been copied to your clipboard!`);
-                            });
+                            // Clipboard.setStringAsync(id).then(() => {
+                            //     alert(`Group ID: ${id} has been copied to your clipboard!`);
+                            // });
                             router.back();
                         }}
                     >
