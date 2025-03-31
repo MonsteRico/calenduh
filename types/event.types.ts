@@ -14,6 +14,7 @@ export interface Event {
 	secondNotification: number | null;
 	firstNotificationId?: string;
 	secondNotificationId?: string;
+	all_day: boolean;
 }
 
 export interface UpdateEvent {
@@ -28,6 +29,7 @@ export interface UpdateEvent {
 	end_time?: DateTime;
 	firstNotification?: number | null;
 	secondNotification?: number | null;
+	all_day?: boolean;
 }
 
 export type EventInstance = Event; // Alias for clarity

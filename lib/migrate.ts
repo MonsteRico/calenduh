@@ -99,7 +99,14 @@ export async function migrateDbIfNeeded(db: SQLiteDatabase) {
 
 		currentDbVersion++;
 	}
+	if (currentDbVersion === 3) {
+		console.log("Migrating to version 4");
+		await db.execAsync(`
+        ALTER TABLE events ADD COLUMN all_day INTEGER NOT NULL DEFAULT 0;
+      `);
 
+		currentDbVersion++;
+	}
 	// if (currentDbVersion === 1) {
 	//   Add more migrations
 	// }
