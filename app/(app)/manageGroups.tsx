@@ -14,6 +14,7 @@ import { setEnabled } from "react-native/Libraries/Performance/Systrace";
 import { DismissKeyboardView } from "@/components/DismissKeyboardView";
 import { JoinGroupModal } from "@/components/JoinGroupModal";
 import { CreateGroupModal } from '@/components/CreateGroupModal';
+import { ViewGroupModal } from "@/components/ViewGroupModal";
 
 export default function ManageGroups() {
 	const isPresented = router.canGoBack();
@@ -24,6 +25,8 @@ export default function ManageGroups() {
 
 	const [openCreateGroup, setOpenCreateGroup] = useState(false);
 	const [openJoinGroup, setOpenJoinGroup] = useState(false);
+	const [openViewGroup, setOpenViewGroup] = useState(false);
+	const [selectedGroup, setSelectedGroup] = useState(0);
 
 	const { setEnabledCalendarIds } = useEnabledCalendarIds();
 	return (
@@ -39,6 +42,11 @@ export default function ManageGroups() {
 			<CreateGroupModal
 				visible={openCreateGroup}
 				onClose={() => setOpenCreateGroup(false)}
+			/>
+			<ViewGroupModal
+				visible={openViewGroup}
+				onClose={() => setOpenViewGroup(false)}
+				group={selectedGroup}	
 			/>
 			<View className='m-2 flex-row items-center justify-between'>
 				<Text className='text-3xl font-bold text-primary'>Groups</Text>

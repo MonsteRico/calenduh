@@ -34,7 +34,7 @@ function CreateGroupModal({ visible, onClose }: CreateGroupModalProps) {
                                 onPress={onModalClose}
                                 className='h-8 w-8 items-center justify-center rounded-full'
                             >
-                                <Text className="text-xl text-gray-500">✕</Text>
+                                <Text className="text-xl text-foreground">✕</Text>
                             </TouchableOpacity>
                         </View>
 
