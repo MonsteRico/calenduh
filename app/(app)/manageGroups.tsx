@@ -15,6 +15,8 @@ import { DismissKeyboardView } from "@/components/DismissKeyboardView";
 import { JoinGroupModal } from "@/components/JoinGroupModal";
 import { CreateGroupModal } from '@/components/CreateGroupModal';
 import { ViewGroupModal } from "@/components/ViewGroupModal";
+import { Group } from '@/types/group.types';
+import { EditGroupModal } from '@/components/EditGroupModal'
 
 export default function ManageGroups() {
 	const isPresented = router.canGoBack();
@@ -25,8 +27,13 @@ export default function ManageGroups() {
 
 	const [openCreateGroup, setOpenCreateGroup] = useState(false);
 	const [openJoinGroup, setOpenJoinGroup] = useState(false);
-	const [openViewGroup, setOpenViewGroup] = useState(false);
-	const [selectedGroup, setSelectedGroup] = useState(0);
+	const [openViewGroup, setOpenViewGroup] = useState(true);
+	const [openEditGroup, setOpenEditGroup] = useState(false);
+	const [selectedGroup, setSelectedGroup] = useState<Group>({
+		group_id: "",
+		name: "",
+		calendar_ids: null,
+	})
 
 	const { setEnabledCalendarIds } = useEnabledCalendarIds();
 	return (
@@ -46,7 +53,16 @@ export default function ManageGroups() {
 			<ViewGroupModal
 				visible={openViewGroup}
 				onClose={() => setOpenViewGroup(false)}
+				openEditGroup={() => setOpenEditGroup(true)}
 				group={selectedGroup}	
+			/>
+			<EditGroupModal
+				visible={openEditGroup}
+				onClose={() => {
+					setOpenEditGroup(false)
+					setOpenViewGroup(true)
+				}}
+				group={selectedGroup}
 			/>
 			<View className='m-2 flex-row items-center justify-between'>
 				<Text className='text-3xl font-bold text-primary'>Groups</Text>
