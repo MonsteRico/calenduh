@@ -2,6 +2,8 @@ export interface User {
 	user_id: string;
 	email: string;
 	username: string;
+	name: string | undefined;
+	birthday: string | undefined;
 }
 
 export interface Session {

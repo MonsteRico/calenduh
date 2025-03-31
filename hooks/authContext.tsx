@@ -83,6 +83,8 @@ export function SessionProvider({ children }: PropsWithChildren) {
 							user_id: "localUser",
 							email: "local@local.com",
 							username: "localUser",
+							name: "localUser",
+							birthday: "1899-01-01",
 						};
 						if (Platform.OS !== "web") {
 							SecureStore.setItem("sessionId", JSON.stringify(sessionId));
