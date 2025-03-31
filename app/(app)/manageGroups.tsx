@@ -13,6 +13,7 @@ import { useEnabledCalendarIds } from "@/hooks/useEnabledCalendarIds";
 import { setEnabled } from "react-native/Libraries/Performance/Systrace";
 import { DismissKeyboardView } from "@/components/DismissKeyboardView";
 import { JoinGroupModal } from "@/components/JoinGroupModal";
+import { CreateGroupModal } from '@/components/CreateGroupModal';
 
 export default function ManageGroups() {
 	const isPresented = router.canGoBack();
@@ -35,12 +36,16 @@ export default function ManageGroups() {
 					console.log(code);
 				}}
 			/>
+			<CreateGroupModal
+				visible={openCreateGroup}
+				onClose={() => setOpenCreateGroup(false)}
+			/>
 			<View className='m-2 flex-row items-center justify-between'>
 				<Text className='text-3xl font-bold text-primary'>Groups</Text>
 
 				<Button
 					labelClasses='text-secondary'
-					onPress={() => {router.navigate(`/updateCalendar?id`);}}
+					onPress={() => {setOpenCreateGroup(true)}}
 				>
 					Create Group
 				</Button>
