@@ -1,7 +1,7 @@
 import { type SQLiteDatabase } from "expo-sqlite";
 
 export async function migrateDbIfNeeded(db: SQLiteDatabase) {
-	const DATABASE_VERSION = 3;
+	const DATABASE_VERSION = 4;
 	let result = await db.getFirstAsync<{ user_version: number }>("PRAGMA user_version");
 	let currentDbVersion = result ? result.user_version : 0;
 	if (currentDbVersion >= DATABASE_VERSION) {
