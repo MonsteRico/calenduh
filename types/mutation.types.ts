@@ -5,6 +5,7 @@ export interface Mutation {
     parameters: string;
     calendar_id?: string;
 	event_id?: string;
+	group_id?: string; //Maybe?
 }
 
 export type MutationTypes =
@@ -13,4 +14,7 @@ export type MutationTypes =
 	| "DELETE_CALENDAR"
 	| "CREATE_EVENT"
 	| "UPDATE_EVENT"
-	| "DELETE_EVENT";
+	| "DELETE_EVENT"
+	| "CREATE_GROUP" //Again idk if this is needed
+	| "UPDATE_GROUP"
+	| "DELETE_GROUP";
