@@ -4,8 +4,8 @@ import { useQuery, useQueryClient } from "@tanstack/react-query";
 import * as SecureStore from "expo-secure-store";
 import server from "@/constants/serverAxiosClient";
 import { router } from "expo-router";
-import { User, Session } from "@/lib/types";
 import { useEnabledCalendarIds } from "./useEnabledCalendarIds";
+import { User, Session } from "@/types/user.types"
 
 const AuthContext = createContext<{
 	signIn: (sessionId: string) => void;
@@ -85,6 +85,8 @@ export function SessionProvider({ children }: PropsWithChildren) {
 							username: "localUser",
 							name: "localUser",
 							birthday: "1899-01-01",
+							default_calendar_id: undefined,
+							profile_picture: undefined
 						};
 						if (Platform.OS !== "web") {
 							SecureStore.setItem("sessionId", JSON.stringify(sessionId));

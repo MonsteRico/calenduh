@@ -20,6 +20,8 @@ import { migrateUserCalendarsInDB, migrateUserServer } from "@/lib/user.helper";
 import { useEnabledCalendarIds } from "@/hooks/useEnabledCalendarIds";
 import Storage from "expo-sqlite/kv-store";
 import { useUpdateUser } from "@/hooks/profile.hooks";
+import Dropdown from "@/components/Dropdown";
+import { Calendar } from "@/types/calendar.types";
 
 export default function ProfileView() {
 	const isPresented = router.canGoBack();
@@ -27,19 +29,13 @@ export default function ProfileView() {
 	const [isEditing, setIsEditing] = useState(false);
 
 	const { user } = useSession();
-	if (!user) {
-		return <Text className="text-primary">Loading...</Text>;
-	}
 
-	const [username, setUserName] = useState(user?.username || "");
-	const [name, setName] = useState(user?.name || "");
+	const [username, setUserName] = useState("");
+	const [name, setName] = useState("");
 	// const [birthday, setBirthday] = useState(DateTime.fromISO("1900-01-01T00:00:00.000Z"));
-	const [birthday, setBirthday] = useState(user?.birthday ? DateTime.fromISO(user.birthday) : DateTime.local().startOf('day'));
+	const [birthday, setBirthday] = useState<DateTime<true> | undefined>(DateTime.local().startOf('day'));
+	const [defaultCal, setDefaultCal] = useState<string | undefined>(undefined);
 	const { colorScheme } = useColorScheme();
-
-	const [tempUsername, setTempUserName] = useState(username);
-	const [tempName, setTempName] = useState(name);
-	const [tempBirthday, setTempBirthday] = useState(birthday);
 
 	const [signInModalVisible, setSignInModalVisible] = useStateWithCallbackLazy(false);
 	const [mergeCalendarModalVisible, setMergeCalendarModalVisible] = useState(false);
@@ -59,31 +55,39 @@ export default function ProfileView() {
 	});
 
 
+	useEffect(() => {
+		if (!user) return;
+		setName(user.name || "")
+		setUserName(user.username)
+		setBirthday(user.birthday ? DateTime.fromFormat(user.birthday, "yyyy-mm-dd") as DateTime<true> : undefined)
+		setDefaultCal(user.default_calendar_id)
+	}, [user])
+
 	const handleSave = () => {
-		console.log("***BDAY:", tempBirthday);
+		if (!user) {
+			return
+		}
 		updateUser({
 			user_id: user.user_id,
-			username: tempUsername,
-			name: tempName,
+			username: username,
+			name: name,
 			// birthday: tempBirthday ? tempBirthday : undefined
-			birthday: tempBirthday ? tempBirthday.toFormat('yyyy-MM-dd') : undefined
+			birthday: birthday ? birthday.toFormat("yyyy-mm-dd") : undefined,
+			default_calendar_id: defaultCal,
+			// TODO: PFP how
+
 		}, {
 			onSuccess: () => {
 				setIsEditing(false);
-				// update values locally
-				setUserName(tempUsername);
-				setName(tempName);
-				setBirthday(tempBirthday);
 			},
 		});
 	};
 
 	const handleCancel = () => {
 		setIsEditing(false);
-		setTempUserName(username);
-		setTempName(name);
-		setTempBirthday(birthday);
-	};
+	}
+	
+	;
 	const { signOut } = useSession();
 
 	const { mutate: deleteUser, isPending: isDeleting } = useDeleteUser({});
@@ -166,6 +170,15 @@ export default function ProfileView() {
 
 	const { enabledCalendarIds, setEnabledCalendarIds } = useEnabledCalendarIds();
 
+	if (!calendars) {
+		return null;
+	}
+
+		if (!user) {
+		return <Text className="text-primary">Loading...</Text>;
+	}
+
+
 	return (
 		<View>
 			<GuestSignInModal
@@ -211,8 +224,8 @@ export default function ProfileView() {
 							<TextInput
 								className="rounded-lg border border-gray-300 p-3 text-primary"
 								style={{ backgroundColor: globColorInverse }}
-								value={tempUsername}
-								onChangeText={setTempUserName}
+								value={username}
+								onChangeText={setUserName}
 								placeholder="Username"
 							/>
 
@@ -220,8 +233,8 @@ export default function ProfileView() {
 							<TextInput
 								className="rounded-lg border border-gray-300 p-3 text-primary"
 								style={{ backgroundColor: globColorInverse }}
-								value={tempName}
-								onChangeText={setTempName}
+								value={name}
+								onChangeText={setName}
 								placeholder="Name"
 							/>
 
@@ -231,22 +244,38 @@ export default function ProfileView() {
 									className="flex flex-row items-center space-x-2 rounded-lg bg-gray-200 px-4 py-2"
 									onPress={() => setShowDatePicker(true)}
 								>
-									<Text className="font-medium text-primary">{birthday.toLocaleString(DateTime.DATE_MED)}</Text>
+									<Text className="font-medium text-primary">{birthday ? birthday.toLocaleString(DateTime.DATE_MED) : "No birthday set"}</Text>
 								</TouchableOpacity>
 							)}
 							{(showDatePicker || Platform.OS === "ios") && (
 								<DateTimePicker
-									value={tempBirthday?.toJSDate()}
+									value={birthday? birthday.toJSDate() : new Date()}
 									mode={"date"}
 									onChange={(e, selectedDate) => {
 										if (selectedDate && e.type === "set") {
 											const luxonDate = DateTime.fromJSDate(selectedDate);
-											setTempBirthday(luxonDate);
+											setBirthday(luxonDate as DateTime<true>);
 										}
 										setShowDatePicker(false);
 									}}
 								/>
 							)}
+
+							<Text className="text-primary">Default Calendar</Text>
+							<Dropdown<Calendar>
+								options={calendars}
+								renderItem={(calendar) => {
+									return (
+										<View className="flex flex-row items-center gap-2">
+											<View className="h-6 w-6 rounded-full" style={{ backgroundColor: calendar.color }} />
+											<Text className="text-primary">{calendar.title}</Text>
+										</View>
+									);
+								}}
+								onSelect={(selectedCalendar) => {
+									setDefaultCal(selectedCalendar.calendar_id);
+								}}
+							/>
 
 							<View className="mt-10 flex-row items-center justify-center gap-8">
 								{/* <Button onPress={handleSave} labelClasses="text-background">
@@ -270,19 +299,24 @@ export default function ProfileView() {
 								<View className="space-y-4">
 									<View className="flex-row items-center rounded-xl border border-gray-100 py-4 mb-2">
 										<Text className="pl-[5px] w-1/3 text-lg font-medium text-gray-600">Username</Text>
-										<Text className="flex-1 text-lg font-semibold text-gray-100">{tempUsername}</Text>
+										<Text className="flex-1 text-lg font-semibold text-gray-100">{username}</Text>
 									</View>
 
 									<View className="flex-row items-center rounded-xl border border-gray-100 py-4 mb-2">
 										<Text className="pl-[5px] w-1/3 text-lg font-medium text-gray-600">Name</Text>
-										<Text className="flex-1 text-lg font-semibold text-gray-100">{tempName}</Text>
+										<Text className="flex-1 text-lg font-semibold text-gray-100">{name}</Text>
 									</View>
 
 									<View className="flex-row items-center rounded-xl border border-gray-100 py-4 mb-2">
 										<Text className="pl-[5px] w-1/3 text-lg font-medium text-gray-600">Birthday</Text>
 										<Text className="flex-1 text-lg font-semibold text-gray-100">
-										{tempBirthday ? tempBirthday.toLocaleString(DateTime.DATE_MED) : "Not set"}
+										{birthday ? birthday.toLocaleString(DateTime.DATE_MED) : "Not set"}
 										</Text>
+									</View>
+
+									<View className="flex-row items-center rounded-xl border border-gray-100 py-4 mb-2">
+										<Text className="pl-[5px] w-1/3 text-lg font-medium text-gray-600">Default Calendar</Text>
+										<Text className="flex-1 text-lg font-semibold text-gray-100">{defaultCal}</Text>
 									</View>
 								</View>
 							</View>

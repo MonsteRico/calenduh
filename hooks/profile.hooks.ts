@@ -4,7 +4,8 @@ import { addMutationToQueue, getMutationsFromDB } from "@/lib/mutation.helpers";
 import { useSession } from "./authContext";
 import * as Crypto from "expo-crypto";
 import { User, UpdateUser } from "@/types/user.types";
-import { updateUserOnServer, updateUserInDB } from "@/lib/user.helper";
+import { updateUserOnServer } from "@/lib/user.helper";
+import * as SecureStore from "expo-secure-store";
 // --- Queries ---
 export const useUpdateUser = (
 	options?: UseMutationOptions<UpdateUser, Error, UpdateUser, { previousUser: User}>
@@ -19,12 +20,20 @@ export const useUpdateUser = (
 
 	return useMutation({
 		mutationFn: async (updatedUser: UpdateUser) => {
-			// await updateUserInDB(updatedUser.user_id, updatedUser); // Update the user in the local database
+			console.log(updatedUser)
 			if (isConnected && user.user_id !== "localUser") {
-				return await updateUserOnServer(updatedUser);
+				const res = await updateUserOnServer(updatedUser);
+				console.log(res)
+				return res
 			} else {
 				return updatedUser;
 			}
 		},
+		onSuccess: async (updatedUser: UpdateUser) => {
+			console.log("updated user", updatedUser);
+			const user = await JSON.parse(SecureStore.getItem("user") ?? "")
+			SecureStore.setItem("user", JSON.stringify({...user, ...updatedUser}));
+			console.log("set secure store user to ", {...user, ...updatedUser})
+		}
 	});
 };
