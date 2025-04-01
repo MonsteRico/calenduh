@@ -109,9 +109,9 @@ export default function ManageGroups() {
                             >
                                 <View className="flex-1">
                                     <Text className="text-lg font-semibold text-gray-800">{group.name}</Text>
-                                    <Text className="text-sm text-gray-500 mt-1">
+                                    {/*<Text className="text-sm text-gray-500 mt-1">
                                         {group.calendar_ids ? `${group.calendar_ids.length} calendars` : 'No calendars'}
-                                    </Text>
+                                    </Text> */}
                                 </View>
                                 <Feather name="chevron-right" size={20} color="#9ca3af" />
                             </TouchableOpacity>

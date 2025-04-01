@@ -15,6 +15,7 @@ import {
 	deleteCalendarOnServer,
 	getCalendarFromDB,
 	upsertCalendarIntoDB,
+	getGroupCalendarsFromServer,
 } from "@/lib/calendar.helpers";
 import { addMutationToQueue, getMutationsFromDB } from "@/lib/mutation.helpers";
 import { useSession } from "./authContext";
@@ -132,6 +133,33 @@ export const useMultipleCalendars = (calendarIds: string[]) => {
 		})),
 	});
 };
+
+export const useGroupCalendars = (group_id: string) => {
+	const queryClient = useQueryClient();
+	const isConnected = useIsConnected();
+	const { user, sessionId } = useSession();
+
+	if (!user || !sessionId) {
+		throw new Error("User not found");
+	}
+
+	return useQuery({
+		queryKey: ["calendars", group_id],
+		queryFn: async () => {
+			if (isConnected && user.user_id !== "localUser") {
+				try {
+					const serverCalendars = await getGroupCalendarsFromServer(group_id);
+					return serverCalendars;
+				} catch (error) {
+					console.error(`Error fetching calendars from server with group_id: ${group_id}:`, error);
+					throw new Error(`Calendars could not be fetched for group_id: ${group_id}`);
+				}
+			} else {
+				throw new Error("User or session not found");
+			}
+		}
+	})
+}
 
 export const useMyCalendars = () => {
 	const queryClient = useQueryClient();

@@ -14,6 +14,7 @@ import {
 } from "@/lib/group.helpers";
 import { addMutationToQueue } from "@/lib/mutation.helpers";
 import { useSession } from "./authContext";
+import { User } from "lucide-react-native";
 
 // --- Queries ---
 export const useMyGroups = () => {
@@ -52,7 +53,7 @@ export const useGroup = (group_id: string) => {
 
     return useQuery({
         queryKey: ['groups', group_id],
-        queryFn: async  () => {
+        queryFn: async () => {
             if (isConnected && user.user_id !== "localUser") {
                 try {
                     const serverGroup = await getGroupFromServer(group_id);
@@ -62,7 +63,7 @@ export const useGroup = (group_id: string) => {
                     return serverGroup;
                 } catch (error) {
                     console.error(`Error fetching group ${group_id} from server:`, error);
-                    throw new Error(`Error fetching group ${group_id} from server:`, error)
+                    throw new Error(`Error fetching group ${group_id} from server`);
                 }
             }
         }
@@ -71,8 +72,42 @@ export const useGroup = (group_id: string) => {
 
 // --- Mutations ---
 
-// Creates a new group
 export const useCreateGroup = (
+    options?: UseMutationOptions<
+        Group,
+        Error,
+        Omit<Group, "group_id" | "invite_code" | "calendar_ids">
+    >
+) => {
+    const queryClient = useQueryClient();
+    const isConnected = useIsConnected();
+    const { user, sessionId } = useSession();
+
+    if (!user || !sessionId) {
+        throw new Error("User not found or session not found");
+    }
+
+
+    return useMutation<Group, Error, Omit<Group, "group_id" | "invite_code" | "calendar_ids">>(
+        {
+            mutationFn: async (newGroup: Omit<Group, "group_id" | "invite_code" | "calendar_ids">) => {
+                if (isConnected && user.user_id !== "localUser") {
+                    return await createGroupOnServer(newGroup);
+                } else {
+                    throw new Error("Not connected to server or using a local-only account");
+                }
+            },
+            onMutate: async (newGroup) => {
+                options?.onMutate?.(newGroup);
+                await queryClient.invalidateQueries({ queryKey: ["groups"] });              
+            },
+        }
+    )
+}
+
+
+// Creates a new group
+/*xport const useCreateGroup = (
     options?: UseMutationOptions<
         Group,
         Error,
@@ -125,4 +160,4 @@ export const useCreateGroup = (
             await queryClient.invalidateQueries({ queryKey: ["groups"] });
         },
     });
-};
+};*/

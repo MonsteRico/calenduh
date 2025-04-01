@@ -5,6 +5,7 @@ import { useColorScheme } from 'nativewind';
 import Feather from '@expo/vector-icons/Feather';
 import { Group } from '@/types/group.types';
 import { EditGroupModal } from '@/components/EditGroupModal'
+import { useGroupCalendars } from '@/hooks/calendar.hooks';
 
 interface ViewGroupModalProps {
     visible: boolean;
@@ -18,6 +19,8 @@ function ViewGroupModal({ visible, onClose, group, openEditGroup }: ViewGroupMod
     const [groupName, setGroupName] = useState('Test Group Name')
     const [groupShareCode, setGroupShareCode] = useState('123456')
     const [editModalOpen, setEditModalOpen] = useState(false);
+    const { data: group_calendars, isLoading} = useGroupCalendars(group.group_id);
+
     //const [groupCalendars, setGroupCalendars] = useState([]); - use when actually functional
     const groupCalendars = [
         { name: 'Calendar1', color: '#E63946' },
@@ -82,10 +85,10 @@ function ViewGroupModal({ visible, onClose, group, openEditGroup }: ViewGroupMod
                                     showsVerticalScrollIndicator={true}
                                     contentContainerClassName='pb-2'
                                 >
-                                    {groupCalendars.map((calendar) => (
-                                        <View key={calendar.name} className='flex-row items-center py-3 border-b border-gray-200/30'>
+                                    {group_calendars?.map((calendar) => (
+                                        <View key={calendar.calendar_id} className='flex-row items-center py-3 border-b border-gray-200/30'>
                                             <View className='w-6 h-6 rounded-full mr-4' style={{ backgroundColor: calendar.color }} />
-                                            <Text className='text-base text-foreground'>{calendar.name}</Text>
+                                            <Text className='text-base text-foreground'>{calendar.title}</Text>
                                         </View>
                                     ))}
                                 </ScrollView>

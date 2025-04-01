@@ -102,12 +102,10 @@ export const getMyGroupsFromServer = async (): Promise<Group []> => {
     return response.data;
 }
 
-// Create a new group on the server
-export const createGroupOnServer = async (group: Omit<Group, "group_id">): Promise<Group> => {
+export const createGroupOnServer = async (group: Omit<Group, "group_id" | "invite_code" | "calendar_ids">): Promise<Group> => {
     const response = await server.post("/groups/", group);
-    console.log("create group on server", response.data);
     return response.data;
-};
+}
 
 // Update a group on the server
 export const updateGroupOnServer = async (group: UpdateGroup): Promise<Group> => {

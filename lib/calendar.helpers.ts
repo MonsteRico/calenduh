@@ -132,6 +132,11 @@ export const getCalendarsFromServer = async (): Promise<Calendar[]> => {
 	return response.data;
 };
 
+export const getGroupCalendarsFromServer = async (group_id: string): Promise<Calendar[]> => {
+	const response = await server.get(`/calendars/@groups/${group_id}`);
+	return response.data
+}
+
 export const getCalendarFromServer = async (calendar_id: string): Promise<Calendar> => {
 	const response = await server.get(`/calendars/${calendar_id}`);
 	return response.data;
