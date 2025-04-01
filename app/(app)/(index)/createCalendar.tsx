@@ -31,6 +31,9 @@ export default function CreateCalendar() {
         return <Text className="text-primary">Loading...</Text>;
     }
 
+    //TODO: Conditionally render group option if user is connected
+    //TODO: Fix calendar creation when I group is selected
+
     return (
         <DismissKeyboardView className="flex-1 bg-background">
             <View className="m-2 flex-row items-center">

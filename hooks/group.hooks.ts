@@ -8,6 +8,7 @@ import {
     createGroupOnServer,
     getMyGroupsFromServer,
     updateGroupOnServer,
+    joinGroupOnServer,
     //insertGroupIntoDB,
     //updateGroupInDB,
     //deleteGroupFromDB,
@@ -131,6 +132,35 @@ export const useUpdateGroup = (
         },
         onMutate: async (updatedGroup) => {
             options?.onMutate?.(updatedGroup);
+        },
+        onSuccess: async (data) => { //onSuccess needed to invalidate queries properly
+            options?.onSuccess?.(data, { name: data.name } as any, undefined as any);
+            await queryClient.invalidateQueries({ queryKey: ["groups"]});
+        }
+    })
+}
+
+export const useJoinGroup = (
+    options?: UseMutationOptions<Group, Error, Omit<Group, "group_id" | "name">>
+) => {
+    const queryClient = useQueryClient();
+    const isConnected = useIsConnected();
+    const { user, sessionId } = useSession();
+
+    if (!user || !sessionId) {
+        throw new Error("User not found or session not found");   
+    }
+
+    return useMutation<Group, Error, Omit<Group, "group_id" | "name">>({
+        mutationFn: async(group: Omit<Group, "group_id" | "name">) => {
+            if (isConnected && user.user_id !== 'localUser') {
+                return await joinGroupOnServer(group);
+            } else {
+                throw new Error("Not connected to server or using a local-only account");
+            }
+        },
+        onMutate: async (group) => {
+            options?.onMutate?.(group);
         },
         onSuccess: async (data) => {
             options?.onSuccess?.(data, { name: data.name } as any, undefined as any);

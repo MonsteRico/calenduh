@@ -4,20 +4,32 @@ import { useState } from 'react';
 import { useColorScheme } from 'nativewind';
 import { Input } from '@/components/Input';
 import { DismissKeyboardView } from './DismissKeyboardView';
+import { useJoinGroup } from '@/hooks/group.hooks';
+import { Group } from '@/types/group.types'
 
 interface JoinGroupModalProps {
     visible: boolean;
     onClose: () => void;
-    setGroupCode: (code: string) => void;
 }
 
-function JoinGroupModal({ visible, onClose, setGroupCode }: JoinGroupModalProps) {
+function JoinGroupModal({ visible, onClose }: JoinGroupModalProps) {
     const { colorScheme } = useColorScheme();
     const [code, setCode] = useState("");
+    const { mutate } = useJoinGroup();
 
     const onModalClose = () => {
         setCode("");
         onClose();
+    }
+
+    const onSubmit = () => {
+        if (!code || code.trim() === "") {
+            return;
+        }
+        mutate({
+            invite_code: code
+        });
+        onModalClose();
     }
 
     return (
@@ -61,8 +73,7 @@ function JoinGroupModal({ visible, onClose, setGroupCode }: JoinGroupModalProps)
                             </Button>
                             <Button
                                 onPress={() => {
-                                    setGroupCode(code);
-                                    onModalClose();
+                                    onSubmit();
                                 }}
                                 disabled={!code.trim()}
                             >

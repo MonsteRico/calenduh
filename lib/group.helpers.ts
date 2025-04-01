@@ -107,6 +107,11 @@ export const createGroupOnServer = async (group: Omit<Group, "group_id" | "invit
     return response.data;
 }
 
+export const joinGroupOnServer = async ( group: Omit<Group, "group_id" | "name">): Promise<Group> => {
+    const response = await server.post(`/groups/join/${group.invite_code}`);
+    return response.data;
+} 
+
 // Update a group on the server
 export const updateGroupOnServer = async (group: UpdateGroup): Promise<Group> => {
     const response = await server.put(`/groups/${group.group_id}`, group).catch(function (error) {
