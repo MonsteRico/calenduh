@@ -78,7 +78,7 @@ export const insertEventIntoDB = async (event: EventUpsert, userId: string): Pro
 
 	try {
 		await db.runAsync(
-			"INSERT INTO events (event_id, calendar_id, name, location, description, first_notification, second_notification, frequency, priority, start_time, end_time) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)",
+			"INSERT INTO events (event_id, calendar_id, name, location, description, first_notification, second_notification, frequency, priority, start_time, end_time, all_day) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)",
 			[
 				event.event_id || "",
 				event.calendar_id,
@@ -91,6 +91,7 @@ export const insertEventIntoDB = async (event: EventUpsert, userId: string): Pro
 				event.priority || null,
 				event.start_time.valueOf().toString(),
 				event.end_time.valueOf().toString(),
+				event.all_day
 			]
 		);
 	} catch (error) {
@@ -136,7 +137,7 @@ export const updateEventInDB = async (eventId: string, event: UpdateEvent, userI
 		}
 
 		await db.runAsync(
-			"UPDATE events SET calendar_id = ?, name = ?, location = ?, description = ?, first_notification = ?, second_notification = ?, frequency = ?, priority = ?, start_time = ?, end_time = ?, event_id = ? WHERE event_id = ?",
+			"UPDATE events SET calendar_id = ?, name = ?, location = ?, description = ?, first_notification = ?, second_notification = ?, frequency = ?, priority = ?, start_time = ?, end_time = ?, all_day = ?, event_id = ? WHERE event_id = ?",
 			[
 				event.calendar_id ?? existingEvent.calendar_id,
 				event.name ?? existingEvent.name,
@@ -148,6 +149,7 @@ export const updateEventInDB = async (eventId: string, event: UpdateEvent, userI
 				event.priority ?? existingEvent.priority,
 				event.start_time?.valueOf().toString() ?? existingEvent.start_time.valueOf().toString(),
 				event.end_time?.valueOf().toString() ?? existingEvent.end_time.valueOf().toString(),
+				event.all_day ?? existingEvent.all_day,
 				event.event_id,
 				eventId,
 			]

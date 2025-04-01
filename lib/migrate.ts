@@ -1,7 +1,7 @@
 import { type SQLiteDatabase } from "expo-sqlite";
 
 export async function migrateDbIfNeeded(db: SQLiteDatabase) {
-	const DATABASE_VERSION = 3;
+	const DATABASE_VERSION = 4;
 	let result = await db.getFirstAsync<{ user_version: number }>("PRAGMA user_version");
 	let currentDbVersion = result ? result.user_version : 0;
 	if (currentDbVersion >= DATABASE_VERSION) {
@@ -99,7 +99,14 @@ export async function migrateDbIfNeeded(db: SQLiteDatabase) {
 
 		currentDbVersion++;
 	}
+	if (currentDbVersion === 3) {
+		console.log("Migrating to version 4");
+		await db.execAsync(`
+        ALTER TABLE events ADD COLUMN all_day INTEGER NOT NULL DEFAULT 0;
+      `);
 
+		currentDbVersion++;
+	}
 	// if (currentDbVersion === 1) {
 	//   Add more migrations
 	// }
