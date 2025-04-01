@@ -40,6 +40,7 @@ export default function CreateEvent() {
 	const [secondNotification, setSecondNotification] = useState<number | null>(null); //Text box
 	const [eventCalendarId, setEventCalendarId] = useState<string>(""); //Single Select List
 	const [freq, setFrequency] = useState(""); //Single Select List
+	const [priority, setPriority] = useState<number>(0); //Single Select List
 	const [isAllDay, setIsAllDay] = useState(false);
 
 	const [showStartDatePicker, setShowStartDatePicker] = useState(false);
@@ -241,6 +242,13 @@ export default function CreateEvent() {
 					)}
 				</View>
 
+				<PrioDropdown
+					handleSelect={(item: { label: string; value: number }) => {
+						setPriority(item.value);
+					}}
+					defaultValue={priority}
+				/>
+
 				{/* Get this to send event to db */}
 				<Button
 					className={cn(isPending && "opacity-50")}
@@ -259,7 +267,7 @@ export default function CreateEvent() {
 								secondNotification,
 								description: description,
 								frequency: freq,
-								priority: 0,
+								priority: priority,
 								all_day: isAllDay,
 
 							},
@@ -310,6 +318,41 @@ const NotificationDropdown = ({
 				renderItem={renderItem}
 				onSelect={handleSelect}
 				label="Notification Time"
+			/>
+		</View>
+	);
+};
+
+const PrioDropdown = ({
+	handleSelect,
+	defaultValue,
+}: {
+	handleSelect: (
+		item:
+			| {
+					label: string;
+					value: number;
+			  }
+	) => void;
+	defaultValue?: number | null | undefined;
+}) => {
+	const options = [
+		{ label: "None", value: 0 },
+		{ label: "Low", value: 1 },
+		{ label: "Medium", value: 2 },
+		{ label: "High", value: 3 },
+	];
+
+	const renderItem = (item: (typeof options)[number]) => <Text className="text-primary">{item.label}</Text>;
+
+	return (
+		<View>
+			<Dropdown
+				options={options}
+				defaultValue={options.find((option) => option.value === defaultValue)}
+				renderItem={renderItem}
+				onSelect={handleSelect}
+				label="Priority"
 			/>
 		</View>
 	);
