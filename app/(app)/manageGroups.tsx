@@ -21,11 +21,7 @@ import { useMyGroups } from "@/hooks/group.hooks";
 import { Feather } from '@expo/vector-icons';
 
 export default function ManageGroups() {
-	const isPresented = router.canGoBack();
-	const queryClient = useQueryClient();
 	const { data: groups, isLoading } = useMyGroups();
-	const isConnected = useIsConnected();
-	const db = useSQLiteContext();
 	const [openCreateGroup, setOpenCreateGroup] = useState(false);
 	const [openJoinGroup, setOpenJoinGroup] = useState(false);
 	const [openViewGroup, setOpenViewGroup] = useState(false);
@@ -35,7 +31,6 @@ export default function ManageGroups() {
 		name: "",
 		invite_code: "",
 	});
-	const { setEnabledCalendarIds } = useEnabledCalendarIds();
 
 	return (
 		<DismissKeyboardView className="flex-1 bg-background">

@@ -6,6 +6,7 @@ import Feather from '@expo/vector-icons/Feather';
 import { Group } from '@/types/group.types';
 import { EditGroupModal } from '@/components/EditGroupModal'
 import { useGroupCalendars } from '@/hooks/calendar.hooks';
+import { useLeaveGroup } from '@/hooks/group.hooks';
 
 interface ViewGroupModalProps {
     visible: boolean;
@@ -20,6 +21,7 @@ function ViewGroupModal({ visible, onClose, group, openEditGroup }: ViewGroupMod
     const [groupShareCode, setGroupShareCode] = useState(group.invite_code)
     const [editModalOpen, setEditModalOpen] = useState(false);
     const { data: group_calendars, isLoading} = useGroupCalendars(group.group_id);
+    const { mutate } = useLeaveGroup();
 
 
     //TODO: when group name is edited - does not immediately propagate to this view - don't know how to fix
@@ -31,6 +33,11 @@ function ViewGroupModal({ visible, onClose, group, openEditGroup }: ViewGroupMod
     const openEditModal = () => {
         onClose();
         openEditGroup();
+    }
+
+    const leaveGroup = () => {
+        mutate(group);
+        onClose();
     }
 
     useEffect(() => {
@@ -99,7 +106,7 @@ function ViewGroupModal({ visible, onClose, group, openEditGroup }: ViewGroupMod
                         <View className='p-6 pt-2'>
                             <Button
                                 className='bg-destructive w-full'
-                                onPress={() => { }}
+                                onPress={leaveGroup}
                             >
                                 <View className='py-2 px-4'>
                                     <Text className='text-white font-medium text-center'>Leave Group</Text>

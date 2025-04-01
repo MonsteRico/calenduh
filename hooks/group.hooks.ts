@@ -9,6 +9,7 @@ import {
     getMyGroupsFromServer,
     updateGroupOnServer,
     joinGroupOnServer,
+    leaveGroupOnServer,
     //insertGroupIntoDB,
     //updateGroupInDB,
     //deleteGroupFromDB,
@@ -168,6 +169,35 @@ export const useJoinGroup = (
         }
     })
 }
+
+export const useLeaveGroup = (
+    options?: UseMutationOptions<Group, Error, Group>) => {
+        const queryClient = useQueryClient();
+        const isConnected = useIsConnected();
+        const { user, sessionId } = useSession();
+
+        if (!user || !sessionId) {
+            throw new Error("User not found or session not found");
+        }
+
+        return useMutation<Group, Error, Group>({
+            mutationFn: async(group: Group) => {
+                if (isConnected && user.user_id !== 'localUser') {
+                    console.log("Delete");
+                    return await leaveGroupOnServer(group);
+                } else {
+                    throw new Error("Not connected to server or using a local-only account");
+                }
+            },
+            onMutate: async(group) => {
+                options?.onMutate?.(group);
+            },
+            onSuccess: async(data) => {
+                options?.onSuccess?.(data, { name: data.name } as any, undefined as any);
+                await queryClient.invalidateQueries({ queryKey: ["groups"] });
+            }
+        })
+    }
 
 
 // Creates a new group
