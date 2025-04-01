@@ -1,10 +1,11 @@
 import { Text, View, Modal, TouchableOpacity } from 'react-native';
 import { Button } from '@/components/Button';
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useColorScheme } from 'nativewind';
 import { Input } from '@/components/Input';
 import { DismissKeyboardView } from './DismissKeyboardView';
 import { Group } from '@/types/group.types';
+import { useUpdateGroup } from '@/hooks/group.hooks';
 
 interface EditGroupModalProps {
     visible: boolean;
@@ -14,10 +15,26 @@ interface EditGroupModalProps {
 
 function EditGroupModal({ visible, onClose, group }: EditGroupModalProps) {
     const [newName, setNewName] = useState(group.name);
+    const { mutate } = useUpdateGroup();
+
+    useEffect(() => {
+        setNewName(group.name);
+    }, [group]);
 
     const onModalClose = () => {
         setNewName(group.name);
         onClose();
+    }
+
+    const onSubmit = () => {
+        if (newName.trim() === "") {
+            return;
+        }
+        mutate({
+            group_id: group.group_id,
+            name: newName,
+        });
+        onModalClose();
     }
     return (
         < Modal
@@ -60,8 +77,7 @@ function EditGroupModal({ visible, onClose, group }: EditGroupModalProps) {
                             </Button>
                             <Button
                                 onPress={() => {
-                                    //TODO: make submit actually do something
-                                    onModalClose();
+                                    onSubmit();
                                 }}
                                 disabled={!newName.trim()}
                             >

@@ -1,12 +1,13 @@
 import { useQuery, useMutation, useQueryClient, UseMutationOptions } from "@tanstack/react-query";
 import { useIsConnected } from "@/hooks/useIsConnected"; // Adjust path
-import { Group } from "@/types/group.types"; // Assume this is where Group type is defined
+import { Group, UpdateGroup } from "@/types/group.types"; // Assume this is where Group type is defined
 import {
     //getGroupsFromDB,
     getGroupsFromServer,
     getGroupFromServer,
     createGroupOnServer,
     getMyGroupsFromServer,
+    updateGroupOnServer,
     //insertGroupIntoDB,
     //updateGroupInDB,
     //deleteGroupFromDB,
@@ -76,7 +77,7 @@ export const useCreateGroup = (
     options?: UseMutationOptions<
         Group,
         Error,
-        Omit<Group, "group_id" | "invite_code" | "calendar_ids">
+        Omit<Group, "group_id" | "invite_code">
     >
 ) => {
     const queryClient = useQueryClient();
@@ -88,9 +89,9 @@ export const useCreateGroup = (
     }
 
 
-    return useMutation<Group, Error, Omit<Group, "group_id" | "invite_code" | "calendar_ids">>(
+    return useMutation<Group, Error, Omit<Group, "group_id" | "invite_code">>(
         {
-            mutationFn: async (newGroup: Omit<Group, "group_id" | "invite_code" | "calendar_ids">) => {
+            mutationFn: async (newGroup: Omit<Group, "group_id" | "invite_code">) => {
                 if (isConnected && user.user_id !== "localUser") {
                     return await createGroupOnServer(newGroup);
                 } else {
@@ -99,10 +100,43 @@ export const useCreateGroup = (
             },
             onMutate: async (newGroup) => {
                 options?.onMutate?.(newGroup);
-                await queryClient.invalidateQueries({ queryKey: ["groups"] });              
+                //await queryClient.invalidateQueries({ queryKey: ["groups"] });              
             },
+            onSuccess: async (data) => {
+                options?.onSuccess?.(data, { name: data.name } as any, undefined as any);
+                await queryClient.invalidateQueries({ queryKey: ["groups"]})
+            }
         }
     )
+}
+
+export const useUpdateGroup = (
+    options?: UseMutationOptions<UpdateGroup, Error, UpdateGroup>
+) => {
+    const queryClient = useQueryClient();
+    const isConnected = useIsConnected();
+    const { user, sessionId } = useSession();
+
+    if (!user || !sessionId) {
+        throw new Error("User not found or session not found");
+    }
+
+    return useMutation({
+        mutationFn: async (updatedGroup: UpdateGroup) => {
+            if (isConnected && user.user_id !== 'localUser') {
+                return await updateGroupOnServer(updatedGroup);
+            } else {
+                throw new Error("Not connected to server or using a local-only account");
+            }
+        },
+        onMutate: async (updatedGroup) => {
+            options?.onMutate?.(updatedGroup);
+        },
+        onSuccess: async (data) => {
+            options?.onSuccess?.(data, { name: data.name } as any, undefined as any);
+            await queryClient.invalidateQueries({ queryKey: ["groups"]});
+        }
+    })
 }
 
 

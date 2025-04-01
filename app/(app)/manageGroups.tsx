@@ -34,7 +34,6 @@ export default function ManageGroups() {
         group_id: "",
         name: "",
 		invite_code: "",
-        calendar_ids: null,
     });
     const { setEnabledCalendarIds } = useEnabledCalendarIds();
 

@@ -1,6 +1,6 @@
 import { Text, View, Modal, TouchableOpacity, ScrollView } from 'react-native';
 import { Button } from '@/components/Button';
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { useColorScheme } from 'nativewind';
 import Feather from '@expo/vector-icons/Feather';
 import { Group } from '@/types/group.types';
@@ -16,17 +16,13 @@ interface ViewGroupModalProps {
 
 function ViewGroupModal({ visible, onClose, group, openEditGroup }: ViewGroupModalProps) {
     const { colorScheme } = useColorScheme();
-    const [groupName, setGroupName] = useState('Test Group Name')
-    const [groupShareCode, setGroupShareCode] = useState('123456')
+    const [groupName, setGroupName] = useState(group.name)
+    const [groupShareCode, setGroupShareCode] = useState(group.invite_code)
     const [editModalOpen, setEditModalOpen] = useState(false);
     const { data: group_calendars, isLoading} = useGroupCalendars(group.group_id);
 
-    //const [groupCalendars, setGroupCalendars] = useState([]); - use when actually functional
-    const groupCalendars = [
-        { name: 'Calendar1', color: '#E63946' },
-        { name: 'Calendar2', color: '#FF6B6B' },
-        { name: 'Calendar3', color: '#95D5B2' }
-    ]
+
+    //TODO: when group name is edited - does not immediately propagate to this view - don't know how to fix
 
     const onModalClose = () => {
         onClose();
@@ -36,6 +32,11 @@ function ViewGroupModal({ visible, onClose, group, openEditGroup }: ViewGroupMod
         onClose();
         openEditGroup();
     }
+
+    useEffect(() => {
+        setGroupName(group.name);
+        setGroupShareCode(group.invite_code);
+    }, [group]);
 
     return (
         <>

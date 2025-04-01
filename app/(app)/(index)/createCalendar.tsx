@@ -8,20 +8,22 @@ import { useCreateCalendar } from "@/hooks/calendar.hooks";
 import { useSession } from "@/hooks/authContext";
 import { Input } from "@/components/Input";
 import { DismissKeyboardView } from "@/components/DismissKeyboardView";
+import { Group } from "@/types/group.types";
+import { useMyGroups } from "@/hooks/group.hooks";
 
 function getRandomItem<T>(list: T[]): T {
     return list[Math.floor(Math.random() * list.length)];
 }
 
 export default function CreateCalendar() {
-    //TODO: Actually get group data and make group get saved when creating calendar
     const isPresented = router.canGoBack();
     const [calendarName, setCalendarName] = useState("");
     const [calendarColorHex, setCalendarColor] = useState(getRandomItem(calendarColors).hex);
-    const [isPublic, setIsPublic] = useState(false);
-    const [userGroups, setUserGroups] = useState<{ id: string; name: string }[]>([]); // Replace with actual user groups
+    const [isPublic, setIsPublic] = useState(false); 
     const [isGroup, setIsGroup] = useState(false);
-    const [selectedGroup, setSelectedGroup] = useState<{ id: string; name: string } | null>(null);
+    const [selectedGroup, setSelectedGroup] = useState<Group | null>(null);
+
+    const { data: groups, isLoading } = useMyGroups();
     const { mutate } = useCreateCalendar();
     const { user } = useSession();
 
@@ -102,8 +104,8 @@ export default function CreateCalendar() {
                 {isGroup &&
                     <View className='mt-5 flex flex-col gap-2'>
                         <Text className='text-primary'>Group Name:</Text>
-                        <Dropdown<{ id: string, name: string }>
-                            options={userGroups}
+                        <Dropdown<Group>
+                            options={groups || []}
                             renderItem={(group) => (
                                 <Text className='text-primary'>{group.name}</Text>
                             )}
@@ -121,7 +123,7 @@ export default function CreateCalendar() {
                                 return;
                             }
                             mutate({
-                                group_id: null,
+                                group_id: selectedGroup ? selectedGroup.group_id : null,
                                 title: calendarName,
                                 color: calendarColorHex,
                                 is_public: isPublic,

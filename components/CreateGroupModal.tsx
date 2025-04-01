@@ -4,6 +4,8 @@ import { useState } from 'react';
 import { useColorScheme } from 'nativewind';
 import { Input } from '@/components/Input';
 import { DismissKeyboardView } from './DismissKeyboardView'
+import { useCreateGroup } from '@/hooks/group.hooks'
+import { Group } from '@/types/group.types'
 
 interface CreateGroupModalProps {
     visible: boolean;
@@ -13,11 +15,23 @@ interface CreateGroupModalProps {
 function CreateGroupModal({ visible, onClose }: CreateGroupModalProps) {
     const { colorScheme } = useColorScheme();
     const [name, setName] = useState("");
+    const { mutate } = useCreateGroup();
 
     const onModalClose = () => {
         setName("");
         onClose();
     }
+
+    const onSubmit = () => {
+        if (!name || name.trim() === "") {
+            return;
+        }
+        mutate({
+            name: name
+        });
+        onModalClose();
+    }
+
     return (
         < Modal
             animationType='fade'
@@ -59,8 +73,7 @@ function CreateGroupModal({ visible, onClose }: CreateGroupModalProps) {
                             </Button>
                             <Button
                                 onPress={() => {
-                                    //TODO: make submit actually do something
-                                    onModalClose();
+                                    onSubmit();
                                 }}
                                 disabled={!name.trim()}
                             >
