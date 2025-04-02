@@ -126,10 +126,27 @@ const CalendarDayView: React.FC<CalendarDayViewProps> = ({
             const widthPercent = 100 / eventCount;
 
             // Sort concurrent events to determine position (left)
-            const sortedEvents = concurrentEvents.sort((a, b) =>
-                a.start_time.toMillis() - b.start_time.toMillis() ||
-                a.event_id.localeCompare(b.event_id) // Secondary sort by ID for consistent ordering - could be changed to event priority
-            );
+			const sortedEvents = concurrentEvents.sort((a, b) => {
+				// First compare by priority
+				if (a.priority !== undefined && b.priority !== undefined) {
+					const priorityDiff = a.priority - b.priority;
+					
+					// If priorities are the same, sort by start time
+					if (priorityDiff === 0) {
+						return a.start_time.toMillis() - b.start_time.toMillis();
+					}
+					
+					return priorityDiff;
+				}
+				
+				// If any priority is undefined, sort by start time
+				return a.start_time.toMillis() - b.start_time.toMillis();
+			});
+            /*const sortedEvents = concurrentEvents.sort((a, b) =>
+				a.priority - b.priority ||
+                a.start_time.toMillis() - b.start_time.toMillis() 
+                //a.event_id.localeCompare(b.event_id) // Secondary sort by ID for consistent ordering - could be changed to event priority
+            );*/
 
             // Find the position of the current event
             const position = sortedEvents.findIndex(e => e.event_id === event.event_id);
