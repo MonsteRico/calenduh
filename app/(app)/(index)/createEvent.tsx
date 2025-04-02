@@ -2,7 +2,7 @@ import { Button } from "@/components/Button";
 import { router } from "expo-router";
 import { StyleSheet, Text, View, TouchableOpacity, Platform, Switch } from "react-native";
 import { SelectList } from "react-native-dropdown-select-list";
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import { FontAwesome } from "@expo/vector-icons";
 import { Input } from "@/components/Input";
 import { useColorScheme } from "nativewind";
@@ -17,6 +17,7 @@ import { cn } from "@/lib/utils";
 import { useSession } from "@/hooks/authContext";
 import { NotificationTimes } from "@/constants/notificationTimes";
 import { DismissKeyboardView } from "@/components/DismissKeyboardView";
+import Storage from "expo-sqlite/kv-store";
 
 export default function CreateEvent() {
 	const { user } = useSession();
@@ -36,8 +37,10 @@ export default function CreateEvent() {
 	const [endDate, setEndDate] = useState(eventDay.plus({ hours: 1 })); //DateTimePicker
 	const [location, setLocation] = useState(""); //Text box
 	const [description, setDescription] = useState(""); //Text box
-	const [firstNotification, setFirstNotification] = useState<number | null>(NotificationTimes.FIFTEEN_MINUTES_MS); //Text box
-	const [secondNotification, setSecondNotification] = useState<number | null>(null); //Text box
+	// const [firstNotification, setFirstNotification] = useState<number | null>(NotificationTimes.FIFTEEN_MINUTES_MS); //Text box
+	// const [secondNotification, setSecondNotification] = useState<number | null>(null); //Text box
+	const [firstNotification, setFirstNotification] = useState<number | null>(null);
+	const [secondNotification, setSecondNotification] = useState<number | null>(null);
 	const [eventCalendarId, setEventCalendarId] = useState<string>(""); //Single Select List
 	const [freq, setFrequency] = useState(""); //Single Select List
 	const [priority, setPriority] = useState<number>(0); //Single Select List
@@ -47,6 +50,28 @@ export default function CreateEvent() {
 	const [showStartTimePicker, setShowStartTimePicker] = useState(false);
 	const [showEndDatePicker, setShowEndDatePicker] = useState(false);
 	const [showEndTimePicker, setShowEndTimePicker] = useState(false);
+
+	useEffect(() => {
+        const loadNotificationSettings = async () => {
+            try {
+                const savedFirst = await Storage.getItem('firstNotification');
+                const savedSecond = await Storage.getItem('secondNotification');
+                
+                if (savedFirst !== null) {
+                    setFirstNotification(savedFirst === 'null' ? null : Number(savedFirst));
+                }
+                if (savedSecond !== null) {
+                    setSecondNotification(savedSecond === 'null' ? null : Number(savedSecond));
+                }
+            } catch (error) {
+                console.error('Error loading notification settings:', error);
+                setFirstNotification(NotificationTimes.FIFTEEN_MINUTES_MS);
+                setSecondNotification(null);
+            }
+        };
+        
+        loadNotificationSettings();
+    }, []);
 
 	//REPLACE WITH USER'S CALENDARS
 	const { data: calendars, isLoading } = useMyCalendars();
