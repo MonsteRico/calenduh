@@ -59,7 +59,7 @@ export default function ProfileView() {
 		if (!user) return;
 		setName(user.name || "")
 		setUserName(user.username)
-		setBirthday(user.birthday ? DateTime.fromFormat(user.birthday, "yyyy-mm-dd") as DateTime<true> : undefined)
+		setBirthday(user.birthday ? DateTime.fromFormat(user.birthday, "yyyy-MM-dd") as DateTime<true> : undefined)
 		setDefaultCal(user.default_calendar_id)
 	}, [user])
 
@@ -72,7 +72,7 @@ export default function ProfileView() {
 			username: username,
 			name: name,
 			// birthday: tempBirthday ? tempBirthday : undefined
-			birthday: birthday ? birthday.toFormat("yyyy-mm-dd") : undefined,
+			birthday: birthday ? birthday.toFormat("yyyy-MM-dd") : undefined,
 			default_calendar_id: defaultCal,
 			// TODO: PFP how
 
