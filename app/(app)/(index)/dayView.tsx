@@ -41,9 +41,10 @@ const CalendarDayView: React.FC<CalendarDayViewProps> = ({
     const HOURS_IN_DAY = 24;
     const HOUR_HEIGHT = hourHeight;
     const TIME_LABEL_WIDTH = 50;
-    const CONTAINER_HEIGHT = HOURS_IN_DAY * HOUR_HEIGHT;
-    const screenWidth = Dimensions.get('window').width;
-    const eventContainerWidth = screenWidth - TIME_LABEL_WIDTH;
+    const ALL_DAY_BANNER_HEIGHT = 40;
+    const BANNER_TOP_PADDING = 8; // test
+    const TOTAL_TOP_PADDING = ALL_DAY_BANNER_HEIGHT + BANNER_TOP_PADDING;
+    const CONTAINER_HEIGHT = (HOURS_IN_DAY * HOUR_HEIGHT) + TOTAL_TOP_PADDING;
     const { colorScheme } = useColorScheme();
 
     const renderHourIndicators = (): React.ReactNode[] => {
@@ -54,8 +55,8 @@ const CalendarDayView: React.FC<CalendarDayViewProps> = ({
             const formattedHour = hourDateTime.toFormat('h a');
 
             hours.push(
-                <View key={i} className="flex-row" style={{ height: HOUR_HEIGHT }}>
-
+                <View key={i} className="flex-row" style={{ height: HOUR_HEIGHT, marginTop: i === 0 ? TOTAL_TOP_PADDING : 0 }}>
+                    
                     <View className="border-r border-gray-300 justify-start items-end pr-2" style={{ width: TIME_LABEL_WIDTH }}>
                         <Text className="text-xs text-gray-500">{formattedHour}</Text>
                     </View>
@@ -152,13 +153,21 @@ const CalendarDayView: React.FC<CalendarDayViewProps> = ({
         const endHour = event.end_time.hour + event.end_time.minute / 60;
         const duration = endHour - startHour;
 
-        // Calculate width and left as percentages
+        let top = 0;
+        
+        // put midnight event under all day banner
+        if (startHour === 0) {
+            top = TOTAL_TOP_PADDING;
+        } else {
+            top = TOTAL_TOP_PADDING + (startHour * HOUR_HEIGHT);
+        }
+
         const widthValue = `${event.width}%` as DimensionValue;
         const leftValue = `${event.left}%` as DimensionValue;
 
         return {
             position: 'absolute',
-            top: startHour * HOUR_HEIGHT,
+            top: top,
             height: duration * HOUR_HEIGHT,
             width: widthValue,
             left: leftValue,
@@ -184,51 +193,96 @@ const CalendarDayView: React.FC<CalendarDayViewProps> = ({
             return acc;
         }, {} as Record<string, Calendar | undefined>);
 
+        const allDayEvents = processedEvents.filter(event => event.all_day);
+        const regularEvents = processedEvents.filter(event => !event.all_day);
+        
+        return (
+            <>
+                {allDayEvents.length > 0 && (
+                    <View 
+                        className="absolute top-0 left-0 right-0 border-b border-gray-200 bg-gray-50 z-20"
+                        style={{
+                            height: ALL_DAY_BANNER_HEIGHT,
+                            left: TIME_LABEL_WIDTH,
+                        }}
+                    >
+                        <ScrollView 
+                            horizontal 
+                            showsHorizontalScrollIndicator={false} 
+                            className="flex-row px-2 py-1"
+                        >
+                            {allDayEvents.map((event, index) => {
+                                const calendar = calendarMap[event.calendar_id];
+                                if (!calendar) {
+                                    return null;
+                                }
+                                
+                                const borderColor = calendar.color;
+                                
+                                return (
+                                    <TouchableOpacity
+                                        key={`all-day-${event.event_id || index.toString()}`} // test
+                                        className="rounded-md px-2 py-1 mr-2"
+                                        style={{
+                                            backgroundColor: `${borderColor}20`,
+                                            borderLeftWidth: 4,
+                                            borderLeftColor: borderColor,
+                                        }}
+                                        onPress={() => onEventPress && onEventPress(event)}
+                                    >
+                                        <Text className="font-bold text-xs">{event.name}</Text>
+                                    </TouchableOpacity>
+                                );
+                            })}
+                        </ScrollView>
+                    </View>
+                )}
+    
+                {regularEvents.map((event, index) => {
+                    const eventStyle = getEventStyle(event);
+                    //const borderColor = event.color || 'rgb(59, 130, 246)'; 
+                    //const { data: calendar } = useCalendar(event.calendar_id);
+                    const calendar = calendarMap[event.calendar_id];
+                    if (!calendar) {
+                        return null;
+                    }
+                    const borderColor = calendar.color
+                    //const borderColor = 'rgb(59, 130, 246)';
 
-        return processedEvents.map((event, index) => {
-            const eventStyle = getEventStyle(event);
-            //const borderColor = event.color || 'rgb(59, 130, 246)'; 
-            //const { data: calendar } = useCalendar(event.calendar_id);
-            const calendar = calendarMap[event.calendar_id];
-            if (!calendar) {
-                return null;
-            }
-            const borderColor = calendar.color
-            //const borderColor = 'rgb(59, 130, 246)';
-
-            return (
-                <TouchableOpacity
-                    key={event.event_id || index.toString()}
-                    style={[
-                        eventStyle,
-                        {
-                            backgroundColor: `${borderColor}20`,
-                            borderLeftWidth: 4,
-                            borderLeftColor: borderColor
-                        }
-                    ]}
-                    className="rounded-r-md px-2 py-1 mr-1"
-                    onPress={() => onEventPress && onEventPress(event)}
-                >
-                    <Text className="font-bold text-xs">{event.name}</Text>
-                    {/*check height of event and width*/}
-                    {eventStyle.height as number > 50 && parseInt((eventStyle.width as string).substring(0, (eventStyle.width as string).length)) > 14 && (
-                        <>
-
-                            <Text className="text-xs text-gray-700">
-                                {formatEventTime(event.start_time)} - {formatEventTime(event.end_time)}
-                            </Text>
-                        </>
-                    )}
-
-                </TouchableOpacity>
-            );
-        });
+                    return (
+                        <TouchableOpacity
+                            key={event.event_id || index.toString()}
+                            style={[
+                                eventStyle,
+                                {
+                                    backgroundColor: `${borderColor}20`,
+                                    borderLeftWidth: 4,
+                                    borderLeftColor: borderColor
+                                }
+                            ]}
+                            className="rounded-r-md px-2 py-1 mr-1"
+                            onPress={() => onEventPress && onEventPress(event)}
+                        >
+                            <Text className="font-bold text-xs">{event.name}</Text>
+                            {/*check height of event and width*/}
+                            {eventStyle.height as number > 50 && parseInt((eventStyle.width as string).substring(0, (eventStyle.width as string).length)) > 14 && (
+                                <>
+                                
+                                    <Text className="text-xs text-gray-700">
+                                        {formatEventTime(event.start_time)} - {formatEventTime(event.end_time)}
+                                    </Text>
+                                </>
+                            )}
+                        </TouchableOpacity>
+                    );
+                })}
+            </>
+        );
     };
 
     const getCurrentTimePosition = (): number => {
         const now = new Date();
-        return (now.getHours() + now.getMinutes() / 60) * HOUR_HEIGHT;
+        return (now.getHours() + now.getMinutes() / 60) * HOUR_HEIGHT + BANNER_TOP_PADDING;
     };
 
     return (
@@ -267,7 +321,7 @@ const CalendarDayView: React.FC<CalendarDayViewProps> = ({
 
                     <View
                         className="absolute top-0 bottom-0"
-                        style={{ left: TIME_LABEL_WIDTH, right: 0 }}
+                        style={{ left: TIME_LABEL_WIDTH, right: 0, top: BANNER_TOP_PADDING }}
                     >
                         {renderEvents()}
                     </View>
