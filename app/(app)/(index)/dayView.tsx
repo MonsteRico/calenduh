@@ -42,8 +42,8 @@ const CalendarDayView: React.FC<CalendarDayViewProps> = ({
     const HOUR_HEIGHT = hourHeight;
     const TIME_LABEL_WIDTH = 50;
     const ALL_DAY_BANNER_HEIGHT = 40;
-    const BANNER_TOP_PADDING = 8; // test
-    const TOTAL_TOP_PADDING = ALL_DAY_BANNER_HEIGHT + BANNER_TOP_PADDING;
+    const BANNER_TOP_PADDING = 0; // test
+    const TOTAL_TOP_PADDING = ALL_DAY_BANNER_HEIGHT;// + BANNER_TOP_PADDING;
     const CONTAINER_HEIGHT = (HOURS_IN_DAY * HOUR_HEIGHT) + TOTAL_TOP_PADDING;
     const { colorScheme } = useColorScheme();
 
@@ -153,21 +153,12 @@ const CalendarDayView: React.FC<CalendarDayViewProps> = ({
         const endHour = event.end_time.hour + event.end_time.minute / 60;
         const duration = endHour - startHour;
 
-        let top = 0;
-        
-        // put midnight event under all day banner
-        if (startHour === 0) {
-            top = TOTAL_TOP_PADDING;
-        } else {
-            top = TOTAL_TOP_PADDING + (startHour * HOUR_HEIGHT);
-        }
-
         const widthValue = `${event.width}%` as DimensionValue;
         const leftValue = `${event.left}%` as DimensionValue;
 
         return {
             position: 'absolute',
-            top: top,
+            top: TOTAL_TOP_PADDING + (startHour * HOUR_HEIGHT),
             height: duration * HOUR_HEIGHT,
             width: widthValue,
             left: leftValue,
@@ -281,9 +272,10 @@ const CalendarDayView: React.FC<CalendarDayViewProps> = ({
     };
 
     const getCurrentTimePosition = (): number => {
-        const now = new Date();
-        return (now.getHours() + now.getMinutes() / 60) * HOUR_HEIGHT + BANNER_TOP_PADDING;
+        const now = DateTime.now();
+        return TOTAL_TOP_PADDING + (now.hour * HOUR_HEIGHT) + (now.minute / 60 * HOUR_HEIGHT);
     };
+
 
     return (
         <View className="flex-1 bg-white">
