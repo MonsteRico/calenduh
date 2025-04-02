@@ -189,11 +189,15 @@ export const deleteEventFromDB = async (event_id: string): Promise<void> => {
 };
 
 // Delete an event from the local database
-export const deleteEventsUntilFromDB = async (event_id: string): Promise<void> => {
+export const deleteEventsUntilFromDB = async (deleteBefore: DateTime, user_id:string): Promise<void> => {
 	const db = await openDatabaseAsync("local.db");
 
 	try {
-		await db.runAsync("DELETE FROM events WHERE event_id = ?", event_id);
+		await db.runAsync(
+			"DELETE FROM events WHERE start_time < ? AND calendar_id IN (SELECT calendar_id FROM calendars WHERE user_id = ?);",
+			deleteBefore.valueOf().toString(),
+			user_id
+		);
 	} catch (error) {
 		console.error("Error deleting event:", error);
 		throw error;
