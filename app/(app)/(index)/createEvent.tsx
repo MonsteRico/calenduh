@@ -37,10 +37,12 @@ export default function CreateEvent() {
 	const [endDate, setEndDate] = useState(eventDay.plus({ hours: 1 })); //DateTimePicker
 	const [location, setLocation] = useState(""); //Text box
 	const [description, setDescription] = useState(""); //Text box
-	// const [firstNotification, setFirstNotification] = useState<number | null>(NotificationTimes.FIFTEEN_MINUTES_MS); //Text box
-	// const [secondNotification, setSecondNotification] = useState<number | null>(null); //Text box
-	const [firstNotification, setFirstNotification] = useState<number | null>(null);
-	const [secondNotification, setSecondNotification] = useState<number | null>(null);
+	const [firstNotification, setFirstNotification] = useState<number | null>(
+		Storage.getItemSync("firstNotification") === "null" ? null : Number(Storage.getItemSync("firstNotification"))
+	);
+	const [secondNotification, setSecondNotification] = useState<number | null>(
+		Storage.getItemSync("secondNotification") === "null" ? null : Number(Storage.getItemSync("secondNotification"))
+	);
 	const [eventCalendarId, setEventCalendarId] = useState<string>(""); //Single Select List
 	const [freq, setFrequency] = useState(""); //Single Select List
 	const [priority, setPriority] = useState<number>(0); //Single Select List
@@ -52,26 +54,32 @@ export default function CreateEvent() {
 	const [showEndTimePicker, setShowEndTimePicker] = useState(false);
 
 	useEffect(() => {
-        const loadNotificationSettings = async () => {
-            try {
-                const savedFirst = await Storage.getItem('firstNotification');
-                const savedSecond = await Storage.getItem('secondNotification');
-                
-                if (savedFirst !== null) {
-                    setFirstNotification(savedFirst === 'null' ? null : Number(savedFirst));
-                }
-                if (savedSecond !== null) {
-                    setSecondNotification(savedSecond === 'null' ? null : Number(savedSecond));
-                }
-            } catch (error) {
-                console.error('Error loading notification settings:', error);
-                setFirstNotification(NotificationTimes.FIFTEEN_MINUTES_MS);
-                setSecondNotification(null);
-            }
-        };
-        
-        loadNotificationSettings();
-    }, []);
+		const loadNotificationSettings = async () => {
+			try {
+				const savedFirst = await Storage.getItem("firstNotification");
+				const savedSecond = await Storage.getItem("secondNotification");
+
+				if (savedFirst !== null) {
+					setFirstNotification(savedFirst === "null" ? null : Number(savedFirst));
+				}
+				if (savedSecond !== null) {
+					setSecondNotification(savedSecond === "null" ? null : Number(savedSecond));
+				}
+			} catch (error) {
+				console.error("Error loading notification settings:", error);
+				setFirstNotification(NotificationTimes.FIFTEEN_MINUTES_MS);
+				setSecondNotification(null);
+			}
+		};
+
+		loadNotificationSettings();
+	}, []);
+
+
+	useEffect(() => {
+		if (!user || !user.default_calendar_id) return;
+		setEventCalendarId(user.default_calendar_id)
+	}, [user])
 
 	//REPLACE WITH USER'S CALENDARS
 	const { data: calendars, isLoading } = useMyCalendars();
@@ -350,13 +358,7 @@ const PrioDropdown = ({
 	handleSelect,
 	defaultValue,
 }: {
-	handleSelect: (
-		item:
-			| {
-					label: string;
-					value: number;
-			  }
-	) => void;
+	handleSelect: (item: { label: string; value: number }) => void;
 	defaultValue?: number | null | undefined;
 }) => {
 	const options = [
