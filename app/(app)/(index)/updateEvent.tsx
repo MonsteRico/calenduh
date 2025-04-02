@@ -18,8 +18,6 @@ import { useSession } from "@/hooks/authContext";
 import { NotificationTimes } from "@/constants/notificationTimes";
 import { DismissKeyboardView } from "@/components/DismissKeyboardView";
 
-
-
 export default function UpdateEvent() {
 	const { eventId, calendarId } = useLocalSearchParams<{ eventId: string; calendarId: string }>();
 	const { user } = useSession();
@@ -64,8 +62,8 @@ export default function UpdateEvent() {
 			setEndDate(event.end_time);
 			setLocation(event.location);
 			setDescription(event.description);
-			setFirstNotification(event.firstNotification);
-			setSecondNotification(event.secondNotification);
+			setFirstNotification(event.first_notification);
+			setSecondNotification(event.second_notification);
 			setEventCalendarId(event.calendar_id);
 			setFrequency(event.frequency);
 		}
@@ -143,7 +141,7 @@ export default function UpdateEvent() {
 					}}
 					defaultValue={secondNotification}
 				/>
-				
+
 				<View className="flex-col gap-2">
 					<Text className="text-primary">Calendar:</Text>
 
@@ -263,8 +261,8 @@ export default function UpdateEvent() {
 								description,
 								frequency: freq,
 								priority: 0,
-								firstNotification,
-								secondNotification,
+								first_notification: firstNotification,
+								second_notification: secondNotification,
 							},
 							calendar_id: eventCalendarId,
 						});

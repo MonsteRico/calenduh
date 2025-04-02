@@ -10,8 +10,8 @@ export interface Event {
 	priority: number;
 	start_time: DateTime;
 	end_time: DateTime;
-	firstNotification: number | null;
-	secondNotification: number | null;
+	first_notification: number | null;
+	second_notification: number | null;
 	firstNotificationId?: string;
 	secondNotificationId?: string;
 	all_day: boolean;
@@ -27,8 +27,8 @@ export interface UpdateEvent {
 	priority?: number;
 	start_time?: DateTime;
 	end_time?: DateTime;
-	firstNotification?: number | null;
-	secondNotification?: number | null;
+	first_notification?: number | null;
+	second_notification?: number | null;
 	all_day?: boolean;
 }
 

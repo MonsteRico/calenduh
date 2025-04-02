@@ -77,8 +77,7 @@ export default function CreateEvent() {
 			setStartDate(DateTime.now());
 			setEndDate(DateTime.now());
 		}
-
-	}
+	};
 
 	return (
 		<DismissKeyboardView className="flex-1 bg-background">
@@ -136,7 +135,11 @@ export default function CreateEvent() {
 
 					<Dropdown<Calendar>
 						options={calendars}
-						defaultValue={user.default_calendar_id ? calendars.find((cal) => cal.calendar_id == user.default_calendar_id): undefined}
+						defaultValue={
+							user.default_calendar_id
+								? calendars.find((cal) => cal.calendar_id == user.default_calendar_id)
+								: undefined
+						}
 						renderItem={(calendar) => {
 							return (
 								<View className="flex flex-row items-center gap-2">
@@ -151,13 +154,9 @@ export default function CreateEvent() {
 					/>
 				</View>
 
-
 				<View className="flex-row items-center gap-2">
-					<Text className="text-primary pr-[9]">All Day</Text>
-					<Switch
-						value={isAllDay}
-						onValueChange={(value) => toggleAllDay(value)}
-					/>
+					<Text className="pr-[9] text-primary">All Day</Text>
+					<Switch value={isAllDay} onValueChange={(value) => toggleAllDay(value)} />
 				</View>
 
 				<View className="flex-row items-center gap-2">
@@ -184,7 +183,7 @@ export default function CreateEvent() {
 							}}
 						/>
 					)}
-					{(!isAllDay && (showStartTimePicker || Platform.OS === 'ios')) && (
+					{!isAllDay && (showStartTimePicker || Platform.OS === "ios") && (
 						<DateTimePicker
 							value={startDate.toJSDate()}
 							is24Hour={false}
@@ -225,7 +224,7 @@ export default function CreateEvent() {
 							}}
 						/>
 					)}
-					{(!isAllDay && (showEndTimePicker || Platform.OS == 'ios')) && (
+					{!isAllDay && (showEndTimePicker || Platform.OS == "ios") && (
 						<DateTimePicker
 							value={endDate.toJSDate()}
 							is24Hour={false}
@@ -255,13 +254,12 @@ export default function CreateEvent() {
 								end_time: endDate,
 								calendar_id: eventCalendarId,
 								location: location,
-								firstNotification,
-								secondNotification,
+								first_notification: firstNotification,
+								second_notification: secondNotification,
 								description: description,
 								frequency: freq,
 								priority: 0,
 								all_day: isAllDay,
-
 							},
 							calendar_id: eventCalendarId,
 						});

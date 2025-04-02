@@ -16,20 +16,20 @@ export async function scheduleEventNotifications(event: Event) {
 		throw new Error("How the hell does an event not have a calendar");
 	}
 
-	if (event.firstNotification !== undefined && event.firstNotification !== null) {
-		const notificationDate = event.start_time.minus(event.firstNotification);
+	if (event.first_notification !== undefined && event.first_notification !== null) {
+		const notificationDate = event.start_time.minus(event.first_notification);
 		if (notificationDate > DateTime.now()) {
 			let durationString = "Event starting now";
-			if (event.firstNotification > NotificationTimes.TIME_OF_EVENT) {
-				const duration = Duration.fromMillis(event.firstNotification);
+			if (event.first_notification > NotificationTimes.TIME_OF_EVENT) {
+				const duration = Duration.fromMillis(event.first_notification);
 				durationString = `In ${duration.toFormat("m")} minutes`;
 			}
-			if (event.firstNotification >= NotificationTimes.ONE_HOUR_MS) {
-				const duration = Duration.fromMillis(event.firstNotification);
+			if (event.first_notification >= NotificationTimes.ONE_HOUR_MS) {
+				const duration = Duration.fromMillis(event.first_notification);
 				durationString = `In ${duration.toFormat("h")} hour${duration.hours > 1 ? "s" : ""}`;
 			}
-			if (event.firstNotification >= NotificationTimes.ONE_DAY_MS) {
-				const duration = Duration.fromMillis(event.firstNotification);
+			if (event.first_notification >= NotificationTimes.ONE_DAY_MS) {
+				const duration = Duration.fromMillis(event.first_notification);
 				durationString = `In ${duration.toFormat("d")} day${duration.days > 1 ? "s" : ""}`;
 			}
 			firstNotificationId = await Notifications.scheduleNotificationAsync({
@@ -46,20 +46,20 @@ export async function scheduleEventNotifications(event: Event) {
 			console.log("First Notification Id:", firstNotificationId);
 		}
 	}
-	if (event.secondNotification !== undefined && event.secondNotification !== null) {
-		const notificationDate = event.start_time.minus(event.secondNotification);
+	if (event.second_notification !== undefined && event.second_notification !== null) {
+		const notificationDate = event.start_time.minus(event.second_notification);
 		if (notificationDate > DateTime.now()) {
 			let durationString = "Event starting now";
-			if (event.secondNotification > NotificationTimes.TIME_OF_EVENT) {
-				const duration = Duration.fromMillis(event.secondNotification);
+			if (event.second_notification > NotificationTimes.TIME_OF_EVENT) {
+				const duration = Duration.fromMillis(event.second_notification);
 				durationString = `In ${duration.toFormat("m")} minutes`;
 			}
-			if (event.secondNotification >= NotificationTimes.ONE_HOUR_MS) {
-				const duration = Duration.fromMillis(event.secondNotification);
+			if (event.second_notification >= NotificationTimes.ONE_HOUR_MS) {
+				const duration = Duration.fromMillis(event.second_notification);
 				durationString = `In ${duration.toFormat("h")} hour${duration.hours > 1 ? "s" : ""}`;
 			}
-			if (event.secondNotification >= NotificationTimes.ONE_DAY_MS) {
-				const duration = Duration.fromMillis(event.secondNotification);
+			if (event.second_notification >= NotificationTimes.ONE_DAY_MS) {
+				const duration = Duration.fromMillis(event.second_notification);
 				durationString = `In ${duration.toFormat("d")} day${duration.days > 1 ? "s" : ""}`;
 			}
 			secondNotificationId = await Notifications.scheduleNotificationAsync({
