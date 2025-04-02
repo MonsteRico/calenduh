@@ -235,28 +235,10 @@ export const createEventOnServer = async (calendar_id: string, event: EventUpser
 		...event,
 		start_time: event.start_time.toUTC().toISO(),
 		end_time: event.end_time.toUTC().toISO(),
-	};
+	}
 	console.log("Sending to server", modifiedEvent);
-	const response = await server.post(`/events/${calendar_id}`, modifiedEvent).catch((error) => {
-		if (error.response) {
-			// The request was made and the server responded with a status code
-			// that falls out of the range of 2xx
-			console.log(error.response.data);
-			console.log(error.response.status);
-			console.log(error.response.headers);
-		} else if (error.request) {
-			// The request was made but no response was received
-			// `error.request` is an instance of XMLHttpRequest in the browser and an instance of
-			// http.ClientRequest in node.js
-			console.log(error.request);
-		} else {
-			// Something happened in setting up the request that triggered an Error
-			console.log("Error", error.message);
-		}
-		console.log(error.config);
-		throw error;
-	});
-	const createdEvent = response.data as Event & { start_time: string; end_time: string };
+	const response = await server.post(`/events/${calendar_id}`, modifiedEvent).catch(errorCatcher);
+	const createdEvent = response?.data as Event & { start_time: string; end_time: string };
 	return {
 		...createdEvent,
 		start_time: DateTime.fromJSDate(new Date(createdEvent.start_time)),
