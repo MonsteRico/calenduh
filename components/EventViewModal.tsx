@@ -8,6 +8,7 @@ import { router } from 'expo-router';
 import { useDeleteEvent } from '@/hooks/event.hooks';
 import { useEvent } from '@/hooks/event.hooks';
 import { useCalendar } from '@/hooks/calendar.hooks';
+import { cn } from '@/lib/utils';
 
 
 
@@ -60,7 +61,10 @@ function EventViewModal({ visible, onClose, calendarId, eventId }: EventViewModa
 							</TouchableOpacity>
 
 							<View className="flex-1 items-center">
-								<Text className="text-center text-2xl font-bold text-foreground">{event.name}</Text>
+								<Text className={cn("text-center text-2xl text-foreground", 
+									event.priority > 0 && "text-center text-2xl font-bold text-foreground",
+									event.priority > 1 && "text-center text-2xl font-bold text-foreground underline",
+									event.priority > 2 && "text-center text-2xl font-bold text-foreground underline uppercase")}>{event.name}</Text>
 							</View>
 
 							<View className="w-16 flex-row justify-end gap-2">
