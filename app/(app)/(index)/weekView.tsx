@@ -5,7 +5,7 @@ import { Button } from '@/components/Button';
 import { EventViewModal } from '@/components/EventViewModal';
 import { Event } from '@/types/event.types';
 import { useEnabledCalendarIds } from '@/hooks/useEnabledCalendarIds';
-import { useCalendar, useMultipleCalendars } from '@/hooks/calendar.hooks';
+import { useMultipleCalendars } from '@/hooks/calendar.hooks';
 import { useColorScheme } from 'nativewind'
 
 import { router } from 'expo-router';
