@@ -4,6 +4,7 @@ import server from "@/constants/serverAxiosClient";
 import { useSession } from "@/hooks/authContext";
 import { DateTime } from "luxon";
 import { parse } from "path";
+import { errorCatcher } from "./easyAxiosCatch";
 
 // Get all events from the local database
 export const getEventsFromDB = async (user_id: string): Promise<Event[]> => {

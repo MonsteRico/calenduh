@@ -71,7 +71,12 @@ const CalendarWeekView: React.FC<CalendarWeekViewProps> = ({
       }
     });
 
-    // Sort events for each day
+    // Sort events for prio first
+    Object.keys(groupedEvents).forEach(date => {
+      groupedEvents[date].sort((a, b) => b.priority - a.priority);
+    });
+
+    // Then Sort events for each day
     Object.keys(groupedEvents).forEach(date => {
       groupedEvents[date].sort((a, b) => a.start_time.toMillis() - b.start_time.toMillis());
     });
