@@ -27,7 +27,9 @@ export default function TestButtons() {
 			<View className="items-left flex-row flex-wrap gap-4">
 				<Button onPress={() => {setEnabledCalendarIds([])}}>Reset Enabled Ids</Button>
 
-
+				<Button onPress={() => {
+					
+				}}>OptIn Event Deletion</Button>
 
 				<Button onPress={() => {}}>Update Calendar</Button>
 				<Button onPress={() => {}}>Delete Calendar</Button>
