@@ -106,7 +106,7 @@ export default function CreateEvent() {
 			// setStartDate(PLACEHOLDER_DATE);
 			// setEndDate(PLACEHOLDER_DATE);
 			setStartDate((prev) => prev.startOf("day"));
-			setEndDate((prev) => prev.startOf("day"));
+			setEndDate((prev) => prev.endOf("day"));
 		} else {
 			setStartDate(DateTime.now());
 			setEndDate(DateTime.now());
