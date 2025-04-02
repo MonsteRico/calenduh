@@ -142,6 +142,12 @@ export const getCalendarFromServer = async (calendar_id: string): Promise<Calend
 	return response.data;
 };
 
+export const getMyGroupCalendarsFromServer = async (): Promise<Calendar[]> => {
+	const response = await server.get("/calendars/@groups");
+	console.log("Response", response.data);
+	return response.data;
+}
+
 export const getMyCalendarsFromServer = async (): Promise<Calendar[]> => {
 	const response = await server.get(`/calendars/@me`);
 	return response.data;
@@ -157,6 +163,11 @@ export const createCalendarOnServer = async (calendar: Omit<Calendar, "calendar_
 	console.log("create calendar on server", response.data);
 	return response.data;
 };
+
+export const createGroupCalendarOnServer = async (calendar: Omit<Calendar, "calendar_id">): Promise<Calendar> => {
+	const response = await server.post(`/calendars/${calendar.group_id}`, calendar);
+	return response.data;
+}
 
 export const updateCalendarOnServer = async (calendar: UpdateCalendar): Promise<Calendar> => {
 	const updatedCalendar = {...calendar, is_public: calendar.is_public as unknown as number == 1 ? true : false}

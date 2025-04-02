@@ -3,7 +3,7 @@ import { router } from "expo-router";
 import { Text, View, ScrollView, TouchableOpacity, ActivityIndicator } from "react-native";
 import { Checkbox } from "@/components/Checkbox";
 import { Accordion } from "@/components/Accordion";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useQueryClient } from "@tanstack/react-query";
 import { useCalendars } from "@/hooks/calendar.hooks";
 import { useSQLiteContext } from "expo-sqlite";
@@ -19,6 +19,7 @@ import { Group } from '@/types/group.types';
 import { EditGroupModal } from '@/components/EditGroupModal';
 import { useMyGroups } from "@/hooks/group.hooks";
 import { Feather } from '@expo/vector-icons';
+import { useSession } from "@/hooks/authContext";
 
 export default function ManageGroups() {
 	const { data: groups, isLoading } = useMyGroups();
@@ -31,6 +32,38 @@ export default function ManageGroups() {
 		name: "",
 		invite_code: "",
 	});
+
+	const { user } = useSession();
+
+	useEffect(() => {
+		var group_id = selectedGroup.group_id;
+		var temp_group = groups?.find((group) => group.group_id === group_id) || {
+			group_id: "",
+			name: "",
+			invite_code: "",
+		};
+		setSelectedGroup(temp_group);
+	}, [groups]);
+
+
+	if (user?.user_id === "localUser") {
+		return (
+			<View>
+				<View className="px-4 pt-6 bg-primary/5">
+					<Text className="text-3xl font-bold text-primary mb-6">Groups</Text>
+				</View>
+
+
+				<View className="items-center justify-center py-12">
+					<View className="bg-gray-100 rounded-full p-4 mb-4">
+						<Feather name="users" size={24} color="#6366f1" />
+					</View>
+					<Text className="text-lg font-semibold text-gray-800 text-center">Groups not Enabled for Guest Accounts</Text>
+					<Text className="text-gray-500 text-center mt-2 mb-6">Create an account to join and create groups</Text>
+				</View>
+			</View>
+		)
+	}
 
 	return (
 		<DismissKeyboardView className="flex-1 bg-background">

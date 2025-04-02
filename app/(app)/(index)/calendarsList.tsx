@@ -20,6 +20,7 @@ const dummyCalendars: example_calendar[] = [
 export default function CalendarsList({ toggleDrawer }: { toggleDrawer: () => void }) {
 	const [editMode, setEditMode] = useState(false);
 	const { enabledCalendarIds, setEnabledCalendarIds } = useEnabledCalendarIds();
+	
 
 	const editOnPress = (id: string) => {
 		router.navigate(`/updateCalendar?id=${id}`);
@@ -44,12 +45,11 @@ export default function CalendarsList({ toggleDrawer }: { toggleDrawer: () => vo
 
 	const { data: calendars, isLoading } = useMyCalendars();
 
-
 	return (
 		<ScrollView className="mb-20 flex w-full flex-col gap-3">
 			<Accordion title={"My Calendars"} defaultOpen className="mb-5 text-primary">
 				<View className="flex h-auto flex-col gap-2">
-					{calendars && calendars.map((calendar, i) => (
+					{calendars && calendars.filter((calendar) => calendar.group_id === null).map((calendar, i) => (
 						<CalendarItem
 							checked={enabledCalendarIds.includes(calendar.calendar_id)}
 							key={calendar.calendar_id}
@@ -64,14 +64,14 @@ export default function CalendarsList({ toggleDrawer }: { toggleDrawer: () => vo
 
 			<Accordion title={"Group Calendars"} className="mb-5">
 				<View className="flex h-auto flex-col gap-2">
-					{dummyCalendars.map((calendar, i) => (
+				{calendars && calendars.filter((calendar) => calendar.group_id !== null).map((calendar, i) => (
 						<CalendarItem
-							checked={enabledCalendarIds.includes(calendar.id)}
-							key={calendar.name}
-							calendarName={calendar.name}
+							checked={enabledCalendarIds.includes(calendar.calendar_id)}
+							key={calendar.calendar_id}
+							calendarName={calendar.title}
 							calendarColor={calendar.color}
 							editMode={editMode}
-							onPress={() => calendarOnPress(calendar.id) }
+							onPress={() => calendarOnPress(calendar.calendar_id) }
 						/>
 					))}
 				</View>

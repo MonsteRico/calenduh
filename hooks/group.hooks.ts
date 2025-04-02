@@ -40,6 +40,8 @@ export const useMyGroups = () => {
                     console.error("Error fetching groupsf rom server:", error);
                     throw new Error("Error fetching groups from server");
                 }
+            } else {
+                throw new Error("Not connected to server or using a local-only account")
             }
         },
     });
@@ -166,6 +168,7 @@ export const useJoinGroup = (
         onSuccess: async (data) => {
             options?.onSuccess?.(data, { name: data.name } as any, undefined as any);
             await queryClient.invalidateQueries({ queryKey: ["groups"]});
+            await queryClient.invalidateQueries({ queryKey: ["calendars"]})
         }
     })
 }
