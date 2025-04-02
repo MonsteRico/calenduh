@@ -70,6 +70,8 @@ export default function UpdateEvent() {
 			setSecondNotification(event.secondNotification);
 			setEventCalendarId(event.calendar_id);
 			setFrequency(event.frequency);
+			setPriority(event.priority);
+			setIsAllDay(event.all_day);
 		}
 	}, [event]);
 
@@ -127,7 +129,7 @@ export default function UpdateEvent() {
 					</Button>
 				)}
 
-				<Text className="items-center pl-5 text-3xl font-bold text-primary">Create Event</Text>
+				<Text className="items-center pl-5 text-3xl font-bold text-primary">Update Event</Text>
 			</View>
 
 			<View className="mt-5 flex flex-col gap-2 px-8">
@@ -169,6 +171,7 @@ export default function UpdateEvent() {
 
 					<Dropdown<Calendar>
 						options={calendars}
+						defaultValue={eventCalendarId ? calendars.find((cal) => cal.calendar_id == eventCalendarId): undefined}
 						renderItem={(calendar) => {
 							return (
 								<View className="flex flex-row items-center gap-2">
@@ -339,7 +342,9 @@ const NotificationDropdown = ({
 		{ label: "None", value: NotificationTimes.NONE },
 	];
 
-	const renderItem = (item: (typeof options)[number]) => <Text className="text-primary">{item.label}</Text>;
+	const renderItem = (item: (typeof options)[number]) => <Text className="text-primary">{item.label}</Text>
+
+	console.log(defaultValue)
 
 	return (
 		<View>
