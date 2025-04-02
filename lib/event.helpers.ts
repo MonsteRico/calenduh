@@ -239,7 +239,7 @@ export const createEventOnServer = async (calendar_id: string, event: EventUpser
 		start_time: event.start_time.toUTC().toISO(),
 		end_time: event.end_time.toUTC().toISO(),
 	}
-		console.log("Sending to server", modifiedEvent);
+	console.log("Sending to server", modifiedEvent);
 	const response = await server.post(`/events/${calendar_id}`, modifiedEvent).catch(errorCatcher);
 	const createdEvent = response?.data as Event & { start_time: string; end_time: string };
 	return {
