@@ -213,6 +213,9 @@ export const getEventsForCalendarFromServer = async (calendar_id: string): Promi
 export const getEventsForDayFromServer = async (startMs: number, endMs: number): Promise<Event[]> => {
 	const response = await server.get(`/events/@me/?start=${startMs}&end=${endMs}`);
 	const events = response.data as (Event & { start_time: string; end_time: string })[];
+	if (!events) {
+		return []
+	}
 	return events.map((event: Event & { start_time: string; end_time: string }) => ({
 		...event,
 		start_time: DateTime.fromJSDate(new Date(event.start_time)),
