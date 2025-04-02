@@ -13,6 +13,8 @@ import { useIsConnected } from "@/hooks/useIsConnected";
 import { useEnabledCalendarIds } from "@/hooks/useEnabledCalendarIds";
 import { setEnabled } from "react-native/Libraries/Performance/Systrace";
 import { useDbVersion } from "@/hooks/useDbVersion";
+import { deleteEventsUntilFromDB, deleteEventsUntilNowOnServer } from "@/lib/event.helpers";
+import { DateTime } from "luxon";
 
 export default function TestButtons() {
 	const isPresented = router.canGoBack();
@@ -26,10 +28,6 @@ export default function TestButtons() {
 		<View className="flex-1 bg-background">
 			<View className="items-left flex-row flex-wrap gap-4">
 				<Button onPress={() => {setEnabledCalendarIds([])}}>Reset Enabled Ids</Button>
-
-				<Button onPress={() => {
-					
-				}}>OptIn Event Deletion</Button>
 
 				<Button onPress={() => {}}>Update Calendar</Button>
 				<Button onPress={() => {}}>Delete Calendar</Button>

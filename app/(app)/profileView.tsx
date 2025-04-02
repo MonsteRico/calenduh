@@ -24,6 +24,7 @@ import Dropdown from "@/components/Dropdown";
 import { Calendar } from "@/types/calendar.types";
 import { GlobalNotificationSettingsModal } from "@/components/GlobalNotificationSettingsModal";
 import { NotificationTimes } from "@/constants/notificationTimes";
+import { deleteEventsUntilFromDB, deleteEventsUntilNowOnServer } from "@/lib/event.helpers";
 
 export default function ProfileView() {
 	const isPresented = router.canGoBack();
@@ -332,6 +333,11 @@ export default function ProfileView() {
                             >
                                 Configure Notifications
                             </Button>
+
+							<Button onPress={() => {
+								deleteEventsUntilFromDB(DateTime.now(), user.user_id)
+								deleteEventsUntilNowOnServer()
+							}}>OptIn Event Deletion</Button>
 
 							<View className="mt-10 flex-row items-center justify-center gap-8">
 								{/* <Button onPress={handleSave} labelClasses="text-background">
