@@ -68,94 +68,74 @@ const CalendarDayView: React.FC<CalendarDayViewProps> = ({
 		return hours;
 	};
 
-	// Process events to handle overlapping
-	const processEvents = (events: Event[]): ProcessedEventType[] => {
+	const processRegularEvents = (events: Event[]): ProcessedEventType[] => {
 		if (!events.length) return [];
 
-		const filteredEvents = events.filter((event) => event.all_day === false);
-
-		// Find the maximum number of concurrent events in any time slot
 		const eventConcurrency: { [key: string]: number } = {};
 		const eventOverlapGroups: { [key: string]: Event[] } = {};
 
 		let i = 0;
 		let j = 1;
-		let maxEnd = filteredEvents[0]?.end_time;
+		let maxEnd = events[0]?.end_time;
 
-		while (j < filteredEvents.length) {
-			if (filteredEvents[j].start_time < maxEnd && filteredEvents[j].end_time > maxEnd) {
-				maxEnd = filteredEvents[j].end_time;
+		while (j < events.length) {
+			if (events[j].start_time < maxEnd && events[j].end_time > maxEnd) {
+				maxEnd = events[j].end_time;
 				j++;
 			}
-			else if (filteredEvents[j].start_time < maxEnd) {
+			else if (events[j].start_time < maxEnd) {
 				j++;
 			}
 			else {
 				let maxConcurrent = j - i;
 				let overlapGroup: Event[] = [];
 				for (let k = i; k < j; k++) {
-					overlapGroup.push(filteredEvents[k]);
+					overlapGroup.push(events[k]);
 				}
 				for (let k = i; k < j; k++) {
-					eventConcurrency[filteredEvents[k].event_id] = maxConcurrent;
-					eventOverlapGroups[filteredEvents[k].event_id] = overlapGroup;
+					eventConcurrency[events[k].event_id] = maxConcurrent;
+					eventOverlapGroups[events[k].event_id] = overlapGroup;
 				}
 				i = j;
-				maxEnd = filteredEvents[j].end_time;
+				maxEnd = events[j].end_time;
 				j++;
 			}
 		}
 
-		//process last overlap group because while loop ends
 		let maxConcurrent = j - i;
 		let overlapGroup: Event[] = [];
 		for (let k = i; k < j; k++) {
-			overlapGroup.push(filteredEvents[k]);
+			overlapGroup.push(events[k]);
 		}
 		for (let k = i; k < j; k++) {
-			eventConcurrency[filteredEvents[k].event_id] = maxConcurrent;
-			eventOverlapGroups[filteredEvents[k].event_id] = overlapGroup;
+			eventConcurrency[events[k].event_id] = maxConcurrent;
+			eventOverlapGroups[events[k].event_id] = overlapGroup;
 		}
 
-
-		// Process events with calculated concurrency
 		const processedEvents: ProcessedEventType[] = [];
 
-		filteredEvents.forEach(event => {
+		events.forEach(event => {
 			const concurrentEvents = eventOverlapGroups[event.event_id];
 			const eventCount = eventConcurrency[event.event_id];
 
-			// Width is determined by how many events are concurrent (as a decimal percentage)
 			const widthPercent = 100 / eventCount;
 
-			// Sort concurrent events to determine position (left)
 			const sortedEvents = concurrentEvents.sort((a, b) => {
-				// First compare by priority
 				if (a.priority !== null && b.priority !== null) {
 					const priorityDiff = a.priority - b.priority;
 
-					// If priorities are the same, sort by start time
 					if (priorityDiff === 0) {
 						return a.start_time.toMillis() - b.start_time.toMillis();
 					}
 
 					return priorityDiff;
 				}
-
-				// If any priority is undefined, sort by start time
 				return a.start_time.toMillis() - b.start_time.toMillis();
 			});
-			/*const sortedEvents = concurrentEvents.sort((a, b) =>
-				a.priority - b.priority ||
-				a.start_time.toMillis() - b.start_time.toMillis() 
-				//a.event_id.localeCompare(b.event_id) // Secondary sort by ID for consistent ordering - could be changed to event priority
-			);*/
 
-			// Find the position of the current event
 			const position = sortedEvents.findIndex(e => e.event_id === event.event_id);
 			const leftPercent = (position * 100) / eventCount;
 
-			// Store percentages as decimal numbers rather than strings
 			processedEvents.push({
 				...event,
 				width: widthPercent,
@@ -163,108 +143,123 @@ const CalendarDayView: React.FC<CalendarDayViewProps> = ({
 			});
 		});
 
-		const processedAllDayEvents: ProcessedEventType[] = [];
+		return processedEvents;
+	}
 
-		const allDayEvents = events.filter((event) => event.all_day === true);
-		const concurrentDayEvents = allDayEvents.length;
-		const sortedEvents = allDayEvents.forEach(event => {
-			const widthPercent = 100 / concurrentDayEvents;
-			const sortedEvents = allDayEvents.sort((a, b) => {
+	const processAllDayEvents = (events: Event[]): ProcessedEventType[] => {
+		if (!events.length) return [];
+
+		const processedEvents: ProcessedEventType[] = [];
+		const eventCount = events.length;
+
+		events.forEach(event => {
+
+			const widthPercent = 100 / eventCount;
+
+			const sortedEvents = events.sort((a, b) => {
 				if (a.priority !== null && b.priority !== null) {
 					const priorityDiff = a.priority - b.priority;
 
 					if (priorityDiff === 0) {
-						return a.start_time.toMillis() - b.start_time.toMillis();
+						return 0;
 					}
-
-					return priorityDiff;
 				}
-				return 0; //start times will be the same;
+				return 0;
 			});
-		
-			const position = sortedEvents.findIndex(e => e.event_id === event.event_id);
-			const leftPercent = (position * 100) / concurrentDayEvents;
 
-			processedAllDayEvents.push({
+			const position = sortedEvents.findIndex(e => e.event_id === event.event_id);
+			const leftPercent = (position * 100) / eventCount;
+
+			processedEvents.push({
 				...event,
 				width: widthPercent,
 				left: leftPercent
 			});
-		}
-		
-		)
+		});
 
-	
-	
-	const allProcessedEvents = [...processedAllDayEvents, ...processedEvents]
+		return processedEvents;
+	}
 
-	return allProcessedEvents;
-};
+	// Calculate position and height for an event - fixed types
+	const getEventStyle = (event: ProcessedEventType): ViewStyle => {
+		const startHour = event.start_time.hour + event.start_time.minute / 60;
+		const endHour = event.end_time.hour + event.end_time.minute / 60;
+		const duration = endHour - startHour;
 
-// Calculate position and height for an event - fixed types
-const getEventStyle = (event: ProcessedEventType): ViewStyle => {
-	const startHour = event.start_time.hour + event.start_time.minute / 60;
-	const endHour = event.end_time.hour + event.end_time.minute / 60;
-	const duration = endHour - startHour;
+		const widthValue = `${event.width}%` as DimensionValue;
+		const leftValue = `${event.left}%` as DimensionValue;
 
-	const widthValue = `${event.width}%` as DimensionValue;
-	const leftValue = `${event.left}%` as DimensionValue;
-
-	return {
-		position: 'absolute',
-		top: TOTAL_TOP_PADDING + (startHour * HOUR_HEIGHT),
-		height: duration * HOUR_HEIGHT,
-		width: widthValue,
-		left: leftValue,
+		return {
+			position: 'absolute',
+			top: TOTAL_TOP_PADDING + (startHour * HOUR_HEIGHT),
+			height: duration * HOUR_HEIGHT,
+			width: widthValue,
+			left: leftValue,
+		};
 	};
-};
 
-const getAllDayEventStyle = (event: ProcessedEventType): ViewStyle => {
-	const widthValue = `${event.width}%` as DimensionValue;
-	const leftValue = `${event.left}%` as DimensionValue;
-	return {
-		position: 'absolute',
-		height: ALL_DAY_BANNER_HEIGHT - 8,
-		width: widthValue,
-		left: leftValue,
-	}; 
-}
+	const getAllDayEventStyle = (event: ProcessedEventType): ViewStyle => {
+		const widthValue = `${event.width}%` as DimensionValue;
+		const leftValue = `${event.left}%` as DimensionValue;
+		return {
+			position: 'absolute',
+			height: ALL_DAY_BANNER_HEIGHT - 8,
+			width: widthValue,
+			left: leftValue,
+		};
+	}
 
-const formatEventTime = (date: DateTime): string => {
-	return date.toFormat("h:mm a");
-};
+	const formatEventTime = (date: DateTime): string => {
+		return date.toFormat("h:mm a");
+	};
 
-const renderEvents = (): React.ReactNode => {
-	const processedEvents = processEvents(events);
+	const renderEvents = (): React.ReactNode => {
+		//const processedEvents = processEvents(events);
 
-	const calendar_ids = Array.from(new Set(processedEvents.map(event => event.calendar_id)));
-	const calendars = useMultipleCalendars(calendar_ids);
-	const calendarMap: Record<string, Calendar | undefined> = calendar_ids.reduce((acc, id, index) => {
-		const result = calendars[index];
-		if (result.isSuccess && result.data) {
-			acc[id] = result.data;
-		} else {
-			acc[id] = undefined;
-		}
-		return acc;
-	}, {} as Record<string, Calendar | undefined>);
+		//const calendar_ids = Array.from(new Set(processedEvents.map(event => event.calendar_id)));
+		//const calendars = useMultipleCalendars(calendar_ids);
+		
 
-	const allDayEvents = processedEvents.filter(event => event.all_day);
-	const regularEvents = processedEvents.filter(event => !event.all_day);
+		const allDayEvents = events.filter(event => event.all_day);
+		const regularEvents = events.filter(event => !event.all_day);
+		console.log(events);
 
-	return (
-		<>
-			{allDayEvents.length > 0 && (
-				<View
-					className="absolute top-0 left-0 right-0 border-b border-gray-200 bg-gray-50 z-20"
-					style={{
-						height: ALL_DAY_BANNER_HEIGHT,
-						left: 0,
-					}}
-				>
-						{allDayEvents.map((event, index) => {
+		const processedAllDayEvents = processAllDayEvents(allDayEvents);
+		const processedEvents = processRegularEvents(regularEvents);
+
+		const dayCalendarIds = new Set(processedAllDayEvents.map(event => event.calendar_id));
+		const regCalendarIds = new Set(processedEvents.map(event => event.calendar_id));
+
+		const calendar_ids = Array.from(new Set([...dayCalendarIds, ...regCalendarIds]));
+		const calendars = useMultipleCalendars(calendar_ids);
+		const calendarMap: Record<string, Calendar | undefined> = calendar_ids.reduce((acc, id, index) => {
+			const result = calendars[index];
+			if (result.isSuccess && result.data) {
+				acc[id] = result.data;
+			} else {
+				acc[id] = undefined;
+			}
+			return acc;
+		}, {} as Record<string, Calendar | undefined>);
+
+		
+
+		//const allDayEvents = processedEvents.filter(event => event.all_day);
+		//const regularEvents = processedEvents.filter(event => !event.all_day);
+
+		return (
+			<>
+				{processedAllDayEvents.length > 0 && (
+					<View
+						className="absolute top-0 left-0 right-0 border-b border-gray-200 bg-gray-50 z-20"
+						style={{
+							height: ALL_DAY_BANNER_HEIGHT,
+							left: 0,
+						}}
+					>
+						{processedAllDayEvents.map((event, index) => {
 							const eventStyle = getAllDayEventStyle(event);
-							
+
 							const calendar = calendarMap[event.calendar_id];
 							if (!calendar) {
 								return null;
@@ -274,7 +269,7 @@ const renderEvents = (): React.ReactNode => {
 
 							return (
 								<TouchableOpacity
-									key={event.event_id || index.toString()}
+									key={event?.event_id || index.toString()}
 									style={[
 										eventStyle,
 										{
@@ -290,101 +285,101 @@ const renderEvents = (): React.ReactNode => {
 								</TouchableOpacity>
 							);
 						})}
-				</View>
-			)}
-
-			{regularEvents.map((event, index) => {
-				const eventStyle = getEventStyle(event);
-				//const borderColor = event.color || 'rgb(59, 130, 246)'; 
-				//const { data: calendar } = useCalendar(event.calendar_id);
-				const calendar = calendarMap[event.calendar_id];
-				if (!calendar) {
-					return null;
-				}
-				const borderColor = calendar.color
-				//const borderColor = 'rgb(59, 130, 246)';
-
-				return (
-					<TouchableOpacity
-						key={event.event_id || index.toString()}
-						style={[
-							eventStyle,
-							{
-								backgroundColor: `${borderColor}20`,
-								borderLeftWidth: 4,
-								borderLeftColor: borderColor
-							}
-						]}
-						className="rounded-r-md px-2 py-1 mr-1"
-						onPress={() => onEventPress && onEventPress(event)}
-					>
-						<Text className="font-bold text-xs">{event.name}</Text>
-						{/*check height of event and width*/}
-						{eventStyle.height as number > 50 && parseInt((eventStyle.width as string).substring(0, (eventStyle.width as string).length)) > 14 && (
-							<>
-
-								<Text className="text-xs text-gray-700">
-									{formatEventTime(event.start_time)} - {formatEventTime(event.end_time)}
-								</Text>
-							</>
-						)}
-					</TouchableOpacity>
-				);
-			})}
-		</>
-	);
-};
-
-const getCurrentTimePosition = (): number => {
-	const now = DateTime.now();
-	return TOTAL_TOP_PADDING + (now.hour * HOUR_HEIGHT) + (now.minute / 60 * HOUR_HEIGHT);
-};
-
-
-return (
-	<View className="flex-1 bg-white">
-		<View className="items-center border-b border-gray-300">
-			<View className="flex-row items-center justify-center w-full px-4 py-2">
-				<TouchableOpacity onPress={navigateToPreviousDay} className="pr-3 translate-y-[1px]">
-					<Entypo name="chevron-left" size={28} color={colorScheme === 'dark' ? 'white' : 'black'} />
-				</TouchableOpacity>
-
-				<Text className="text-xl font-bold">
-					<Text className="text-xl font-bold">{date.toFormat('EEEE, MMMM d, yyyy')}</Text>
-				</Text>
-
-				<TouchableOpacity onPress={navigateToNextDay} className="pl-3 translate-y-[1px]">
-					<Entypo name="chevron-right" size={28} color={colorScheme === 'dark' ? 'white' : 'black'} />
-				</TouchableOpacity>
-			</View>
-		</View>
-
-		<ScrollView className="flex-1">
-			<View style={{ height: CONTAINER_HEIGHT, position: 'relative' }}>
-				{renderHourIndicators()}
-
-				{showCurrentTime && (
-					<View
-						className="absolute left-0 right-0 border-t border-red-500 z-10"
-						style={{
-							top: getCurrentTimePosition(),
-							left: TIME_LABEL_WIDTH
-						}}
-					>
-						<View className="h-2 w-2 rounded-full bg-red-500 absolute -left-1 -top-1" />
 					</View>
 				)}
 
-				<View
-					className="absolute top-0 bottom-0"
-					style={{ left: TIME_LABEL_WIDTH, right: 0, top: BANNER_TOP_PADDING }}
-				>
-					{renderEvents()}
+				{processedEvents.map((event, index) => {
+					const eventStyle = getEventStyle(event);
+					//const borderColor = event.color || 'rgb(59, 130, 246)'; 
+					//const { data: calendar } = useCalendar(event.calendar_id);
+					const calendar = calendarMap[event.calendar_id];
+					if (!calendar) {
+						return null;
+					}
+					const borderColor = calendar.color
+					//const borderColor = 'rgb(59, 130, 246)';
+
+					return (
+						<TouchableOpacity
+							key={event?.event_id || index.toString()}
+							style={[
+								eventStyle,
+								{
+									backgroundColor: `${borderColor}20`,
+									borderLeftWidth: 4,
+									borderLeftColor: borderColor
+								}
+							]}
+							className="rounded-r-md px-2 py-1 mr-1"
+							onPress={() => onEventPress && onEventPress(event)}
+						>
+							<Text className="font-bold text-xs">{event.name}</Text>
+							{/*check height of event and width*/}
+							{eventStyle.height as number > 50 && parseInt((eventStyle.width as string).substring(0, (eventStyle.width as string).length)) > 14 && (
+								<>
+
+									<Text className="text-xs text-gray-700">
+										{formatEventTime(event.start_time)} - {formatEventTime(event.end_time)}
+									</Text>
+								</>
+							)}
+						</TouchableOpacity>
+					);
+				})}
+			</>
+		);
+	};
+
+	const getCurrentTimePosition = (): number => {
+		const now = DateTime.now();
+		return TOTAL_TOP_PADDING + (now.hour * HOUR_HEIGHT) + (now.minute / 60 * HOUR_HEIGHT);
+	};
+
+
+	return (
+		<View className="flex-1 bg-white">
+			<View className="items-center border-b border-gray-300">
+				<View className="flex-row items-center justify-center w-full px-4 py-2">
+					<TouchableOpacity onPress={navigateToPreviousDay} className="pr-3 translate-y-[1px]">
+						<Entypo name="chevron-left" size={28} color={colorScheme === 'dark' ? 'white' : 'black'} />
+					</TouchableOpacity>
+
+					<Text className="text-xl font-bold">
+						<Text className="text-xl font-bold">{date.toFormat('EEEE, MMMM d, yyyy')}</Text>
+					</Text>
+
+					<TouchableOpacity onPress={navigateToNextDay} className="pl-3 translate-y-[1px]">
+						<Entypo name="chevron-right" size={28} color={colorScheme === 'dark' ? 'white' : 'black'} />
+					</TouchableOpacity>
 				</View>
 			</View>
-		</ScrollView>
-	</View>
-);
+
+			<ScrollView className="flex-1">
+				<View style={{ height: CONTAINER_HEIGHT, position: 'relative' }}>
+					{renderHourIndicators()}
+
+					{showCurrentTime && (
+						<View
+							className="absolute left-0 right-0 border-t border-red-500 z-10"
+							style={{
+								top: getCurrentTimePosition(),
+								left: TIME_LABEL_WIDTH
+							}}
+						>
+							<View className="h-2 w-2 rounded-full bg-red-500 absolute -left-1 -top-1" />
+						</View>
+					)}
+
+					<View
+						className="absolute top-0 bottom-0"
+						style={{ left: TIME_LABEL_WIDTH, right: 0, top: BANNER_TOP_PADDING }}
+					>
+						{renderEvents()}
+					</View>
+				</View>
+			</ScrollView>
+		</View>
+	);
 };
 
 export default function DayView() {

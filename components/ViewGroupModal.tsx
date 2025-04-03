@@ -24,8 +24,6 @@ function ViewGroupModal({ visible, onClose, group, openEditGroup }: ViewGroupMod
     const { mutate } = useLeaveGroup();
 
 
-    //TODO: when group name is edited - does not immediately propagate to this view - don't know how to fix
-
     const onModalClose = () => {
         onClose();
     }
