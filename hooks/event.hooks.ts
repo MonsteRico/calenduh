@@ -385,7 +385,7 @@ export const useCreateEvent = (
 					console.error("Error syncing event to server:", error);
 				}
 			}
-			await queryClient.invalidateQueries({ queryKey: ["events", variables.calendar_id] });
+			await queryClient.invalidateQueries({ queryKey: ["events"] });
 			await queryClient.invalidateQueries({ queryKey: ["events", "day", variables.newEvent.start_time.toISODate()] });
 			if (variables.newEvent.start_time.toISODate() !== variables.newEvent.end_time.toISODate()) {
 				await queryClient.invalidateQueries({ queryKey: ["events", "day", variables.newEvent.end_time.toISODate()] });
@@ -458,7 +458,7 @@ export const useUpdateEvent = (
 		},
 		onSettled: async (data, error, { updatedEvent, calendar_id }, context) => {
 			options?.onSettled?.(data, error, { updatedEvent, calendar_id }, context);
-			await queryClient.invalidateQueries({ queryKey: ["events", calendar_id] });
+			await queryClient.invalidateQueries({ queryKey: ["events"] });
 			await queryClient.invalidateQueries({ queryKey: ["event", calendar_id, updatedEvent.event_id] });
 			if (context?.startTime && context?.endTime) {
 				await queryClient.invalidateQueries({
@@ -527,7 +527,7 @@ export const useDeleteEvent = (
 		},
 		onSettled: async (data, error, { event_id, calendar_id }, context) => {
 			options?.onSettled?.(data, error, { event_id, calendar_id }, context);
-			await queryClient.invalidateQueries({ queryKey: ["events", calendar_id] });
+			await queryClient.invalidateQueries({ queryKey: ["events"] });
 			await queryClient.invalidateQueries({ queryKey: ["event", calendar_id, event_id] });
 			if (context?.startTime && context?.endTime) {
 				await queryClient.invalidateQueries({

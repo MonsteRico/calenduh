@@ -22,8 +22,8 @@ export const getEventsFromDB = async (user_id: string): Promise<Event[]> => {
 		);
 		return events.map((item) => ({
 			...item,
-			start_time: DateTime.fromJSDate(new Date(item.start_time)),
-			end_time: DateTime.fromJSDate(new Date(item.end_time)),
+			start_time: DateTime.fromJSDate(new Date(item.start_time)).toLocal(),
+			end_time: DateTime.fromJSDate(new Date(item.end_time)).toLocal(),
 		}));
 	} catch (error) {
 		console.error("Error fetching events:", error);
@@ -41,8 +41,8 @@ export const getEventsForCalendarFromDB = async (calendar_id: string): Promise<E
 		);
 		return events.map((item) => ({
 			...item,
-			start_time: DateTime.fromJSDate(new Date(item.start_time)),
-			end_time: DateTime.fromJSDate(new Date(item.end_time)),
+			start_time: DateTime.fromJSDate(new Date(item.start_time)).toLocal(),
+			end_time: DateTime.fromJSDate(new Date(item.end_time)).toLocal(),
 		}));
 	} catch (error) {
 		console.error("Error fetching events for calendar:", error);
@@ -62,8 +62,8 @@ export const getEventFromDB = async (event_id: string): Promise<Event | undefine
 		if (event) {
 			return {
 				...event,
-				start_time: DateTime.fromJSDate(new Date(event.start_time)),
-				end_time: DateTime.fromJSDate(new Date(event.end_time)),
+				start_time: DateTime.fromJSDate(new Date(event.start_time)).toLocal(),
+				end_time: DateTime.fromJSDate(new Date(event.end_time)).toLocal(),
 			};
 		}
 		return undefined;
@@ -195,8 +195,8 @@ export const getEventsFromServer = async (): Promise<Event[]> => {
 	const events = response.data as (Event & { start_time: string; end_time: string })[];
 	return events.map((event: Event & { start_time: string; end_time: string }) => ({
 		...event,
-		start_time: DateTime.fromJSDate(new Date(event.start_time)),
-		end_time: DateTime.fromJSDate(new Date(event.end_time)),
+		start_time: DateTime.fromJSDate(new Date(event.start_time)).toLocal(),
+		end_time: DateTime.fromJSDate(new Date(event.end_time)).toLocal(),
 	}));
 };
 
@@ -205,8 +205,8 @@ export const getEventsForCalendarFromServer = async (calendar_id: string): Promi
 	const events = response.data as (Event & { start_time: string; end_time: string })[];
 	return events.map((event: Event & { start_time: string; end_time: string }) => ({
 		...event,
-		start_time: DateTime.fromJSDate(new Date(event.start_time)),
-		end_time: DateTime.fromJSDate(new Date(event.end_time)),
+		start_time: DateTime.fromJSDate(new Date(event.start_time)).toLocal(),
+		end_time: DateTime.fromJSDate(new Date(event.end_time)).toLocal(),
 	}));
 };
 
@@ -218,8 +218,8 @@ export const getEventsForDayFromServer = async (startMs: number, endMs: number):
 	}
 	return events.map((event: Event & { start_time: string; end_time: string }) => ({
 		...event,
-		start_time: DateTime.fromJSDate(new Date(event.start_time)),
-		end_time: DateTime.fromJSDate(new Date(event.end_time)),
+		start_time: DateTime.fromJSDate(new Date(event.start_time)).toLocal(),
+		end_time: DateTime.fromJSDate(new Date(event.end_time)).toLocal(),
 	}));
 };
 
@@ -228,8 +228,8 @@ export const getEventFromServer = async (calendar_id: string, event_id: string):
 	const event = response.data as Event & { start_time: string; end_time: string };
 	return {
 		...event,
-		start_time: DateTime.fromJSDate(new Date(event.start_time)),
-		end_time: DateTime.fromJSDate(new Date(event.end_time)),
+		start_time: DateTime.fromJSDate(new Date(event.start_time)).toLocal(),
+		end_time: DateTime.fromJSDate(new Date(event.end_time)).toLocal(),
 	};
 };
 
@@ -244,8 +244,8 @@ export const createEventOnServer = async (calendar_id: string, event: EventUpser
 	const createdEvent = response?.data as Event & { start_time: string; end_time: string };
 	return {
 		...createdEvent,
-		start_time: DateTime.fromJSDate(new Date(createdEvent.start_time)),
-		end_time: DateTime.fromJSDate(new Date(createdEvent.end_time)),
+		start_time: DateTime.fromJSDate(new Date(createdEvent.start_time)).toLocal(),
+		end_time: DateTime.fromJSDate(new Date(createdEvent.end_time)).toLocal(),
 	};
 };
 

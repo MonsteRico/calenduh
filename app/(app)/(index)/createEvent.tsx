@@ -18,6 +18,8 @@ import { useSession } from "@/hooks/authContext";
 import { NotificationTimes } from "@/constants/notificationTimes";
 import { DismissKeyboardView } from "@/components/DismissKeyboardView";
 import Storage from "expo-sqlite/kv-store";
+import RecurrenceSelector from "@/components/RecurrenceSelector";
+import { ScrollView } from "react-native-gesture-handler";
 
 export default function CreateEvent() {
 	const { user } = useSession();
@@ -44,7 +46,7 @@ export default function CreateEvent() {
 		Storage.getItemSync("secondNotification") === "null" ? null : Number(Storage.getItemSync("secondNotification"))
 	);
 	const [eventCalendarId, setEventCalendarId] = useState<string>(""); //Single Select List
-	const [freq, setFrequency] = useState(""); //Single Select List
+	const [frequency, setFrequency] = useState<null | string>(null);
 	const [priority, setPriority] = useState<number>(0); //Single Select List
 	const [isAllDay, setIsAllDay] = useState(false);
 
@@ -75,11 +77,10 @@ export default function CreateEvent() {
 		loadNotificationSettings();
 	}, []);
 
-
 	useEffect(() => {
 		if (!user || !user.default_calendar_id) return;
-		setEventCalendarId(user.default_calendar_id)
-	}, [user])
+		setEventCalendarId(user.default_calendar_id);
+	}, [user]);
 
 	//REPLACE WITH USER'S CALENDARS
 	const { data: calendars, isLoading } = useMyCalendars();
@@ -130,7 +131,7 @@ export default function CreateEvent() {
 				<Text className="items-center pl-5 text-3xl font-bold text-primary">Create Event</Text>
 			</View>
 
-			<View className="mt-5 flex flex-col gap-2 px-8">
+			<ScrollView className="mt-5 flex flex-col gap-2 px-8">
 				<Input label="Name:" className="text-primary" value={name} onChangeText={setName} placeholder="Event Name" />
 				<Input
 					className="text-primary"
@@ -274,14 +275,23 @@ export default function CreateEvent() {
 					)}
 				</View>
 
+				<RecurrenceSelector
+					onRecurrenceChange={(recurrenceValue) => {
+						setFrequency(recurrenceValue);
+						console.log(recurrenceValue)
+					}}
+					start_time={startDate}
+				/>
+
 				<PrioDropdown
 					handleSelect={(item: { label: string; value: number }) => {
 						setPriority(item.value);
 					}}
 					defaultValue={priority}
 				/>
-
-				{/* Get this to send event to db */}
+			</ScrollView>
+			{/* Get this to send event to db */}
+			<View className="mb-4 flex flex-row items-center justify-center">
 				<Button
 					className={cn(isPending && "opacity-50")}
 					onPress={() => {
@@ -298,7 +308,7 @@ export default function CreateEvent() {
 								first_notification: firstNotification,
 								second_notification: secondNotification,
 								description: description,
-								frequency: freq,
+								frequency: frequency,
 								priority: priority,
 								all_day: isAllDay,
 							},

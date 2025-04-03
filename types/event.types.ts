@@ -6,7 +6,7 @@ export interface Event {
 	name: string;
 	location: string;
 	description: string;
-	frequency: string;
+	frequency: string | null;
 	priority: number;
 	start_time: DateTime;
 	end_time: DateTime;
@@ -23,7 +23,7 @@ export interface UpdateEvent {
 	name?: string;
 	location?: string;
 	description?: string;
-	frequency?: string;
+	frequency?: string | null;
 	priority?: number;
 	start_time?: DateTime;
 	end_time?: DateTime;

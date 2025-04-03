@@ -1,5 +1,6 @@
 import React from "react";
 import { TouchableWithoutFeedback, Keyboard, View } from "react-native";
+import { ScrollView } from "react-native-gesture-handler";
 
 const DismissKeyboardHOC = (Comp) => {
 	return ({ children, ...props }) => (
@@ -9,3 +10,4 @@ const DismissKeyboardHOC = (Comp) => {
 	);
 };
 export const DismissKeyboardView = DismissKeyboardHOC(View);
+export const DismissKeyboardScrollView = DismissKeyboardHOC(ScrollView)

@@ -17,6 +17,8 @@ import { cn } from "@/lib/utils";
 import { useSession } from "@/hooks/authContext";
 import { NotificationTimes } from "@/constants/notificationTimes";
 import { DismissKeyboardView } from "@/components/DismissKeyboardView";
+import { ScrollView } from "react-native-gesture-handler";
+import RecurrenceSelector from "@/components/RecurrenceSelector";
 
 export default function UpdateEvent() {
 	const { eventId, calendarId } = useLocalSearchParams<{ eventId: string; calendarId: string }>();
@@ -39,9 +41,9 @@ export default function UpdateEvent() {
 	const [firstNotification, setFirstNotification] = useState<number | null>(NotificationTimes.FIFTEEN_MINUTES_MS); //Text box
 	const [secondNotification, setSecondNotification] = useState<number | null>(null); //Text box
 	const [eventCalendarId, setEventCalendarId] = useState(""); //Single Select List
-	const [priority, setPriority] = useState<number>(0); 
+	const [priority, setPriority] = useState<number>(0);
 	const [isAllDay, setIsAllDay] = useState(false);
-	const [freq, setFrequency] = useState(""); //TODO: still get a freq done
+	const [frequency, setFrequency] = useState<string | null>(null);
 
 	const [showStartDatePicker, setShowStartDatePicker] = useState(false);
 	const [showStartTimePicker, setShowStartTimePicker] = useState(false);
@@ -78,20 +80,19 @@ export default function UpdateEvent() {
 	const PLACEHOLDER_DATE = DateTime.fromObject({ year: 1899, month: 1, day: 1 });
 
 	const toggleAllDay = (value: boolean) => {
-			setIsAllDay(value);
-			if (value) {
-				// store as 1899 year so we know it is an all day event
-				// workaround until i can store null in database
-				setStartDate(PLACEHOLDER_DATE);
-				setEndDate(PLACEHOLDER_DATE);
-				//setStartDate((prev) => prev.startOf("day"));
-				//setEndDate((prev) => prev.startOf("day"));
-			} else {
-				setStartDate(DateTime.now());
-				setEndDate(DateTime.now());
-			}
-	
+		setIsAllDay(value);
+		if (value) {
+			// store as 1899 year so we know it is an all day event
+			// workaround until i can store null in database
+			setStartDate(PLACEHOLDER_DATE);
+			setEndDate(PLACEHOLDER_DATE);
+			//setStartDate((prev) => prev.startOf("day"));
+			//setEndDate((prev) => prev.startOf("day"));
+		} else {
+			setStartDate(DateTime.now());
+			setEndDate(DateTime.now());
 		}
+	};
 
 	if (calendarsIsLoading || eventIsLoading || !user) {
 		return <Text className="text-primary">Loading...</Text>;
@@ -130,7 +131,7 @@ export default function UpdateEvent() {
 				<Text className="items-center pl-5 text-3xl font-bold text-primary">Update Event</Text>
 			</View>
 
-			<View className="mt-5 flex flex-col gap-2 px-8">
+			<ScrollView className="mt-5 flex flex-col gap-2 px-8">
 				<Input label="Name:" className="text-primary" value={name} onChangeText={setName} placeholder="Event Name" />
 				<Input
 					className="text-primary"
@@ -169,7 +170,7 @@ export default function UpdateEvent() {
 
 					<Dropdown<Calendar>
 						options={calendars}
-						defaultValue={eventCalendarId ? calendars.find((cal) => cal.calendar_id == eventCalendarId): undefined}
+						defaultValue={eventCalendarId ? calendars.find((cal) => cal.calendar_id == eventCalendarId) : undefined}
 						renderItem={(calendar) => {
 							return (
 								<View className="flex flex-row items-center gap-2">
@@ -185,11 +186,8 @@ export default function UpdateEvent() {
 				</View>
 
 				<View className="flex-row items-center gap-2">
-					<Text className="text-primary pr-[9]">All Day</Text>
-						<Switch
-							value={isAllDay}
-							onValueChange={(value) => toggleAllDay(value)}
-						/>
+					<Text className="pr-[9] text-primary">All Day</Text>
+					<Switch value={isAllDay} onValueChange={(value) => toggleAllDay(value)} />
 				</View>
 
 				<View className="flex-row items-center gap-2">
@@ -274,13 +272,22 @@ export default function UpdateEvent() {
 					)}
 				</View>
 
+				<RecurrenceSelector
+					onRecurrenceChange={(recurrenceValue) => {
+						setFrequency(recurrenceValue);
+					}}
+					start_time={startDate}
+					defaultValue={frequency}
+				/>
+
 				<PrioDropdown
 					handleSelect={(item: { label: string; value: number }) => {
 						setPriority(item.value);
 					}}
 					defaultValue={priority}
 				/>
-
+			</ScrollView>
+			<View className="mb-4 flex flex-row items-center justify-center">
 				{/* Get this to send event to db */}
 				<Button
 					className={cn(isPending && "opacity-50")}
@@ -297,11 +304,11 @@ export default function UpdateEvent() {
 								calendar_id: eventCalendarId,
 								location,
 								description,
-								frequency: freq,
+								frequency: frequency,
 								first_notification: firstNotification,
 								second_notification: secondNotification,
 								priority: priority,
-								all_day: isAllDay
+								all_day: isAllDay,
 							},
 							calendar_id: eventCalendarId,
 						});
@@ -340,9 +347,9 @@ const NotificationDropdown = ({
 		{ label: "None", value: NotificationTimes.NONE },
 	];
 
-	const renderItem = (item: (typeof options)[number]) => <Text className="text-primary">{item.label}</Text>
+	const renderItem = (item: (typeof options)[number]) => <Text className="text-primary">{item.label}</Text>;
 
-	console.log(defaultValue)
+	console.log(defaultValue);
 
 	return (
 		<View>
@@ -361,13 +368,7 @@ const PrioDropdown = ({
 	handleSelect,
 	defaultValue,
 }: {
-	handleSelect: (
-		item:
-			| {
-					label: string;
-					value: number;
-			  }
-	) => void;
+	handleSelect: (item: { label: string; value: number }) => void;
 	defaultValue?: number | null | undefined;
 }) => {
 	const options = [
@@ -391,4 +392,3 @@ const PrioDropdown = ({
 		</View>
 	);
 };
-
