@@ -1,6 +1,6 @@
 import { Button } from "@/components/Button";
 import { router } from "expo-router";
-import { StyleSheet, Text, View, TouchableOpacity, Platform, Switch, ScrollView } from "react-native";
+import { StyleSheet, Text, View, TouchableOpacity, Platform, Switch } from "react-native";
 import { SelectList } from "react-native-dropdown-select-list";
 import React, { useEffect, useState } from "react";
 import { FontAwesome } from "@expo/vector-icons";
@@ -19,6 +19,7 @@ import { NotificationTimes } from "@/constants/notificationTimes";
 import { DismissKeyboardView } from "@/components/DismissKeyboardView";
 import Storage from "expo-sqlite/kv-store";
 import RecurrenceSelector from "@/components/RecurrenceSelector";
+import { ScrollView } from "react-native-gesture-handler";
 
 export default function CreateEvent() {
 	const { user } = useSession();
@@ -186,153 +187,98 @@ export default function CreateEvent() {
 							setEventCalendarId(selectedCalendar.calendar_id);
 						}}
 					/>
-					</View>
+				</View>
 
-					<Input
-						label="Description:"
-						className="text-primary"
-						value={description}
-						onChangeText={setDescription}
-						placeholder="Description"
-						multiline={true}
-						numberOfLines={4}
-					/>
+				<View className="flex-row items-center gap-2">
+					<Text className="pr-[9] text-primary">All Day</Text>
+					<Switch value={isAllDay} onValueChange={(value) => toggleAllDay(value)} />
+				</View>
 
-					<NotificationDropdown
-						handleSelect={(item: { label: string; value: number | null }) => {
-							setFirstNotification(item.value);
-						}}
-						defaultValue={firstNotification}
-					/>
-
-					<NotificationDropdown
-						handleSelect={(item: { label: string; value: number | null }) => {
-							setSecondNotification(item.value);
-						}}
-						defaultValue={secondNotification}
-					/>
-
-					<View className="flex-col gap-2">
-						<Text className="text-primary">Calendar:</Text>
-
-						<Dropdown<Calendar>
-							options={calendars}
-							defaultValue={
-								user.default_calendar_id
-									? calendars.find((cal) => cal.calendar_id == user.default_calendar_id)
-									: undefined
-							}
-							renderItem={(calendar) => {
-								return (
-									<View className="flex flex-row items-center gap-2">
-										<View className="h-6 w-6 rounded-full" style={{ backgroundColor: calendar.color }} />
-										<Text className="text-primary">{calendar.title}</Text>
-									</View>
-								);
-							}}
-							onSelect={(selectedCalendar) => {
-								setEventCalendarId(selectedCalendar.calendar_id);
+				<View className="flex-row items-center gap-2">
+					<Text className="pr-[3] text-primary">Start Time:</Text>
+					{Platform.OS === "android" && (
+						<TouchableOpacity
+							className="flex flex-row items-center space-x-2 rounded-lg bg-gray-200 px-4 py-2"
+							onPress={() => setShowStartDatePicker(true)}
+						>
+							<Text className="font-medium text-primary">{startDate.toLocaleString(DateTime.DATETIME_MED)}</Text>
+						</TouchableOpacity>
+					)}
+					{(showStartDatePicker || Platform.OS === "ios") && (
+						<DateTimePicker
+							value={startDate.toJSDate()}
+							mode={"date"}
+							onChange={(e, selectedDate) => {
+								if (selectedDate && e.type === "set") {
+									const luxonDate = DateTime.fromJSDate(selectedDate);
+									setStartDate(luxonDate);
+									setShowStartTimePicker(true);
+								}
+								setShowStartDatePicker(false);
 							}}
 						/>
-					</View>
+					)}
+					{!isAllDay && (showStartTimePicker || Platform.OS === "ios") && (
+						<DateTimePicker
+							value={startDate.toJSDate()}
+							is24Hour={false}
+							mode={"time"}
+							onChange={(e, selectedDate) => {
+								if (selectedDate && e.type === "set") {
+									const luxonDate = DateTime.fromJSDate(selectedDate);
+									setStartDate(luxonDate);
+								}
+								setShowStartTimePicker(false);
+							}}
+						/>
+					)}
+				</View>
 
-					<View className="flex-row items-center gap-2">
-						<Text className="pr-[9] text-primary">All Day</Text>
-						<Switch value={isAllDay} onValueChange={(value) => toggleAllDay(value)} />
-					</View>
-
-					<View className="flex-row items-center gap-2">
-						<Text className="pr-[3] text-primary">Start Time:</Text>
-						{Platform.OS === "android" && (
-							<TouchableOpacity
-								className="flex flex-row items-center space-x-2 rounded-lg bg-gray-200 px-4 py-2"
-								onPress={() => setShowStartDatePicker(true)}
-							>
-								<Text className="font-medium text-primary">{startDate.toLocaleString(DateTime.DATETIME_MED)}</Text>
-							</TouchableOpacity>
-						)}
-						{(showStartDatePicker || Platform.OS === "ios") && (
-							<DateTimePicker
-								value={startDate.toJSDate()}
-								mode={"date"}
-								onChange={(e, selectedDate) => {
-									if (selectedDate && e.type === "set") {
-										const luxonDate = DateTime.fromJSDate(selectedDate);
-										setStartDate(luxonDate);
-										setShowStartTimePicker(true);
-									}
-									setShowStartDatePicker(false);
-								}}
-							/>
-						)}
-						{!isAllDay && (showStartTimePicker || Platform.OS === "ios") && (
-							<DateTimePicker
-								value={startDate.toJSDate()}
-								is24Hour={false}
-								mode={"time"}
-								onChange={(e, selectedDate) => {
-									if (selectedDate && e.type === "set") {
-										const luxonDate = DateTime.fromJSDate(selectedDate);
-										setStartDate(luxonDate);
-									}
-									setShowStartTimePicker(false);
-								}}
-							/>
-						)}
-					</View>
-
-					<View className="flex-row items-center gap-2">
-						<Text className="pr-[9] text-primary">End Time:</Text>
-						{Platform.OS === "android" && (
-							<TouchableOpacity
-								className="flex flex-row items-center space-x-2 rounded-lg bg-gray-200 px-4 py-2"
-								onPress={() => setShowEndDatePicker(true)}
-							>
-								<Text className="font-medium text-primary">{endDate.toLocaleString(DateTime.DATETIME_MED)}</Text>
-							</TouchableOpacity>
-						)}
-						{(showEndDatePicker || Platform.OS === "ios") && (
-							<DateTimePicker
-								value={endDate.toJSDate()}
-								is24Hour={false}
-								mode={"date"}
-								onChange={(e, selectedDate) => {
-									if (selectedDate && e.type === "set") {
-										const luxonDate = DateTime.fromJSDate(selectedDate);
-										setEndDate(luxonDate);
-										setShowEndTimePicker(true);
-									}
-									setShowEndDatePicker(false);
-								}}
-							/>
-						)}
-						{!isAllDay && (showEndTimePicker || Platform.OS == "ios") && (
-							<DateTimePicker
-								value={endDate.toJSDate()}
-								is24Hour={false}
-								mode={"time"}
-								onChange={(e, selectedDate) => {
-									if (selectedDate && e.type === "set") {
-										const luxonDate = DateTime.fromJSDate(selectedDate);
-										setEndDate(luxonDate);
-									}
-									setShowEndTimePicker(false);
-								}}
-							/>
-						)}
-					</View>
-
-					<PrioDropdown
-						handleSelect={(item: { label: string; value: number }) => {
-							setPriority(item.value);
-						}}
-						defaultValue={priority}
-					/>
+				<View className="flex-row items-center gap-2">
+					<Text className="pr-[9] text-primary">End Time:</Text>
+					{Platform.OS === "android" && (
+						<TouchableOpacity
+							className="flex flex-row items-center space-x-2 rounded-lg bg-gray-200 px-4 py-2"
+							onPress={() => setShowEndDatePicker(true)}
+						>
+							<Text className="font-medium text-primary">{endDate.toLocaleString(DateTime.DATETIME_MED)}</Text>
+						</TouchableOpacity>
+					)}
+					{(showEndDatePicker || Platform.OS === "ios") && (
+						<DateTimePicker
+							value={endDate.toJSDate()}
+							is24Hour={false}
+							mode={"date"}
+							onChange={(e, selectedDate) => {
+								if (selectedDate && e.type === "set") {
+									const luxonDate = DateTime.fromJSDate(selectedDate);
+									setEndDate(luxonDate);
+									setShowEndTimePicker(true);
+								}
+								setShowEndDatePicker(false);
+							}}
+						/>
+					)}
+					{!isAllDay && (showEndTimePicker || Platform.OS == "ios") && (
+						<DateTimePicker
+							value={endDate.toJSDate()}
+							is24Hour={false}
+							mode={"time"}
+							onChange={(e, selectedDate) => {
+								if (selectedDate && e.type === "set") {
+									const luxonDate = DateTime.fromJSDate(selectedDate);
+									setEndDate(luxonDate);
+								}
+								setShowEndTimePicker(false);
+							}}
+						/>
+					)}
+				</View>
 
 				<RecurrenceSelector
 					onRecurrenceChange={(recurrenceValue) => {
 						setFrequency(recurrenceValue);
-						console.log(recurrenceValue)
+						console.log(recurrenceValue);
 					}}
 					start_time={startDate}
 				/>
