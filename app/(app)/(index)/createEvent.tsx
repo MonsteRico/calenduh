@@ -191,7 +191,7 @@ export default function CreateEvent() {
 						options={calendars}
 						defaultValue={
 							user.default_calendar_id
-								? calendars.find((cal) => cal.calendar_id == user.default_calendar_id)
+								? calendars.find((cal) => cal.calendar_id === user.default_calendar_id)
 								: undefined
 						}
 						renderItem={(calendar) => {
