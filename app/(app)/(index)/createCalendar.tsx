@@ -60,8 +60,6 @@ export default function CreateCalendar() {
         router.back();
     }
 
-    //TODO: Fix calendar creation when I group is selected
-
     return (
         <DismissKeyboardView className="flex-1 bg-background">
             <View className="m-2 flex-row items-center">

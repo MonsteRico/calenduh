@@ -10,7 +10,6 @@ import { DismissKeyboardView } from "@/components/DismissKeyboardView";
 
 
 export default function CreateGroup() {
-    //TODO: Actually get group data and make group get saved when creating calendar
     const isPresented = router.canGoBack();
     const [groupName, setGroupName] = useState("");
     //const { mutate } = useCreateGroup();
