@@ -17,6 +17,8 @@ import {
 	upsertEventIntoDB,
 	getEventsForDayFromServer,
 	updateEventNotificationIds,
+	deleteEventsUntilNowOnServer,
+	deleteEventsUntilFromDB,
 } from "@/lib/event.helpers";
 import { addMutationToQueue, getMutationsFromDB } from "@/lib/mutation.helpers";
 import { useSession } from "./authContext";
@@ -540,6 +542,37 @@ export const useDeleteEvent = (
 					});
 				}
 			}
+		},
+	});
+};
+
+
+export const usePruneOldEvents = (
+	options?: UseMutationOptions<void, Error, { pruneBefore: DateTime }, void>
+) => {
+	const queryClient = useQueryClient();
+	const isConnected = useIsConnected();
+
+	const { user, sessionId } = useSession();
+	if (!user || !sessionId) {
+		throw new Error("User not found or session not found");
+	}
+
+	return useMutation({
+		mutationFn: async ({pruneBefore} : {pruneBefore:DateTime}) => {
+			if (isConnected && user.user_id !== "localUser") {
+				await deleteEventsUntilNowOnServer();
+			}
+			await deleteEventsUntilFromDB(pruneBefore, user.user_id);
+			return
+		},
+		onSuccess: (data, variables) => {
+			options?.onSuccess?.(data, variables);
+			// Boom baby!
+		},
+		onSettled: async () => {
+			await queryClient.invalidateQueries({ queryKey: ["events"] });
+			await queryClient.invalidateQueries({ queryKey: ["event"] });
 		},
 	});
 };
