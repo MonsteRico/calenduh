@@ -389,7 +389,7 @@ export default function DayView() {
 
 	const { dayBeingViewed, setDayBeingViewed } = useCurrentViewedDay();
 
-	const { data: events, isLoading } = useEventsForDay(dayBeingViewed);
+	const { data: events, isLoading } = useEventsForDay(dayBeingViewed, {enabled: false});
 
 	const [eventIdToView, setEventIdToView] = useState<string | null>(null);
 	const [calendarIdToView, setCalendarIdToView] = useState<string | null>(null);
@@ -403,8 +403,10 @@ export default function DayView() {
 			return [];
 		}
 		// Filter events based on enabled calendar IDs
+		console.log("------------------------------------------------------------------------------------------");
+		//console.log("Events passed to shown events:                                   ", events);
 		const shownEvents = events.filter((event) => enabledCalendarIds.includes(event.calendar_id));
-
+		//console.log("This is shown Events:                     ", shownEvents);
 		const uniqueEventsMap = new Map<string, Event>();
 
 		shownEvents.forEach((event) => {
@@ -412,6 +414,7 @@ export default function DayView() {
 				uniqueEventsMap.set(event.event_id, event);
 			}
 		});
+		//console.log("This is after loop (return value):                       ", Array.from(uniqueEventsMap.values()));
 
 		return Array.from(uniqueEventsMap.values());
 	}, [enabledCalendarIds, events]); // Memoize based on changes to enabledCalendarIds or events
