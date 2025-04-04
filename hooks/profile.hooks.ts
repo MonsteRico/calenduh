@@ -34,6 +34,9 @@ export const useUpdateUser = (
 			const user = await JSON.parse(SecureStore.getItem("user") ?? "")
 			SecureStore.setItem("user", JSON.stringify({...user, ...updatedUser}));
 			console.log("set secure store user to ", {...user, ...updatedUser})
+		},
+		onSettled: async (data, error, variables, context: { previousUser: User } | undefined) => {
+			options?.onSettled?.(data, error, variables, context);
 		}
 	});
 };

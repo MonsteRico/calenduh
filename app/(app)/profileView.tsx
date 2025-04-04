@@ -2,7 +2,7 @@ import { Button } from "@/components/Button";
 import { router } from "expo-router";
 import { Modal, Text, View, TouchableOpacity, TextInput, Platform, ScrollView } from "react-native";
 import { Input } from "@/components/Input";
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import dayjs from "dayjs";
 import React from "react";
 import Feather from "@expo/vector-icons/Feather";
@@ -26,6 +26,7 @@ import { GlobalNotificationSettingsModal } from "@/components/GlobalNotification
 import { NotificationTimes } from "@/constants/notificationTimes";
 import { deleteEventsUntilFromDB, deleteEventsUntilNowOnServer } from "@/lib/event.helpers";
 
+
 export default function ProfileView() {
 	const isPresented = router.canGoBack();
 
@@ -41,15 +42,17 @@ export default function ProfileView() {
 	const { colorScheme } = useColorScheme();
 
 	// global notification settings
-	const [notificationModalVisible, setNotificationModalVisible] = useState(false); 
+	const [notificationModalVisible, setNotificationModalVisible] = useState(false);
 	const [firstNotification, setFirstNotification] = useState<number | null>(NotificationTimes.FIFTEEN_MINUTES_MS);
-	const [secondNotification, setSecondNotification] = useState<number | null>(null); 
+	const [secondNotification, setSecondNotification] = useState<number | null>(null);
 
 	const [signInModalVisible, setSignInModalVisible] = useStateWithCallbackLazy(false);
 	const [mergeCalendarModalVisible, setMergeCalendarModalVisible] = useState(false);
 	const [showDatePicker, setShowDatePicker] = useState(false);
 
 	const { data: calendars, isLoading } = useMyCalendars();
+
+	const { enabledCalendarIds = [], setEnabledCalendarIds } = useEnabledCalendarIds();
 
 	const handleEditToggle = () => {
 		setIsEditing(!isEditing);
@@ -59,7 +62,7 @@ export default function ProfileView() {
 		onSuccess: () => {
 			setIsEditing(false);
 			router.back(); // Navigate back after updating
-		},
+		}
 	});
 
 	useEffect(() => {
@@ -70,65 +73,76 @@ export default function ProfileView() {
 		setDefaultCal(user.default_calendar_id)
 
 		// load global notification settings
-        const loadNotificationSettings = async () => {
-            try {
-                const savedFirst = await Storage.getItem('firstNotification');
-                const savedSecond = await Storage.getItem('secondNotification');
-                
-                if (savedFirst !== null) {
-                    setFirstNotification(savedFirst === 'null' ? null : Number(savedFirst));
-                }
-                if (savedSecond !== null) {
-                    setSecondNotification(savedSecond === 'null' ? null : Number(savedSecond));
-                }
-            } catch (error) {
-                console.error('Error loading notification settings:', error);
-            }
-        };
+		const loadNotificationSettings = async () => {
+			try {
+				const savedFirst = await Storage.getItem('firstNotification');
+				const savedSecond = await Storage.getItem('secondNotification');
 
-        loadNotificationSettings();
+				if (savedFirst !== null) {
+					setFirstNotification(savedFirst === 'null' ? null : Number(savedFirst));
+				}
+				if (savedSecond !== null) {
+					setSecondNotification(savedSecond === 'null' ? null : Number(savedSecond));
+				}
+			} catch (error) {
+				console.error('Error loading notification settings:', error);
+			}
+		};
+
+		loadNotificationSettings();
 	}, [user])
 
-	const handleSave = () => {
+	const handleSave = async () => {
 		if (!user) {
-			return
+			return;
 		}
-		updateUser({
+
+		const oldDefault = user.default_calendar_id;
+
+		await updateUser({
 			user_id: user.user_id,
 			username: username,
 			name: name,
-			// birthday: tempBirthday ? tempBirthday : undefined
 			birthday: birthday ? birthday.toFormat("yyyy-MM-dd") : undefined,
 			default_calendar_id: defaultCal,
-			// TODO: PFP how
-
 		}, {
 			onSuccess: () => {
 				setIsEditing(false);
+
+				if (defaultCal) {
+					const filteredIds = oldDefault ?
+						enabledCalendarIds.filter(id => id !== oldDefault) :
+						[...enabledCalendarIds];
+
+					if (!filteredIds.includes(defaultCal)) {
+						setEnabledCalendarIds([...filteredIds, defaultCal]);
+					} else {
+						setEnabledCalendarIds(filteredIds);
+					}
+				}
 			},
 		});
+	}
+	const handleSaveNotificationSettings = (firstNotif: number | null, secondNotif: number | null) => {
+		setFirstNotification(firstNotif);
+		setSecondNotification(secondNotif);
+		Storage.setItem('firstNotification', firstNotif?.toString() ?? 'null');
+		Storage.setItem('secondNotification', secondNotif?.toString() ?? 'null');
 	};
 
-	const handleSaveNotificationSettings = (firstNotif: number | null, secondNotif: number | null) => {
-        setFirstNotification(firstNotif);
-        setSecondNotification(secondNotif);
-        Storage.setItem('firstNotification', firstNotif?.toString() ?? 'null');
-        Storage.setItem('secondNotification', secondNotif?.toString() ?? 'null');
-    };
-
-    const formatNotificationTime = (timeMs: number | null): string => {
-        if (timeMs === null) return 'None';
-        if (timeMs === NotificationTimes.TIME_OF_EVENT) return 'At time of event';
-        if (timeMs < NotificationTimes.ONE_HOUR_MS) return `${timeMs / (60 * 1000)} minutes before`;
-        if (timeMs < NotificationTimes.ONE_DAY_MS) return '1 hour before';
-        return '1 day before';
-    };
+	const formatNotificationTime = (timeMs: number | null): string => {
+		if (timeMs === null) return 'None';
+		if (timeMs === NotificationTimes.TIME_OF_EVENT) return 'At time of event';
+		if (timeMs < NotificationTimes.ONE_HOUR_MS) return `${timeMs / (60 * 1000)} minutes before`;
+		if (timeMs < NotificationTimes.ONE_DAY_MS) return '1 hour before';
+		return '1 day before';
+	};
 
 	const handleCancel = () => {
 		setIsEditing(false);
 	}
-	
-	;
+
+		;
 	const { signOut } = useSession();
 
 	const { mutate: deleteUser, isPending: isDeleting } = useDeleteUser({});
@@ -178,7 +192,9 @@ export default function ProfileView() {
 											if (selectedCalendars.includes(calendar.calendar_id)) {
 												setSelectedCalendars(selectedCalendars.filter((id) => id !== calendar.calendar_id));
 											} else {
-												setSelectedCalendars([...selectedCalendars, calendar.calendar_id]);
+												if (!selectedCalendars.filter((id) => id === calendar.calendar_id)) {
+													setSelectedCalendars([...selectedCalendars, calendar.calendar_id]);
+												}
 											}
 										}}
 									/>
@@ -209,15 +225,22 @@ export default function ProfileView() {
 
 	const delay = (ms: number) => new Promise((res) => setTimeout(res, ms));
 
-	const { enabledCalendarIds, setEnabledCalendarIds } = useEnabledCalendarIds();
 
 	if (!calendars) {
 		return null;
 	}
 
-		if (!user) {
+	if (!user) {
 		return <Text className="text-primary">Loading...</Text>;
 	}
+
+
+	const renderCalendarItem = useCallback((calendar: Calendar) => (
+		<View className="flex flex-row items-center gap-2">
+			<View className="h-6 w-6 rounded-full" style={{ backgroundColor: calendar.color }} />
+			<Text className="text-primary">{calendar.title}</Text>
+		</View>
+	), [enabledCalendarIds]);
 
 
 	return (
@@ -241,12 +264,12 @@ export default function ProfileView() {
 			<MergeCalendarModal visible={mergeCalendarModalVisible} onClose={() => setMergeCalendarModalVisible(false)} />
 
 			<GlobalNotificationSettingsModal
-                visible={notificationModalVisible}
-                firstNotification={firstNotification}
-                secondNotification={secondNotification}
-                onClose={() => setNotificationModalVisible(false)}
-                onSave={handleSaveNotificationSettings}
-            />
+				visible={notificationModalVisible}
+				firstNotification={firstNotification}
+				secondNotification={secondNotification}
+				onClose={() => setNotificationModalVisible(false)}
+				onSave={handleSaveNotificationSettings}
+			/>
 
 			<View className="ml-1 mr-1 flex-row items-center justify-center relative">
 				<Text className="text-2xl font-bold text-primary">User Profile</Text>
@@ -298,7 +321,7 @@ export default function ProfileView() {
 							)}
 							{(showDatePicker || Platform.OS === "ios") && (
 								<DateTimePicker
-									value={birthday? birthday.toJSDate() : new Date()}
+									value={birthday ? birthday.toJSDate() : new Date()}
 									mode={"date"}
 									onChange={(e, selectedDate) => {
 										if (selectedDate && e.type === "set") {
@@ -313,6 +336,7 @@ export default function ProfileView() {
 							<Text className="text-primary">Default Calendar</Text>
 							<Dropdown<Calendar>
 								options={calendars}
+								defaultValue={calendars.find((cal) => cal.calendar_id === defaultCal)}
 								renderItem={(calendar) => {
 									return (
 										<View className="flex flex-row items-center gap-2">
@@ -321,18 +345,16 @@ export default function ProfileView() {
 										</View>
 									);
 								}}
-								onSelect={(selectedCalendar) => {
-									setDefaultCal(selectedCalendar.calendar_id);
-								}}
+								onSelect={(selectedCalendar) => (setDefaultCal(selectedCalendar.calendar_id))}
 							/>
 
 							<Text className="text-sm font-medium text-muted-foreground">Notification Settings</Text>
-							<Button 
-                                onPress={() => setNotificationModalVisible(true)}
-                                className="mt-2"
-                            >
-                                Configure Notifications
-                            </Button>
+							<Button
+								onPress={() => setNotificationModalVisible(true)}
+								className="mt-2"
+							>
+								Configure Notifications
+							</Button>
 
 							<Button onPress={() => {
 								deleteEventsUntilFromDB(DateTime.now(), user.user_id)
@@ -372,7 +394,7 @@ export default function ProfileView() {
 									<View className="flex-row items-center rounded-xl border border-gray-100 py-4 mb-2">
 										<Text className="pl-[5px] w-1/3 text-lg font-medium text-gray-600">Birthday</Text>
 										<Text className="flex-1 text-lg font-semibold text-gray-100">
-										{birthday ? birthday.toLocaleString(DateTime.DATE_MED) : "Not set"}
+											{birthday ? birthday.toLocaleString(DateTime.DATE_MED) : "Not set"}
 										</Text>
 									</View>
 
@@ -382,18 +404,18 @@ export default function ProfileView() {
 									</View>
 
 									<View className="flex-row items-center rounded-xl border border-gray-100 py-4 mb-2">
-                                        <Text className="pl-[5px] w-1/3 text-lg font-medium text-gray-600">First Notification</Text>
-                                        <Text className="flex-1 text-lg font-semibold text-gray-100">
-                                            {formatNotificationTime(firstNotification)}
-                                        </Text>
-                                    </View>
+										<Text className="pl-[5px] w-1/3 text-lg font-medium text-gray-600">First Notification</Text>
+										<Text className="flex-1 text-lg font-semibold text-gray-100">
+											{formatNotificationTime(firstNotification)}
+										</Text>
+									</View>
 
-                                    <View className="flex-row items-center rounded-xl border border-gray-100 py-4 mb-2">
-                                        <Text className="pl-[5px] w-1/3 text-lg font-medium text-gray-600">Second Notification</Text>
-                                        <Text className="flex-1 text-lg font-semibold text-gray-100">
-                                            {formatNotificationTime(secondNotification)}
-                                        </Text>
-                                    </View>
+									<View className="flex-row items-center rounded-xl border border-gray-100 py-4 mb-2">
+										<Text className="pl-[5px] w-1/3 text-lg font-medium text-gray-600">Second Notification</Text>
+										<Text className="flex-1 text-lg font-semibold text-gray-100">
+											{formatNotificationTime(secondNotification)}
+										</Text>
+									</View>
 
 								</View>
 							</View>
