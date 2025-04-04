@@ -171,11 +171,11 @@ export default function ProfileView() {
 			<Modal animationType="fade" transparent={true} visible={visible} onRequestClose={onClose}>
 				<View className="flex-1 items-center justify-center bg-black/50">
 					<View className="max-h-[80vh] w-[90vw] rounded-2xl bg-background p-6 shadow-lg">
-						<Text className="mb-3 text-center text-xl font-bold">Merge Calendars</Text>
+						<Text className="mb-3 text-center text-xl font-bold text-primary">Merge Calendars</Text>
 
 						<Text className="mb-5 text-center text-base text-primary">
 							Select calendars to merge with your online account{"\n"}
-							<Text className="font-medium text-red-600">(calendars not selected will be deleted)</Text>
+							<Text className="font-medium text-primary">(calendars not selected will be deleted)</Text>
 						</Text>
 
 						<ScrollView className="max-h-96" contentContainerClassName="pb-2">
@@ -291,7 +291,7 @@ export default function ProfileView() {
 				{isEditing ? (
 					<View className="rounded-xl border border-gray-300 p-4">
 						<View className="space-y-4">
-							<Text className="text-sm font-medium text-muted-foreground">Username</Text>
+							<Text className="text-sm font-medium text-primary">Username</Text>
 							<TextInput
 								className="rounded-lg border border-gray-300 p-3 text-primary"
 								style={{ backgroundColor: globColorInverse }}
@@ -300,7 +300,7 @@ export default function ProfileView() {
 								placeholder="Username"
 							/>
 
-							<Text className="text-sm font-medium text-muted-foreground">Name</Text>
+							<Text className="text-sm font-medium text-primary">Name</Text>
 							<TextInput
 								className="rounded-lg border border-gray-300 p-3 text-primary"
 								style={{ backgroundColor: globColorInverse }}
@@ -309,7 +309,7 @@ export default function ProfileView() {
 								placeholder="Name"
 							/>
 
-							<Text className="text-sm font-medium text-muted-foreground">Birthday</Text>
+							<Text className="text-sm font-medium text-primary">Birthday</Text>
 							{Platform.OS === "android" && (
 								<TouchableOpacity
 									className="flex flex-row items-center space-x-2 rounded-lg bg-gray-200 px-4 py-2"
@@ -347,7 +347,7 @@ export default function ProfileView() {
 								onSelect={(selectedCalendar) => (setDefaultCal(selectedCalendar.calendar_id))}
 							/>
 
-							<Text className="text-sm font-medium text-muted-foreground">Notification Settings</Text>
+							<Text className="text-sm font-medium text-primary">Notification Settings</Text>
 							<Button
 								onPress={() => setNotificationModalVisible(true)}
 								className="mt-2"
@@ -356,15 +356,11 @@ export default function ProfileView() {
 							</Button>
 
 							<View className="mt-10 flex-row items-center justify-center gap-8">
-								{/* <Button onPress={handleSave} labelClasses="text-background">
-									Save Changes
-								</Button> */}
-								<Button onPress={handleSave} labelClasses="text-background" disabled={isUpdating}>
+								<Button onPress={handleSave} labelClasses="text-secondary" disabled={isUpdating}>
 									{isUpdating ? "Updating..." : "Save Changes"}
 								</Button>
 
-
-								<Button onPress={handleCancel} labelClasses="text-background">
+								<Button onPress={handleCancel} labelClasses="text-secondary">
 									Cancel
 								</Button>
 							</View>
@@ -376,37 +372,37 @@ export default function ProfileView() {
 							<View className="rounded-xl border border-gray-300 p-4">
 								<View className="space-y-4">
 									<View className="flex-row items-center rounded-xl border border-gray-100 py-4 mb-2">
-										<Text className="pl-[5px] w-1/3 text-lg font-medium text-gray-600">Username</Text>
-										<Text className="flex-1 text-lg font-semibold text-gray-100">{username}</Text>
+										<Text className="pl-[5px] w-1/3 text-lg font-medium text-primary">Username</Text>
+										<Text className="flex-1 text-lg font-semibold text-primary">{username}</Text>
 									</View>
 
 									<View className="flex-row items-center rounded-xl border border-gray-100 py-4 mb-2">
-										<Text className="pl-[5px] w-1/3 text-lg font-medium text-gray-600">Name</Text>
-										<Text className="flex-1 text-lg font-semibold text-gray-100">{name}</Text>
+										<Text className="pl-[5px] w-1/3 text-lg font-medium text-primary">Name</Text>
+										<Text className="flex-1 text-lg font-semibold text-primary">{name}</Text>
 									</View>
 
 									<View className="flex-row items-center rounded-xl border border-gray-100 py-4 mb-2">
-										<Text className="pl-[5px] w-1/3 text-lg font-medium text-gray-600">Birthday</Text>
-										<Text className="flex-1 text-lg font-semibold text-gray-100">
+										<Text className="pl-[5px] w-1/3 text-lg font-medium text-primary">Birthday</Text>
+										<Text className="flex-1 text-lg font-semibold text-primary">
 											{birthday ? birthday.toLocaleString(DateTime.DATE_MED) : "Not set"}
 										</Text>
 									</View>
 
 									<View className="flex-row items-center rounded-xl border border-gray-100 py-4 mb-2">
-										<Text className="pl-[5px] w-1/3 text-lg font-medium text-gray-600">Default Calendar</Text>
-										<Text className="flex-1 text-lg font-semibold text-gray-100">{defaultCal}</Text>
+										<Text className="pl-[5px] w-1/3 text-lg font-medium text-primary">Default Calendar</Text>
+										<Text className="flex-1 text-lg font-semibold text-primary">{defaultCal}</Text>
 									</View>
 
 									<View className="flex-row items-center rounded-xl border border-gray-100 py-4 mb-2">
-										<Text className="pl-[5px] w-1/3 text-lg font-medium text-gray-600">First Notification</Text>
-										<Text className="flex-1 text-lg font-semibold text-gray-100">
+										<Text className="pl-[5px] w-1/3 text-lg font-medium text-primary">First Notification</Text>
+										<Text className="flex-1 text-lg font-semibold text-primary">
 											{formatNotificationTime(firstNotification)}
 										</Text>
 									</View>
 
 									<View className="flex-row items-center rounded-xl border border-gray-100 py-4 mb-2">
-										<Text className="pl-[5px] w-1/3 text-lg font-medium text-gray-600">Second Notification</Text>
-										<Text className="flex-1 text-lg font-semibold text-gray-100">
+										<Text className="pl-[5px] w-1/3 text-lg font-medium text-primary">Second Notification</Text>
+										<Text className="flex-1 text-lg font-semibold text-primary">
 											{formatNotificationTime(secondNotification)}
 										</Text>
 									</View>
