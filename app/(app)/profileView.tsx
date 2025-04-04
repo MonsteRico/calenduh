@@ -122,6 +122,8 @@ export default function ProfileView() {
 						setEnabledCalendarIds(filteredIds);
 					}
 				}
+
+				router.back()
 			},
 		});
 	}
