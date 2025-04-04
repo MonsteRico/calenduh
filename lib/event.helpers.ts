@@ -188,6 +188,22 @@ export const deleteEventFromDB = async (event_id: string): Promise<void> => {
 	}
 };
 
+// Delete an event from the local database
+export const deleteEventsUntilFromDB = async (deleteBefore: DateTime, user_id:string): Promise<void> => {
+	const db = await openDatabaseAsync("local.db");
+
+	try {
+		await db.runAsync(
+			"DELETE FROM events WHERE start_time < ? AND calendar_id IN (SELECT calendar_id FROM calendars WHERE user_id = ?);",
+			deleteBefore.valueOf().toString(),
+			user_id
+		);
+	} catch (error) {
+		console.error("Error deleting event:", error);
+		throw error;
+	}
+};
+
 // --- API Requests ---
 
 export const getEventsFromServer = async (): Promise<Event[]> => {
@@ -280,4 +296,8 @@ export const updateEventOnServer = async (calendar_id: string, event: UpdateEven
 
 export const deleteEventOnServer = async (calendar_id: string, event_id: string): Promise<void> => {
 	await server.delete(`/events/${calendar_id}/${event_id}`);
+};
+
+export const deleteEventsUntilNowOnServer = async (): Promise<void> => {
+	await server.delete(`/events/@prune`);
 };
