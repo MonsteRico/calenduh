@@ -40,10 +40,10 @@ export default function CreateEvent() {
 	const [location, setLocation] = useState(""); //Text box
 	const [description, setDescription] = useState(""); //Text box
 	const [firstNotification, setFirstNotification] = useState<number | null>(
-		Storage.getItemSync("firstNotification") === "null" ? null : Number(Storage.getItemSync("firstNotification"))
+		NotificationTimes.FIFTEEN_MINUTES_MS
 	);
 	const [secondNotification, setSecondNotification] = useState<number | null>(
-		Storage.getItemSync("secondNotification") === "null" ? null : Number(Storage.getItemSync("secondNotification"))
+		NotificationTimes.NONE
 	);
 	const [eventCalendarId, setEventCalendarId] = useState<string>(""); //Single Select List
 	const [frequency, setFrequency] = useState<null | string>(null);
