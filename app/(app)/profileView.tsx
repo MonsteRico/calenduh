@@ -25,6 +25,7 @@ import { Calendar } from "@/types/calendar.types";
 import { GlobalNotificationSettingsModal } from "@/components/GlobalNotificationSettingsModal";
 import { NotificationTimes } from "@/constants/notificationTimes";
 
+
 export default function ProfileView() {
 	const isPresented = router.canGoBack();
 
@@ -50,6 +51,8 @@ export default function ProfileView() {
 
 	const { data: calendars, isLoading } = useMyCalendars();
 
+	const { enabledCalendarIds = [], setEnabledCalendarIds } = useEnabledCalendarIds();
+
 	const handleEditToggle = () => {
 		setIsEditing(!isEditing);
 	};
@@ -58,7 +61,7 @@ export default function ProfileView() {
 		onSuccess: () => {
 			setIsEditing(false);
 			router.back(); // Navigate back after updating
-		},
+		}
 	});
 
 	useEffect(() => {
@@ -88,26 +91,37 @@ export default function ProfileView() {
 		loadNotificationSettings();
 	}, [user])
 
-	const handleSave = () => {
+	const handleSave = async () => {
 		if (!user) {
-			return
+			return;
 		}
-		updateUser({
+
+		const oldDefault = user.default_calendar_id;
+
+		await updateUser({
 			user_id: user.user_id,
 			username: username,
 			name: name,
-			// birthday: tempBirthday ? tempBirthday : undefined
 			birthday: birthday ? birthday.toFormat("yyyy-MM-dd") : undefined,
 			default_calendar_id: defaultCal,
-			// TODO: PFP how
-
 		}, {
 			onSuccess: () => {
 				setIsEditing(false);
+
+				if (defaultCal) {
+					const filteredIds = oldDefault ?
+						enabledCalendarIds.filter(id => id !== oldDefault) :
+						[...enabledCalendarIds];
+
+					if (!filteredIds.includes(defaultCal)) {
+						setEnabledCalendarIds([...filteredIds, defaultCal]);
+					} else {
+						setEnabledCalendarIds(filteredIds);
+					}
+				}
 			},
 		});
-	};
-
+	}
 	const handleSaveNotificationSettings = (firstNotif: number | null, secondNotif: number | null) => {
 		setFirstNotification(firstNotif);
 		setSecondNotification(secondNotif);
@@ -210,7 +224,6 @@ export default function ProfileView() {
 
 	const delay = (ms: number) => new Promise((res) => setTimeout(res, ms));
 
-	const { enabledCalendarIds, setEnabledCalendarIds } = useEnabledCalendarIds();
 
 	if (!calendars) {
 		return null;
@@ -322,15 +335,16 @@ export default function ProfileView() {
 							<Text className="text-primary">Default Calendar</Text>
 							<Dropdown<Calendar>
 								options={calendars}
-								defaultValue={user.default_calendar_id ? calendars.find((cal) => cal.calendar_id === user.default_calendar_id) : undefined}
-								renderItem={renderCalendarItem}
-								onSelect={(selectedCalendar) => {
-									if (user.default_calendar_id) {
-										setEnabledCalendarIds(enabledCalendarIds.filter((id) => id !== user.default_calendar_id));
-									}
-									setDefaultCal(selectedCalendar.calendar_id);
-									setEnabledCalendarIds([...enabledCalendarIds, selectedCalendar.calendar_id]);
+								defaultValue={calendars.find((cal) => cal.calendar_id === defaultCal)}
+								renderItem={(calendar) => {
+									return (
+										<View className="flex flex-row items-center gap-2">
+											<View className="h-6 w-6 rounded-full" style={{ backgroundColor: calendar.color }} />
+											<Text className="text-primary">{calendar.title}</Text>
+										</View>
+									);
 								}}
+								onSelect={(selectedCalendar) => (setDefaultCal(selectedCalendar.calendar_id))}
 							/>
 
 							<Text className="text-sm font-medium text-muted-foreground">Notification Settings</Text>
