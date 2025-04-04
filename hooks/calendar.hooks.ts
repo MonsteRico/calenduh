@@ -42,11 +42,15 @@ export const useCalendars = () => {
 
 					return serverCalendars;
 				} catch (error) {
-					console.error("Error fetching calendars from server:", error);
+					if (process.env.SHOW_LOGS == 'true') {
+						console.error("Error fetching calendars from server:", error);
+					}
 					return [];
 				}
 			} else {
-				console.error("You are offline, cannot fetch the calendars from the server");
+				if (process.env.SHOW_LOGS == 'true') {
+					console.error("You are offline, cannot fetch the calendars from the server");
+				}
 				return [];
 			}
 		},
@@ -74,7 +78,9 @@ export const useCalendar = (calendar_id: string) => {
 					await updateCalendarInDB(serverCalendar.calendar_id, serverCalendar, user.user_id);
 					return serverCalendar;
 				} catch (error) {
-					console.error(`Error fetching calendar ${calendar_id} from server:`, error);
+					if (process.env.SHOW_LOGS == 'true') {
+						console.error(`Error fetching calendar ${calendar_id} from server:`, error);
+					}
 					const localCalendar = await getCalendarFromDB(calendar_id);
 					if (localCalendar) {
 						return localCalendar;
@@ -116,7 +122,9 @@ export const useMultipleCalendars = (calendarIds: string[]) => {
 						await updateCalendarInDB(serverCalendar.calendar_id, serverCalendar, user.user_id);
 						return serverCalendar;
 					} catch (error) {
-						console.error(`Error fetching calendar ${calendarId} from server:`, error);
+						if (process.env.SHOW_LOGS == 'true') {
+							console.error(`Error fetching calendar ${calendarId} from server:`, error);
+						}
 						const localCalendar = await getCalendarFromDB(calendarId);
 						if (localCalendar) {
 							return localCalendar;
@@ -154,7 +162,9 @@ export const useGroupCalendars = (group_id: string) => {
 					const serverCalendars = await getGroupCalendarsFromServer(group_id);
 					return serverCalendars;
 				} catch (error) {
-					console.error(`Error fetching calendars from server with group_id: ${group_id}:`, error);
+					if (process.env.SHOW_LOGS == 'true') {
+						console.error(`Error fetching calendars from server with group_id: ${group_id}:`, error);
+					}
 					throw new Error(`Calendars could not be fetched for group_id: ${group_id}`);
 				}
 			} else {
@@ -201,7 +211,9 @@ export const useMyCalendars = () => {
 
 					return [...serverGroupCalendars, ...serverCalendars.filter((calendar) => !deletedCalendarIds.includes(calendar.calendar_id))]; // Remove any calendars that were deleted offline before they get deleted on the server
 				} catch (error) {
-					console.error("Error fetching calendars from server:", error);
+					if (process.env.SHOW_LOGS == 'true') {
+						console.error("Error fetching calendars from server:", error);
+					}
 					return localCalendars;
 				}
 			} else {
@@ -229,7 +241,9 @@ export const useSubscribedCalendars = () => {
 					// Update local DB
 					return serverCalendars;
 				} catch (error) {
-					console.error("Error fetching subscribed calendars from server:", error);
+					if (process.env.SHOW_LOGS == 'true') {
+						console.error("Error fetching subscribed calendars from server:", error);
+					}
 					return []; // Or handle error as needed
 				}
 			} else {
@@ -292,7 +306,9 @@ export const useCreateCalendar = (
 				return { previousCalendars, tempId };
 			},
 			onError: (err, newCalendar, context) => {
-				console.error("Error creating calendar:", err);
+				if (process.env.SHOW_LOGS == 'true') {
+					console.error("Error creating calendar:", err);
+				}
 				queryClient.setQueryData<Calendar[]>(["calendars"], context?.previousCalendars);
 				options?.onError?.(err, newCalendar, context);
 			},
@@ -310,7 +326,9 @@ export const useCreateCalendar = (
 						await updateCalendarInDB(context.tempId, newCalendar, user.user_id);
 						setEnabledCalendarIds([...enabledCalendarIds, newCalendar.calendar_id]);
 					} catch (error) {
-						console.error("Error syncing calendar to server:", error);
+						if (process.env.SHOW_LOGS == 'true') {
+							console.error("Error syncing calendar to server:", error);
+						}
 					}
 				}
 				await queryClient.invalidateQueries({ queryKey: ["calendars"] });
@@ -390,7 +408,9 @@ export const useUpdateCalendar = (
 		},
 		onError: (err, updatedCalendar, context) => {
 			options?.onError?.(err, updatedCalendar, context);
-			console.error("Error updating calendar:", err);
+			if (process.env.SHOW_LOGS == 'true') {
+				console.error("Error updating calendar:", err);
+			}
 			queryClient.setQueryData<Calendar[]>(["calendars"], context?.previousCalendars);
 		},
 		onSuccess: (data, variables, context) => {
@@ -467,7 +487,9 @@ export const useDeleteCalendar = (
 		},
 		onError: (err, calendar_id, context) => {
 			options?.onError?.(err, calendar_id, context);
-			console.error("Error deleting calendar:", err);
+			if (process.env.SHOW_LOGS == 'true') {
+				console.error("Error deleting calendar:", err);
+			}
 			queryClient.setQueryData<Calendar[]>(["calendars"], context?.previousCalendars);
 		},
 		onSuccess: (data, variables, context) => {

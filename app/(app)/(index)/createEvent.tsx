@@ -68,7 +68,9 @@ export default function CreateEvent() {
 					setSecondNotification(savedSecond === "null" ? null : Number(savedSecond));
 				}
 			} catch (error) {
-				console.error("Error loading notification settings:", error);
+				if (process.env.SHOW_LOGS == 'true') {
+					console.error("Error loading notification settings:", error);
+				}
 				setFirstNotification(NotificationTimes.FIFTEEN_MINUTES_MS);
 				setSecondNotification(null);
 			}

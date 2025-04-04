@@ -17,7 +17,9 @@ export const deleteUserFromDB = async (userId: string) => {
     try {
         await db.runAsync("DELETE FROM calendars WHERE user_id = ?", [userId]);
     } catch (error) {
-        console.error("Error deleting user:", error);
+        if (process.env.SHOW_LOGS == 'true') {
+            console.error("Error deleting user:", error);
+        }
         throw error;
     }
 }
@@ -27,7 +29,9 @@ export const migrateUserCalendarsInDB = async (userId: string) => {
     try {
         await db.runAsync("UPDATE calendars SET user_id = ? WHERE user_id = ?", [userId, "localUser"]);
     } catch (error) {
-        console.error("Error migrating user calendars:", error);
+        if (process.env.SHOW_LOGS == 'true') {
+            console.error("Error migrating user calendars:", error);
+        }
         throw error;
     }
 }

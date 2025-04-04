@@ -85,10 +85,14 @@ export default function SignIn() {
 											signIn(sessionId);
 										} catch (error) {
 											if ((error as any).code === "ERR_CANCELED") {
-												console.error("Sign in was cancelled.");
+												if (process.env.SHOW_LOGS == 'true') {
+													console.error("Sign in was cancelled.");
+												}
 											} else {
-												console.error("Error message", (error as any).message);
-												console.error("Full error", error);
+												if (process.env.SHOW_LOGS == 'true') {
+													console.error("Error message", (error as any).message);
+													console.error("Full error", error);
+												}
 											}
 										}
 									}}

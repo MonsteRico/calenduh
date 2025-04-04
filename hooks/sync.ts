@@ -77,11 +77,15 @@ export function useSync() {
 							break;
 						case "CREATE_EVENT":
 							if (!mutation.event_id) {
-								console.error("Mutation has no event_id and was trying to create an event");
+								if (process.env.SHOW_LOGS == 'true') {
+									console.error("Mutation has no event_id and was trying to create an event");
+								}
 								continue;
 							}
 							if (!mutation.calendar_id) {
-								console.error("Mutation has no calendar_id and was trying to create an event");
+								if (process.env.SHOW_LOGS == 'true') {
+									console.error("Mutation has no calendar_id and was trying to create an event");
+								}
 								continue;
 							}
 							const newEvent = await createEventOnServer(mutation.calendar_id, JSON.parse(mutation.parameters));
@@ -89,11 +93,15 @@ export function useSync() {
 							break;
 						case "UPDATE_EVENT":
 							if (!mutation.calendar_id) {
-								console.error("Mutation has no calendar_id and was trying to update an event");
+								if (process.env.SHOW_LOGS == 'true') {
+									console.error("Mutation has no calendar_id and was trying to update an event");
+								}
 								continue;
 							}
 							if (!mutation.event_id) {
-								console.error("Mutation has no event_id and was trying to create an event");
+								if (process.env.SHOW_LOGS == 'true') {
+									console.error("Mutation has no event_id and was trying to create an event");
+								}
 								continue;
 							}
 							const updatedEvent = await updateEventOnServer(mutation.calendar_id, JSON.parse(mutation.parameters));
@@ -101,7 +109,9 @@ export function useSync() {
 							break;
 						case "DELETE_EVENT":
 							if (!mutation.calendar_id) {
-								console.error("Mutation has no calendar_id and was trying to delete an event");
+								if (process.env.SHOW_LOGS == 'true') {
+									console.error("Mutation has no calendar_id and was trying to delete an event");
+								}
 								continue;
 							}
 							await deleteEventOnServer(mutation.calendar_id, JSON.parse(mutation.parameters));
@@ -115,7 +125,9 @@ export function useSync() {
 			return { numberSynced };
 		},
 		onError: (_err, _variables, context: any) => {
-			console.error("Error occurred while syncing to server:", context.error);
+			if (process.env.SHOW_LOGS == 'true') {
+				console.error("Error occurred while syncing to server:", context.error);
+			}
 			console.log("Number synced:", context.numberSynced);
 		},
 		onSuccess: (data, variables, context) => {

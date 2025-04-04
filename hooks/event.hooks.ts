@@ -58,7 +58,9 @@ export const useEventsForCalendar = (calendar_id: string) => {
 
 					return serverEvents.filter((event) => !deletedEventIds.includes(event.event_id)); // Remove any events that were deleted offline before they get deleted on the server
 				} catch (error) {
-					console.error(`Error fetching events for calendar ${calendar_id} from server:`, error);
+					if (process.env.SHOW_LOGS == 'true') {
+						console.error(`Error fetching events for calendar ${calendar_id} from server:`, error);
+					}
 					return localEvents;
 				}
 			} else {
@@ -90,7 +92,9 @@ export const useEvent = (calendar_id: string, event_id: string) => {
 
 					return serverEvent;
 				} catch (error) {
-					console.error(`Error fetching event ${event_id} from server:`, error);
+					if (process.env.SHOW_LOGS == 'true') {
+						console.error(`Error fetching event ${event_id} from server:`, error);
+					}
 					const localEvent = await getEventFromDB(event_id);
 					if (localEvent) {
 						return localEvent;
@@ -160,7 +164,9 @@ export const useEventsForInterval = (interval: Interval<true>) => {
 
 					return filteredServerEvents;
 				} catch (error) {
-					console.error("Error fetching events for interval from server:", error);
+					if (process.env.SHOW_LOGS == 'true') {
+						console.error("Error fetching events for interval from server:", error);
+					}
 					// Fallback to local database if server fetch fails
 					const localEvents = await getEventsFromDB(user.user_id);
 					// Filter events that fall within the specified day
@@ -220,7 +226,9 @@ export const useEventsForDay = (day: DateTime, options?: { enabled: boolean }) =
 
 					return filteredServerEvents;
 				} catch (error) {
-					console.error("Error fetching events for day from server:", error);
+					if (process.env.SHOW_LOGS == 'true') {
+						console.error("Error fetching events for day from server:", error);
+					}
 					// Fallback to local database if server fetch fails
 					const localEvents = await getEventsFromDB(user.user_id);
 
@@ -294,7 +302,9 @@ export const useEventsForWeek = (day: DateTime, options?: {enabled: boolean}) =>
 
 					return filteredServerEvents;
 				} catch (error) {
-					console.error("Error fetching events for week from server:", error);
+					if (process.env.SHOW_LOGS == 'true') {
+						console.error("Error fetching events for week from server:", error);
+					}
 					// Fallback to local database if server fetch fails
 					const localEvents = await getEventsFromDB(user.user_id);
 
@@ -372,7 +382,9 @@ export const useCreateEvent = (
 		},
 		onError: (err, { newEvent, calendar_id }, context) => {
 			options?.onError?.(err, { newEvent, calendar_id }, context);
-			console.error("Error creating event:", err);
+			if (process.env.SHOW_LOGS == 'true') {
+				console.error("Error creating event:", err);
+			}
 			queryClient.setQueryData<Event[]>(["events", calendar_id], context?.previousEvents);
 		},
 		onSuccess: (data, variables, context) => {
@@ -385,7 +397,9 @@ export const useCreateEvent = (
 				try {
 					await updateEventInDB(context.tempId, newEvent, user.user_id);
 				} catch (error) {
-					console.error("Error syncing event to server:", error);
+					if (process.env.SHOW_LOGS == 'true') {
+						console.error("Error syncing event to server:", error);
+					}
 				}
 			}
 			await queryClient.invalidateQueries({ queryKey: ["events"] });
@@ -452,7 +466,9 @@ export const useUpdateEvent = (
 		},
 		onError: (err, { updatedEvent, calendar_id }, context) => {
 			options?.onError?.(err, { updatedEvent, calendar_id }, context);
-			console.error("Error updating event:", err);
+			if (process.env.SHOW_LOGS == 'true') {
+				console.error("Error updating event:", err);
+			}
 			queryClient.setQueryData<Event[]>(["events", calendar_id], context?.previousEvents);
 		},
 		onSuccess: (data, variables, context) => {
@@ -521,7 +537,9 @@ export const useDeleteEvent = (
 		},
 		onError: (err, { event_id, calendar_id }, context) => {
 			options?.onError?.(err, { event_id, calendar_id }, context);
-			console.error("Error deleting event:", err);
+			if (process.env.SHOW_LOGS == 'true') {
+				console.error("Error deleting event:", err);
+			}
 			queryClient.setQueryData<Event[]>(["events", calendar_id], context?.previousEvents);
 		},
 		onSuccess: (data, variables, context) => {

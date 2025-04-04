@@ -26,7 +26,9 @@ export const getEventsFromDB = async (user_id: string): Promise<Event[]> => {
 			end_time: DateTime.fromJSDate(new Date(item.end_time)).toLocal(),
 		}));
 	} catch (error) {
-		console.error("Error fetching events:", error);
+		if (process.env.SHOW_LOGS == 'true') {
+			console.error("Error fetching events:", error);
+		}
 		throw error;
 	}
 };
@@ -45,7 +47,9 @@ export const getEventsForCalendarFromDB = async (calendar_id: string): Promise<E
 			end_time: DateTime.fromJSDate(new Date(item.end_time)).toLocal(),
 		}));
 	} catch (error) {
-		console.error("Error fetching events for calendar:", error);
+		if (process.env.SHOW_LOGS == 'true') {
+			console.error("Error fetching events for calendar:", error);
+		}
 		throw error;
 	}
 };
@@ -68,7 +72,9 @@ export const getEventFromDB = async (event_id: string): Promise<Event | undefine
 		}
 		return undefined;
 	} catch (error) {
-		console.error("Error fetching event:", error);
+		if (process.env.SHOW_LOGS == 'true') {
+			console.error("Error fetching event:", error);
+		}
 		throw error;
 	}
 };
@@ -97,7 +103,9 @@ export const insertEventIntoDB = async (event: EventUpsert, userId: string): Pro
 		);
 	} catch (error) {
 		console.log("Event was", event);
-		console.error("Error inserting event:", error);
+		if (process.env.SHOW_LOGS == 'true') {
+			console.error("Error inserting event:", error);
+		}
 		throw error;
 	}
 };
@@ -121,7 +129,9 @@ export const upsertEventIntoDB = async (event: EventUpsert, userId: string): Pro
 			await insertEventIntoDB(event, userId);
 		}
 	} catch (error) {
-		console.error("Error upserting event:", error);
+		if (process.env.SHOW_LOGS == 'true') {
+			console.error("Error upserting event:", error);
+		}
 		throw error;
 	}
 };
@@ -156,7 +166,9 @@ export const updateEventInDB = async (eventId: string, event: UpdateEvent, userI
 			]
 		);
 	} catch (error) {
-		console.error("Error updating event:", error);
+		if (process.env.SHOW_LOGS == 'true') {
+			console.error("Error updating event:", error);
+		}
 		throw error;
 	}
 };
@@ -171,7 +183,9 @@ export const updateEventNotificationIds = async (eventId: string, notificationId
 			eventId,
 		]);
 	} catch (error) {
-		console.error("Error updating event notification ids:", error);
+		if (process.env.SHOW_LOGS == 'true') {
+			console.error("Error updating event notification ids:", error);
+		}
 		throw error;
 	}
 };
@@ -183,7 +197,9 @@ export const deleteEventFromDB = async (event_id: string): Promise<void> => {
 	try {
 		await db.runAsync("DELETE FROM events WHERE event_id = ?", event_id);
 	} catch (error) {
-		console.error("Error deleting event:", error);
+		if (process.env.SHOW_LOGS == 'true') {
+			console.error("Error deleting event:", error);
+		}
 		throw error;
 	}
 };
@@ -199,7 +215,9 @@ export const deleteEventsUntilFromDB = async (deleteBefore: DateTime, user_id:st
 			user_id
 		);
 	} catch (error) {
-		console.error("Error deleting event:", error);
+		if (process.env.SHOW_LOGS == 'true') {
+			console.error("Error deleting event:", error);
+		}
 		throw error;
 	}
 };
