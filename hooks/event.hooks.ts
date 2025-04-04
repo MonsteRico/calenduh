@@ -197,6 +197,7 @@ export const useEventsForDay = (day: DateTime, options?: { enabled: boolean }) =
 	return useQuery<Event[], Error>({
 		queryKey: ["events", "day", day.toISODate()], // Cache key based on the date
 		queryFn: async () => {
+			console.log("Use events for day query ran ");
 			const startOfDay = day.startOf("day").valueOf(); // Get the start of the day in milliseconds
 			const endOfDay = day.endOf("day").valueOf(); // Get the end of the day in milliseconds
 
