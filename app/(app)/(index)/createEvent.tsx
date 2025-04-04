@@ -61,11 +61,17 @@ export default function CreateEvent() {
 				const savedFirst = await Storage.getItem("firstNotification");
 				const savedSecond = await Storage.getItem("secondNotification");
 
-				if (savedFirst !== null) {
+				if (savedFirst !== null && savedFirst !== undefined) {
 					setFirstNotification(savedFirst === "null" ? null : Number(savedFirst));
 				}
-				if (savedSecond !== null) {
+				else {
+					setFirstNotification(NotificationTimes.FIFTEEN_MINUTES_MS)
+				}
+				if (savedSecond !== null && savedSecond !== undefined) {
 					setSecondNotification(savedSecond === "null" ? null : Number(savedSecond));
+				}
+				else {
+					setSecondNotification(NotificationTimes.NONE)
 				}
 			} catch (error) {
 				if (process.env.SHOW_LOGS == 'true') {
