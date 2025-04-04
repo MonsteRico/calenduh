@@ -16,7 +16,9 @@ export const getCalendarsFromDB = async (user_id: string): Promise<Calendar[]> =
 			is_public: item.is_public == 1 ? true : false,
 		}));
 	} catch (error) {
-		console.error("Error fetching calendars:", error);
+		if (process.env.SHOW_LOGS == 'true') {
+			console.error("Error fetching calendars:", error);
+		}
 		throw error;
 	}
 };
@@ -34,7 +36,9 @@ export const getCalendarFromDB = async (calendar_id: string): Promise<Calendar |
 		}
 		return undefined;
 	} catch (error) {
-		console.error("Error fetching calendar:", error);
+		if (process.env.SHOW_LOGS == 'true') {
+			console.error("Error fetching calendar:", error);
+		}
 		throw error;
 	}
 };
@@ -56,7 +60,9 @@ export const insertCalendarIntoDB = async (calendar: CalendarUpsert, userId: str
 			]
 		);
 	} catch (error) {
-		console.error("Error inserting calendar:", error);
+		if (process.env.SHOW_LOGS == 'true') {
+			console.error("Error inserting calendar:", error);
+		}
 		throw error;
 	}
 };
@@ -81,7 +87,9 @@ export const upsertCalendarIntoDB = async (calendar: CalendarUpsert, userId: str
 			await insertCalendarIntoDB(calendar, userId);
 		}
 	} catch (error) {
-		console.error("Error upserting calendar:", error);
+		if (process.env.SHOW_LOGS == 'true') {
+			console.error("Error upserting calendar:", error);
+		}
 		throw error;
 	}
 };
@@ -109,7 +117,9 @@ export const updateCalendarInDB = async (calendar_id: string, calendar: UpdateCa
 			]
 		);
 	} catch (error) {
-		console.error("Error updating calendar:", error);
+		if (process.env.SHOW_LOGS == 'true') {
+			console.error("Error updating calendar:", error);
+		}
 		throw error;
 	}
 };
@@ -120,7 +130,9 @@ export const deleteCalendarFromDB = async (calendar_id: string): Promise<void> =
 	try {
 		await db.runAsync("DELETE FROM calendars WHERE calendar_id = ?", calendar_id);
 	} catch (error) {
-		console.error("Error deleting calendar:", error);
+		if (process.env.SHOW_LOGS == 'true') {
+			console.error("Error deleting calendar:", error);
+		}
 		throw error;
 	}
 };

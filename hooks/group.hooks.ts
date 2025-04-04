@@ -37,7 +37,9 @@ export const useMyGroups = () => {
                     const serverGroups = await getMyGroupsFromServer();
                     return serverGroups;
                 } catch (error) {
-                    console.error("Error fetching groupsf rom server:", error);
+                    if (process.env.SHOW_LOGS == 'true') {
+                        console.error("Error fetching groupsf rom server:", error);
+                    }
                     throw new Error("Error fetching groups from server");
                 }
             } else {
@@ -67,7 +69,9 @@ export const useGroup = (group_id: string) => {
                     }
                     return serverGroup;
                 } catch (error) {
-                    console.error(`Error fetching group ${group_id} from server:`, error);
+                    if (process.env.SHOW_LOGS == 'true') {
+                        console.error(`Error fetching group ${group_id} from server:`, error);
+                    }
                     throw new Error(`Error fetching group ${group_id} from server`);
                 }
             }

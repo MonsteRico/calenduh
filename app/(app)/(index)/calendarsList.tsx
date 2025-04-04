@@ -3,7 +3,7 @@ import { router } from "expo-router";
 import { Text, View, ScrollView } from "react-native";
 import { Checkbox } from "@/components/Checkbox";
 import { Accordion } from "@/components/Accordion";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 
 interface example_calendar {
 	name: string;
@@ -139,6 +139,10 @@ function CalendarItem({
 }: CalendarItemProps) {
 	const [isChecked, setIsChecked] = useState(checked);
 
+
+	useEffect(() => {
+		setIsChecked(checked);
+	}, [checked]);
 
 	return (
 		<View>

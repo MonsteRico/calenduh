@@ -20,11 +20,15 @@ export const useDeleteUser = (options?: UseMutationOptions<void, Error, string, 
 					await deleteUserFromDB(user_id);
 					await deleteUserFromServer();
 				} catch (error) {
-					console.error("Error deleting user from server:", error);
+					if (process.env.SHOW_LOGS == 'true') {
+						console.error("Error deleting user from server:", error);
+					}
 					throw error;
 				}
 			} else {
-				console.error("User is not online, cannot delete user from server");
+				if (process.env.SHOW_LOGS == 'true') {
+					console.error("User is not online, cannot delete user from server");
+				}
 				return;
 			}
 		},

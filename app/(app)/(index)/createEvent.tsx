@@ -9,7 +9,7 @@ import { useColorScheme } from "nativewind";
 import { useLocalSearchParams } from "expo-router";
 import { useMyCalendars } from "@/hooks/calendar.hooks";
 import { Calendar } from "@/types/calendar.types";
-import DateTimePicker from "@react-native-community/datetimepicker";
+import DateTimePicker, { DateTimePickerEvent } from "@react-native-community/datetimepicker";
 import { DateTime } from "luxon";
 import Dropdown from "@/components/Dropdown";
 import { useCreateEvent } from "@/hooks/event.hooks";
@@ -68,7 +68,9 @@ export default function CreateEvent() {
 					setSecondNotification(savedSecond === "null" ? null : Number(savedSecond));
 				}
 			} catch (error) {
-				console.error("Error loading notification settings:", error);
+				if (process.env.SHOW_LOGS == 'true') {
+					console.error("Error loading notification settings:", error);
+				}
 				setFirstNotification(NotificationTimes.FIFTEEN_MINUTES_MS);
 				setSecondNotification(null);
 			}
@@ -106,11 +108,30 @@ export default function CreateEvent() {
 			// workaround until i can store null in database
 			// setStartDate(PLACEHOLDER_DATE);
 			// setEndDate(PLACEHOLDER_DATE);
+
 			setStartDate((prev) => prev.startOf("day"));
-			setEndDate((prev) => prev.endOf("day"));
+			setEndDate(startDate.endOf("day"));
 		} else {
-			setStartDate(DateTime.now());
-			setEndDate(DateTime.now());
+			var currTime = DateTime.now();
+			setStartDate((prev) => prev.set({ hour: currTime.hour, minute: currTime.minute}));
+			setEndDate((prev) => prev.set({ hour: currTime.hour, minute: currTime.minute }).plus({ hour: 1 }));
+		}
+	};
+
+
+	
+	const onStartDateSet = (e: DateTimePickerEvent, selectedDate: Date) => {
+		if (selectedDate && e.type === "set" && isAllDay) {
+			const luxonDate = DateTime.fromJSDate(selectedDate);
+			setStartDate(luxonDate.startOf("day"));
+			setEndDate(luxonDate.endOf("day"));
+		} else if (selectedDate && e.type === "set" && endDate === today.plus({ hours: 1 })) {
+			const luxonDate = DateTime.fromJSDate(selectedDate);
+			setStartDate(luxonDate);
+			setEndDate(luxonDate.plus({ hours: 1 }));
+		} else if (selectedDate && e.type === "set") {
+			const luxonDate = DateTime.fromJSDate(selectedDate);
+			setStartDate(luxonDate);
 		}
 	};
 
@@ -172,7 +193,7 @@ export default function CreateEvent() {
 						options={calendars}
 						defaultValue={
 							user.default_calendar_id
-								? calendars.find((cal) => cal.calendar_id == user.default_calendar_id)
+								? calendars.find((cal) => cal.calendar_id === user.default_calendar_id)
 								: undefined
 						}
 						renderItem={(calendar) => {
@@ -210,9 +231,9 @@ export default function CreateEvent() {
 							mode={"date"}
 							onChange={(e, selectedDate) => {
 								if (selectedDate && e.type === "set") {
-									const luxonDate = DateTime.fromJSDate(selectedDate);
-									setStartDate(luxonDate);
-									setShowStartTimePicker(true);
+									if (selectedDate) {
+										onStartDateSet(e, selectedDate);
+									}
 								}
 								setShowStartDatePicker(false);
 							}}
@@ -224,9 +245,8 @@ export default function CreateEvent() {
 							is24Hour={false}
 							mode={"time"}
 							onChange={(e, selectedDate) => {
-								if (selectedDate && e.type === "set") {
-									const luxonDate = DateTime.fromJSDate(selectedDate);
-									setStartDate(luxonDate);
+								if (selectedDate) {
+									onStartDateSet(e, selectedDate);
 								}
 								setShowStartTimePicker(false);
 							}}
@@ -240,6 +260,7 @@ export default function CreateEvent() {
 						<TouchableOpacity
 							className="flex flex-row items-center space-x-2 rounded-lg bg-gray-200 px-4 py-2"
 							onPress={() => setShowEndDatePicker(true)}
+							disabled={isAllDay}
 						>
 							<Text className="font-medium text-primary">{endDate.toLocaleString(DateTime.DATETIME_MED)}</Text>
 						</TouchableOpacity>

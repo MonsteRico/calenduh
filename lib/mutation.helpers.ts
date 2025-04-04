@@ -32,7 +32,9 @@ export async function addMutationToQueue(mutation: MutationTypes, parameters: an
 			]);
 		}
 	} catch (error) {
-		console.error("Error inserting mutation:", error);
+		if (process.env.SHOW_LOGS == 'true') {
+			console.error("Error inserting mutation:", error);
+		}
 		throw error;
 	}
 }
@@ -45,7 +47,9 @@ export const getMutationsFromDB = async (): Promise<Mutation[]> => {
 		const mutations = await db.getAllAsync<any>("SELECT * FROM mutations");
 		return mutations;
 	} catch (error) {
-		console.error("Error fetching mutations:", error);
+		if (process.env.SHOW_LOGS == 'true') {
+			console.error("Error fetching mutations:", error);
+		}
 		throw error;
 	}
 };
@@ -55,7 +59,9 @@ export const removeMutationFromQueue = async (mutationNumber: number) => {
 	try {
 		await db.runAsync("DELETE FROM mutations WHERE number = ?", mutationNumber);
 	} catch (error) {
-		console.error("Error deleting mutation:", error);
+		if (process.env.SHOW_LOGS == 'true') {
+			console.error("Error deleting mutation:", error);
+		}
 		throw error;
 	}
 };
