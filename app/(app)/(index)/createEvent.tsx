@@ -40,10 +40,10 @@ export default function CreateEvent() {
 	const [location, setLocation] = useState(""); //Text box
 	const [description, setDescription] = useState(""); //Text box
 	const [firstNotification, setFirstNotification] = useState<number | null>(
-		Storage.getItemSync("firstNotification") === "null" ? null : Number(Storage.getItemSync("firstNotification"))
+		NotificationTimes.FIFTEEN_MINUTES_MS
 	);
 	const [secondNotification, setSecondNotification] = useState<number | null>(
-		Storage.getItemSync("secondNotification") === "null" ? null : Number(Storage.getItemSync("secondNotification"))
+		NotificationTimes.NONE
 	);
 	const [eventCalendarId, setEventCalendarId] = useState<string>(""); //Single Select List
 	const [frequency, setFrequency] = useState<null | string>(null);
@@ -61,11 +61,17 @@ export default function CreateEvent() {
 				const savedFirst = await Storage.getItem("firstNotification");
 				const savedSecond = await Storage.getItem("secondNotification");
 
-				if (savedFirst !== null) {
+				if (savedFirst !== null && savedFirst !== undefined) {
 					setFirstNotification(savedFirst === "null" ? null : Number(savedFirst));
 				}
-				if (savedSecond !== null) {
+				else {
+					setFirstNotification(NotificationTimes.FIFTEEN_MINUTES_MS)
+				}
+				if (savedSecond !== null && savedSecond !== undefined) {
 					setSecondNotification(savedSecond === "null" ? null : Number(savedSecond));
+				}
+				else {
+					setSecondNotification(NotificationTimes.NONE)
 				}
 			} catch (error) {
 				if (process.env.SHOW_LOGS == 'true') {

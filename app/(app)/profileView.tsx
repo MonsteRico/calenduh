@@ -61,7 +61,7 @@ export default function ProfileView() {
 	const { mutate: updateUser, isPending: isUpdating } = useUpdateUser({
 		onSuccess: () => {
 			setIsEditing(false);
-			router.back(); // Navigate back after updating
+			router.navigate("/(app)/profileView"); // Navigate back after updating
 		}
 	});
 
@@ -122,6 +122,8 @@ export default function ProfileView() {
 						setEnabledCalendarIds(filteredIds);
 					}
 				}
+
+				router.back()
 			},
 		});
 	}
