@@ -2,7 +2,7 @@ import { router, useLocalSearchParams } from "expo-router";
 import { Text, View, Image, TouchableOpacity, Switch, TextInput } from "react-native";
 import { Button } from "@/components/Button";
 import { useEffect, useState } from "react";
-import { useCalendar, useDeleteCalendar, useUpdateCalendar } from "@/hooks/calendar.hooks";
+import { useCalendar, useDeleteCalendar, useUpdateCalendar, useUpdateGroupCalendar, useDeleteGroupCalendar } from "@/hooks/calendar.hooks";
 import { cn } from "@/lib/utils";
 import Dropdown from '@/components/Dropdown';
 import { Input } from '@/components/Input';
@@ -21,6 +21,51 @@ export default function CalendarInfoView() {
 	const [calendarColorHex, setCalendarColorHex] = useState("");
 	const [isPublic, setIsPublic] = useState(false);
 	const [matchingColor, setMatchingColor] = useState(calendarColors[0]);
+	const { mutate: updateCalendar, isPending: isUpdating } = useUpdateCalendar({
+		onSuccess: () => {
+			router.back();
+		}
+	});
+	const { mutate: deleteCalendar, isPending: isDeleting } = useDeleteCalendar({
+		onSuccess: () => {
+			router.back();
+		}
+	});
+	const { mutate: updateGroupCalendar } = useUpdateGroupCalendar({
+		onSuccess: () => {
+			router.back();
+		}
+	})
+
+	const onSubmit = () => {
+		if ((calendarName.trim() === "" || calendarName.trim() === calendar?.title
+			&& calendarColorHex === calendar?.color && isPublic === calendar?.is_public) || isLoading) {
+			return;
+		}
+		console.log("CALENDAR GROUP ID:      ", calendar?.group_id);
+		if (calendar?.group_id !== null) {
+			console.log("USED UPDATE GROUP CALENDAR")
+			updateGroupCalendar(
+				{
+					calendar_id: calendarId,
+					title: calendarName,
+					color: calendarColorHex,
+					is_public: isPublic,
+					group_id: calendar?.group_id
+				}
+			)
+		}
+		else {
+			updateCalendar(
+				{
+					calendar_id: calendarId,
+					title: calendarName,
+					color: calendarColorHex,
+					is_public: isPublic,
+				},
+			);
+		}
+	}
 
 	useEffect(() => {
 		if (calendar && !isLoading) {
@@ -32,16 +77,7 @@ export default function CalendarInfoView() {
 	}, [calendar, isLoading]);
 
 	const calendarId = params.id as string;
-	const { mutate: updateCalendar, isPending: isUpdating } = useUpdateCalendar({
-        onSuccess: () => {
-            router.back();
-        }
-    });
-	const { mutate: deleteCalendar, isPending: isDeleting } = useDeleteCalendar({
-        onSuccess: () => {
-            router.back();
-        }
-    });
+
 
 	if (isLoading) {
 		return <Text className="text-primary">Loading...</Text>;
@@ -67,8 +103,8 @@ export default function CalendarInfoView() {
 				)}
 				<Text className="items-center pl-5 text-3xl font-bold text-primary">Edit Calendar</Text>
 
-				<ConfirmDelete onDelete={() => deleteCalendar(calendarId)} buttonClass="mr-4 ml-6"/>
-				
+				<ConfirmDelete onDelete={() => deleteCalendar(calendarId)} buttonClass="mr-4 ml-6" />
+
 			</View>
 
 			<View className='mt-5 flex flex-col gap-2 px-8'>
@@ -78,11 +114,11 @@ export default function CalendarInfoView() {
 					value={calendarName}
 					onChangeText={setCalendarName}
 					placeholder='Calendar Name'
-					/>
+				/>
 
 				<View className='flex-col gap-1'>
 					<Text className='text-primary'>Color:</Text>
-					<Dropdown<{hex: string, name: string}>
+					<Dropdown<{ hex: string, name: string }>
 						options={calendarColors}
 						defaultValue={matchingColor}
 						renderItem={(calendarColor) => (
@@ -109,24 +145,7 @@ export default function CalendarInfoView() {
 				</View>
 
 				<Button
-					onPress={() => {
-						if (
-							(calendarName.trim() === calendar.title &&
-								calendarColorHex == calendar.color &&
-								isPublic == calendar.is_public) ||
-							isLoading
-						) {
-							return;
-						}
-						updateCalendar(
-							{
-								calendar_id: calendarId,
-								title: calendarName,
-								color: calendarColorHex,
-								is_public: isPublic,
-							},
-						);
-					}}
+					onPress={() => onSubmit()}
 					className={cn((isUpdating || isDeleting) && "opacity-70")}
 				>
 					<Text>Save Changes</Text>

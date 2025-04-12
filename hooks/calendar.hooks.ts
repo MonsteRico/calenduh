@@ -447,7 +447,7 @@ export const useUpdateGroupCalendar = (
 		},
 		onSuccess: async (data, variables, context) => {
 			options?.onSuccess?.(data, variables, context);
-			queryClient.invalidateQueries({ queryKey: ["calendar"] })
+			queryClient.invalidateQueries({ queryKey: ["calendars"] })
 		}
 	})
 }

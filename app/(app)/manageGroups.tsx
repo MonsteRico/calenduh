@@ -97,14 +97,14 @@ export default function ManageGroups() {
 				<View className="flex-row justify-between">
 					<Button
 						className="flex-1 mr-2 bg-primary"
-						labelClasses="text-white font-medium"
+						labelClasses="text-secondary font-medium"
 						onPress={() => { setOpenCreateGroup(true) }}
 					>
 						Create Group
 					</Button>
 					<Button
 						className="flex-1 ml-2 bg-primary"
-						labelClasses="text-white font-medium"
+						labelClasses="text-secondary font-medium"
 						onPress={() => { setOpenJoinGroup(true) }}
 					>
 						Join Group

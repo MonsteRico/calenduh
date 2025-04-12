@@ -311,12 +311,12 @@ const CalendarWeekView: React.FC<CalendarWeekViewProps> = ({
   return (
     <View className="flex-1 bg-white">
       <View className="items-center border-b border-gray-300">
-        <View className="flex-row items-center justify-center w-full px-4 py-2">
+        <View className="flex-row items-center justify-center w-full px-4 py-2 bg-background">
           <TouchableOpacity onPress={navigateToPreviousWeek} className="pr-3 translate-y-[1px]">
             <Entypo name="chevron-left" size={28} color={colorScheme === 'dark' ? 'white' : 'black'} />
           </TouchableOpacity>
 
-          <Text className="text-xl font-bold">
+          <Text className="text-xl text-primary font-bold">
             {startDate.toFormat('MMM d')} - {startDate.plus({ days: numDays - 1 }).toFormat('MMM d, yyyy')}
           </Text>
 

@@ -339,13 +339,13 @@ const CalendarDayView: React.FC<CalendarDayViewProps> = ({
 	return (
 		<View className="flex-1 bg-white">
 			<View className="items-center border-b border-gray-300">
-				<View className="flex-row items-center justify-center w-full px-4 py-2">
+				<View className="flex-row items-center justify-center w-full px-4 py-2 bg-background">
 					<TouchableOpacity onPress={navigateToPreviousDay} className="pr-3 translate-y-[1px]">
 						<Entypo name="chevron-left" size={28} color={colorScheme === 'dark' ? 'white' : 'black'} />
 					</TouchableOpacity>
 
 					<Text className="text-xl font-bold">
-						<Text className="text-xl font-bold">{date.toFormat('EEEE, MMMM d, yyyy')}</Text>
+						<Text className="text-xl text-primary font-bold">{date.toFormat('EEEE, MMMM d, yyyy')}</Text>
 					</Text>
 
 					<TouchableOpacity onPress={navigateToNextDay} className="pl-3 translate-y-[1px]">

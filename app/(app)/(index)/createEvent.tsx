@@ -219,10 +219,10 @@ export default function CreateEvent() {
 					<Text className="pr-[3] text-primary">Start Time:</Text>
 					{Platform.OS === "android" && (
 						<TouchableOpacity
-							className="flex flex-row items-center space-x-2 rounded-lg bg-gray-200 px-4 py-2"
+							className="flex flex-row items-center space-x-2 rounded-lg bg-foreground px-4 py-2"
 							onPress={() => setShowStartDatePicker(true)}
 						>
-							<Text className="font-medium text-primary">{startDate.toLocaleString(DateTime.DATETIME_MED)}</Text>
+							<Text className="font-medium text-secondary">{startDate.toLocaleString(DateTime.DATETIME_MED)}</Text>
 						</TouchableOpacity>
 					)}
 					{(showStartDatePicker || Platform.OS === "ios") && (
@@ -258,11 +258,11 @@ export default function CreateEvent() {
 					<Text className="pr-[9] text-primary">End Time:</Text>
 					{Platform.OS === "android" && (
 						<TouchableOpacity
-							className="flex flex-row items-center space-x-2 rounded-lg bg-gray-200 px-4 py-2"
+							className="flex flex-row items-center space-x-2 rounded-lg bg-foreground px-4 py-2"
 							onPress={() => setShowEndDatePicker(true)}
 							disabled={isAllDay}
 						>
-							<Text className="font-medium text-primary">{endDate.toLocaleString(DateTime.DATETIME_MED)}</Text>
+							<Text className="font-medium text-secondary">{endDate.toLocaleString(DateTime.DATETIME_MED)}</Text>
 						</TouchableOpacity>
 					)}
 					{(showEndDatePicker || Platform.OS === "ios") && (

@@ -183,7 +183,7 @@ export const createGroupCalendarOnServer = async (calendar: Omit<Calendar, "cale
 
 export const updateCalendarOnServer = async (calendar: UpdateCalendar): Promise<Calendar> => {
 	const updatedCalendar = {...calendar, is_public: calendar.is_public as unknown as number == 1 ? true : false}
-	const response = await server.put(`/calendars/${calendar.calendar_id}`, calendar).catch(function (error) {
+	const response = await server.put(`/calendars/${updatedCalendar.calendar_id}`, updatedCalendar).catch(function (error) {
 		if (error.response) {
 			// The request was made and the server responded with a status code
 			// that falls out of the range of 2xx
