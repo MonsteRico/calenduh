@@ -77,7 +77,7 @@ export default function CalendarsList({ toggleDrawer }: { toggleDrawer: () => vo
 				</View>
 			</Accordion>
 
-			<Accordion title={"Other Calendars"}>
+			<Accordion title={"Subscribed Calendars"}>
 				<View className="flex h-auto flex-col gap-2">
 					{dummyCalendars.map((calendar, i) => (
 						<CalendarItem
