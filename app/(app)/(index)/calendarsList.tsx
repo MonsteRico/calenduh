@@ -5,17 +5,17 @@ import { Checkbox } from "@/components/Checkbox";
 import { Accordion } from "@/components/Accordion";
 import { useState, useEffect } from "react";
 
-interface example_calendar {
-	name: string;
-	color: string;
-	id: string;
-}
+// interface example_calendar {
+// 	name: string;
+// 	color: string;
+// 	id: string;
+// }
 
-const dummyCalendars: example_calendar[] = [
-	{ name: "Calendar1", color: "#0000FF", id: "a" },
-	{ name: "Calendar2", color: "#d42245", id: "b" },
-	{ name: "Calendar3", color: "#0a571e", id: "c" },
-];
+// const dummyCalendars: example_calendar[] = [
+// 	{ name: "Calendar1", color: "#0000FF", id: "a" },
+// 	{ name: "Calendar2", color: "#d42245", id: "b" },
+// 	{ name: "Calendar3", color: "#0a571e", id: "c" },
+// ];
 
 export default function CalendarsList({ toggleDrawer }: { toggleDrawer: () => void }) {
 	const [editMode, setEditMode] = useState(false);
@@ -79,14 +79,15 @@ export default function CalendarsList({ toggleDrawer }: { toggleDrawer: () => vo
 
 			<Accordion title={"Subscribed Calendars"}>
 				<View className="flex h-auto flex-col gap-2">
-					{dummyCalendars.map((calendar, i) => (
-						<CalendarItem
-							checked={enabledCalendarIds.includes(calendar.id)}
-							key={calendar.name}
-							calendarName={calendar.name}
+					{/* && (calendar.user_id !== user.user_id) */}
+					{calendars && calendars.filter((calendar) => (calendar.is_public === true) ).map((calendar, i) => (
+							<CalendarItem
+							checked={enabledCalendarIds.includes(calendar.calendar_id)}
+							key={calendar.calendar_id}
+							calendarName={calendar.title}
 							calendarColor={calendar.color}
-							editMode={editMode}
-							onPress={() => calendarOnPress(calendar.id) }
+							editMode={editMode} //Should be false no matter what since rando user shouldn't be able to edit a public cal they didn't make?
+							onPress={() => toggleCalendar(calendar.calendar_id) }
 						/>
 					))}
 				</View>
