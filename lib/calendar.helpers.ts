@@ -208,3 +208,8 @@ export const updateCalendarOnServer = async (calendar: UpdateCalendar): Promise<
 export const deleteCalendarOnServer = async (calendar_id: string): Promise<void> => {
 	await server.delete(`/calendars/${calendar_id}`);
 };
+
+export const joinPubCalOnServer = async ( calendar: Omit<Calendar, "calendar_id" | "name">): Promise<Calendar> => {
+    const response = await server.post(`/subcriptions/`, calendar);
+    return response.data;
+} 

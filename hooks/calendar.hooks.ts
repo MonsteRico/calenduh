@@ -18,6 +18,7 @@ import {
 	getGroupCalendarsFromServer,
 	createGroupCalendarOnServer,
 	getMyGroupCalendarsFromServer,
+	joinPubCalOnServer,
 } from "@/lib/calendar.helpers";
 import { addMutationToQueue, getMutationsFromDB } from "@/lib/mutation.helpers";
 import { useSession } from "./authContext";
@@ -529,6 +530,37 @@ export const useDeleteGroupCalendar = (
 		onSuccess: async (data, variables, context) => {
 			options?.onSuccess?.(data, variables, context);
 			setEnabledCalendarIds(enabledCalendarIds.filter((id) => id !== variables));
+		}
+	})
+}
+
+export const useJoinCalByCode = (
+	options?: UseMutationOptions<Calendar, Error, Omit<Calendar, "calendar_id" | "name">>
+) => {
+	const queryClient = useQueryClient();
+	const isConnected = useIsConnected();
+	const { user, sessionId } = useSession();
+
+	if (!user || !sessionId) {
+		throw new Error("User not found or session not found");   
+	}
+
+	return useMutation<Calendar, Error, Omit<Calendar, "calendar_id" | "name">>({
+		mutationFn: async(calendar: Omit<Calendar, "calendar_id" | "name">) => {
+			if (isConnected && user.user_id !== 'localUser') {
+				return await joinPubCalOnServer(calendar);
+			} else {
+				throw new Error("Not connected to server or using a local-only account");
+			}
+		},
+		//IDK HERE
+		onMutate: async (group) => {
+			options?.onMutate?.(group);
+		},
+		onSuccess: async (data) => {
+			options?.onSuccess?.(data, { name: data.name } as any, undefined as any);
+			await queryClient.invalidateQueries({ queryKey: ["groups"]});
+			await queryClient.invalidateQueries({ queryKey: ["calendars"]})
 		}
 	})
 }
