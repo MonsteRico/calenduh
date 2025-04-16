@@ -31,9 +31,10 @@ export const useUpdateUser = (
 		},
 		onSuccess: async (updatedUser: UpdateUser) => {
 			console.log("updated user", updatedUser);
-			const user = await JSON.parse(SecureStore.getItem("user") ?? "")
+			const user = await JSON.parse(SecureStore.getItem("user") ?? "");
 			SecureStore.setItem("user", JSON.stringify({...user, ...updatedUser}));
-			console.log("set secure store user to ", {...user, ...updatedUser})
+			console.log("set secure store user to ", {...user, ...updatedUser});
+			await queryClient.invalidateQueries({ queryKey: ["loginData"]})
 		},
 		onSettled: async (data, error, variables, context: { previousUser: User } | undefined) => {
 			options?.onSettled?.(data, error, variables, context);

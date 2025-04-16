@@ -49,6 +49,13 @@ export default function UpdateEvent() {
 	const [showStartTimePicker, setShowStartTimePicker] = useState(false);
 	const [showEndDatePicker, setShowEndDatePicker] = useState(false);
 	const [showEndTimePicker, setShowEndTimePicker] = useState(false);
+	const [is24Hour, setIs24Hour] = useState(false);
+
+	useEffect(() => {
+		if (user) {
+			setIs24Hour(user.is_24_hour);
+		}
+	}, [user]);
 
 	//REPLACE WITH USER'S CALENDARS
 	const { data: calendars, isLoading: calendarsIsLoading } = useMyCalendars();
@@ -197,14 +204,22 @@ export default function UpdateEvent() {
 							className="flex flex-row items-center space-x-2 rounded-lg bg-foreground px-4 py-2"
 							onPress={() => setShowStartDatePicker(true)}
 						>
-							<Text className="font-medium text-secondary">{startDate.toLocaleString(DateTime.DATETIME_MED)}</Text>
+							<Text className="font-medium text-secondary">{startDate.toLocaleString({
+								year: 'numeric',
+								month: 'short',
+								day: 'numeric',
+								hour: '2-digit',
+								minute: '2-digit',
+								hour12: !is24Hour
+							})
+							}</Text>
 						</TouchableOpacity>
 					)}
 					{(showStartDatePicker || Platform.OS === "ios") && (
 						<DateTimePicker
 							value={startDate.toJSDate()}
 							mode={"date"}
-							is24Hour={false}
+							is24Hour={is24Hour}
 							onChange={(e, selectedDate) => {
 								if (selectedDate && e.type === "set") {
 									const luxonDate = DateTime.fromJSDate(selectedDate);
@@ -218,7 +233,7 @@ export default function UpdateEvent() {
 					{(showStartTimePicker || Platform.OS === "ios") && (
 						<DateTimePicker
 							value={startDate.toJSDate()}
-							is24Hour={false}
+							is24Hour={is24Hour}
 							mode={"time"}
 							onChange={(e, selectedDate) => {
 								if (selectedDate && e.type === "set") {
@@ -238,13 +253,22 @@ export default function UpdateEvent() {
 							className="flex flex-row items-center space-x-2 rounded-lg bg-foreground px-4 py-2"
 							onPress={() => setShowEndDatePicker(true)}
 						>
-							<Text className="font-medium text-secondary">{endDate.toLocaleString(DateTime.DATETIME_MED)}</Text>
+							<Text className="font-medium text-secondary">{endDate.toLocaleString(
+								{
+									year: 'numeric',
+									month: 'short',
+									day: 'numeric',
+									hour: '2-digit',
+									minute: '2-digit',
+									hour12: !is24Hour
+								})
+							}</Text>
 						</TouchableOpacity>
 					)}
 					{(showEndDatePicker || Platform.OS === "ios") && (
 						<DateTimePicker
 							value={endDate.toJSDate()}
-							is24Hour={false}
+							is24Hour={is24Hour}
 							mode={"date"}
 							onChange={(e, selectedDate) => {
 								if (selectedDate && e.type === "set") {
@@ -259,7 +283,7 @@ export default function UpdateEvent() {
 					{(showEndTimePicker || Platform.OS == "ios") && (
 						<DateTimePicker
 							value={endDate.toJSDate()}
-							is24Hour={false}
+							is24Hour={is24Hour}
 							mode={"time"}
 							onChange={(e, selectedDate) => {
 								if (selectedDate && e.type === "set") {
@@ -328,13 +352,13 @@ const NotificationDropdown = ({
 	handleSelect: (
 		item:
 			| {
-					label: string;
-					value: number;
-			  }
+				label: string;
+				value: number;
+			}
 			| {
-					label: string;
-					value: null;
-			  }
+				label: string;
+				value: null;
+			}
 	) => void;
 	defaultValue?: number | null | undefined;
 }) => {

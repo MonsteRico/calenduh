@@ -1,6 +1,6 @@
 import { Text, View, Modal, ScrollView, TouchableOpacity } from 'react-native';
 import { Button } from '@/components/Button';
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { DateTime } from 'luxon';
 import Feather from '@expo/vector-icons/Feather';
 import { useColorScheme } from 'nativewind';
@@ -9,6 +9,7 @@ import { useDeleteEvent } from '@/hooks/event.hooks';
 import { useEvent } from '@/hooks/event.hooks';
 import { useCalendar } from '@/hooks/calendar.hooks';
 import { cn } from '@/lib/utils';
+import { useSession } from '@/hooks/authContext';
 
 
 
@@ -21,14 +22,22 @@ interface EventViewModalProps {
 
 type TimestampDisplayProps = {
     timestamp: DateTime;
+	is24Hour?: boolean;
 };
-const TimestampDisplay: React.FC<TimestampDisplayProps> = ({ timestamp }) => {
+const TimestampDisplay: React.FC<TimestampDisplayProps> = ({ timestamp, is24Hour = false }) => {
+	const formattedTime = timestamp.toLocaleString({
+		year: 'numeric',
+		month: 'short',
+		day: 'numeric',
+		hour: '2-digit',
+		minute: '2-digit',
+		hour12: !is24Hour,
+	});
 
-    const formattedTime = timestamp.toLocaleString(DateTime.DATETIME_MED);
-    return (
-        <Text className='text-foreground text-l'>{formattedTime}</Text>
-    );
-}
+	return (
+		<Text className='text-foreground text-l'>{formattedTime}</Text>
+	);
+};
 
 function EventViewModal({ visible, onClose, calendarId, eventId }: EventViewModalProps) {
     const {colorScheme} = useColorScheme();
@@ -46,6 +55,14 @@ function EventViewModal({ visible, onClose, calendarId, eventId }: EventViewModa
 
 	const { data: event, isLoading } = useEvent(calendarId, eventId);
 	const { data: calendar, isLoading: isLoadingCalendar } = useCalendar(calendarId);
+	const { user } = useSession();
+	const [is24Hour, setIs24Hour] = useState(false);
+
+	useEffect(() => {
+		if (user) {
+			setIs24Hour(user.is_24_hour);
+		}
+	}, [user]);
 
 	if (isLoading || !event || !calendar) {
 		return <Text className="text-primary">Loading...</Text>;
@@ -87,12 +104,12 @@ function EventViewModal({ visible, onClose, calendarId, eventId }: EventViewModa
 						<ScrollView className="p-6" contentContainerStyle={{ gap: 16 }}>
 							<View className="flex-row items-center space-x-3">
 								<Text className="w-32 text-xl font-medium text-foreground">Start Time:</Text>
-								<TimestampDisplay timestamp={event.start_time} />
+								<TimestampDisplay timestamp={event.start_time} is24Hour={is24Hour} />
 							</View>
 
 							<View className="flex-row items-center space-x-3">
 								<Text className="w-32 text-xl font-medium text-foreground">End Time:</Text>
-								<TimestampDisplay timestamp={event.end_time} />
+								<TimestampDisplay timestamp={event.end_time} is24Hour={is24Hour} />
 							</View>
 
 							<View className="space-y-3">

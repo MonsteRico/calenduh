@@ -86,7 +86,8 @@ export function SessionProvider({ children }: PropsWithChildren) {
 							name: "localUser",
 							birthday: "1899-01-01",
 							default_calendar_id: undefined,
-							profile_picture: undefined
+							profile_picture: undefined,
+							is_24_hour: false, //TODO: update this to use device settings
 						};
 						if (Platform.OS !== "web") {
 							SecureStore.setItem("sessionId", JSON.stringify(sessionId));

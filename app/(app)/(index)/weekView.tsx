@@ -31,6 +31,7 @@ interface CalendarWeekViewProps {
   numDays?: number;
   navigateToPreviousWeek?: () => void;
   navigateToNextWeek?: () => void;
+  is24Hour?: boolean;
 }
 
 const CalendarWeekView: React.FC<CalendarWeekViewProps> = ({
@@ -43,6 +44,7 @@ const CalendarWeekView: React.FC<CalendarWeekViewProps> = ({
   numDays = 7,
   navigateToPreviousWeek,
   navigateToNextWeek,
+  is24Hour = false,
 }) => {
   const HOURS_IN_DAY = 24;
   const HOUR_HEIGHT = hourHeight;
@@ -50,6 +52,12 @@ const CalendarWeekView: React.FC<CalendarWeekViewProps> = ({
   const CONTAINER_HEIGHT = HOURS_IN_DAY * HOUR_HEIGHT;
   const screenWidth = Dimensions.get('window').width;
   const dayWidth = (screenWidth - TIME_LABEL_WIDTH) / numDays;
+
+  const [is24, setIs24] = useState(is24Hour);
+
+  useEffect(() => {
+    setIs24(is24Hour);
+  }, [is24Hour]);
 
   const { colorScheme } = useColorScheme();
 
@@ -89,7 +97,13 @@ const CalendarWeekView: React.FC<CalendarWeekViewProps> = ({
 
     for (let i = 0; i < HOURS_IN_DAY; i++) {
       const hourDateTime = startDate.set({ hour: i, minute: 0, second: 0, millisecond: 0 });
-      const formattedHour = hourDateTime.toFormat('h a');
+      let formattedHour: string;
+      if (is24) {
+        formattedHour = hourDateTime.toFormat('HH:mm');
+      }
+      else {
+        formattedHour = hourDateTime.toFormat('h a');
+      }
 
       hours.push(
         <View key={`hour-label-${i}`} style={{ height: HOUR_HEIGHT }} className="border-b border-gray-200">
@@ -390,7 +404,7 @@ export default function WeekView() {
   const { enabledCalendarIds } = useEnabledCalendarIds();
 
   const currentDate = DateTime.now();
-
+  
   const calendarsForShownEvents = useMemo(() => {
     if (!events) {
       return [];
@@ -476,6 +490,7 @@ export default function WeekView() {
         showCurrentTime={true}
         navigateToPreviousWeek={navigateToPreviousWeek}
         navigateToNextWeek={navigateToNextWeek}
+        is24Hour={user?.is_24_hour}
       />
     </View>
   );

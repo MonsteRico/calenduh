@@ -8,6 +8,7 @@ export interface User {
 	birthday: string | undefined;
 	default_calendar_id: string | undefined;
 	profile_picture: string | undefined;
+	is_24_hour: boolean;
 }
 
 export interface Session {
@@ -27,6 +28,7 @@ export interface UpdateUser {
     name?: string;
     default_calendar_id?: string;
     profile_picture?: string;
+	is_24_hour?: boolean;
 }
 
 export type UserInstance = User;

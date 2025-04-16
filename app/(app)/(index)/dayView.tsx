@@ -27,6 +27,7 @@ interface CalendarDayViewProps {
 	showCurrentTime?: boolean;
 	navigateToPreviousDay?: () => void;
 	navigateToNextDay?: () => void;
+	is24Hour?: boolean;
 }
 
 const CalendarDayView: React.FC<CalendarDayViewProps> = ({
@@ -37,6 +38,7 @@ const CalendarDayView: React.FC<CalendarDayViewProps> = ({
 	showCurrentTime = true,
 	navigateToPreviousDay,
 	navigateToNextDay,
+	is24Hour = false,
 }) => {
 	const HOURS_IN_DAY = 24;
 	const HOUR_HEIGHT = hourHeight;
@@ -47,12 +49,25 @@ const CalendarDayView: React.FC<CalendarDayViewProps> = ({
 	const CONTAINER_HEIGHT = (HOURS_IN_DAY * HOUR_HEIGHT) + TOTAL_TOP_PADDING;
 	const { colorScheme } = useColorScheme();
 
+	const [is24, setIs24] = useState(is24Hour);
+
+	useEffect(() => {
+		setIs24(is24Hour);
+	}, [is24Hour]);
+
 	const renderHourIndicators = (): React.ReactNode[] => {
 		const hours: React.ReactNode[] = [];
 		for (let i = 0; i < HOURS_IN_DAY; i++) {
 
 			const hourDateTime = date.set({ hour: i, minute: 0, second: 0, millisecond: 0 });
-			const formattedHour = hourDateTime.toFormat('h a');
+			let formattedHour: string;
+			if (is24) {
+				formattedHour = hourDateTime.toFormat('HH:mm');
+			} else {
+				formattedHour = hourDateTime.toFormat('h a');
+			}
+
+			
 
 			hours.push(
 				<View key={i} className="flex-row" style={{ height: HOUR_HEIGHT, marginTop: i === 0 ? TOTAL_TOP_PADDING : 0 }}>
@@ -489,6 +504,7 @@ export default function DayView() {
 				showCurrentTime={dayBeingViewed.hasSame(currentDate, 'day')}
 				navigateToPreviousDay={navigateToPreviousDay}
 				navigateToNextDay={navigateToNextDay}
+				is24Hour={user?.is_24_hour}
 			/>
 		</View>
 	)

@@ -1,6 +1,6 @@
 import { Button } from "@/components/Button";
 import { router } from "expo-router";
-import { Modal, Text, View, TouchableOpacity, TextInput, Platform, ScrollView } from "react-native";
+import { Modal, Text, View, TouchableOpacity, TextInput, Platform, ScrollView, Switch } from "react-native";
 import { Input } from "@/components/Input";
 import { useCallback, useEffect, useState } from "react";
 import dayjs from "dayjs";
@@ -40,6 +40,7 @@ export default function ProfileView() {
 	const [birthday, setBirthday] = useState<DateTime<true> | undefined>(DateTime.local().startOf('day'));
 	const [defaultCal, setDefaultCal] = useState<string | undefined>(undefined);
 	const { colorScheme } = useColorScheme();
+	const [is24Hour, setIs24Hour] = useState(false);
 
 	// global notification settings
 	const [notificationModalVisible, setNotificationModalVisible] = useState(false);
@@ -71,6 +72,7 @@ export default function ProfileView() {
 		setUserName(user.username)
 		setBirthday(user.birthday ? DateTime.fromFormat(user.birthday, "yyyy-MM-dd") as DateTime<true> : undefined)
 		setDefaultCal(user.default_calendar_id)
+		setIs24Hour(user.is_24_hour)
 
 		// load global notification settings
 		const loadNotificationSettings = async () => {
@@ -107,6 +109,7 @@ export default function ProfileView() {
 			name: name,
 			birthday: birthday ? birthday.toFormat("yyyy-MM-dd") : undefined,
 			default_calendar_id: defaultCal,
+			is_24_hour: is24Hour,
 		}, {
 			onSuccess: () => {
 				setIsEditing(false);
@@ -123,7 +126,7 @@ export default function ProfileView() {
 					}
 				}
 
-				router.back()
+				//router.back()
 			},
 		});
 	}
@@ -351,6 +354,17 @@ export default function ProfileView() {
 								}}
 								onSelect={(selectedCalendar) => (setDefaultCal(selectedCalendar.calendar_id))}
 							/>
+							<View className='flex-row p-2'>
+							<Text className='text-primary pt-1'>24-Hour Time</Text>
+							<Switch
+								trackColor={{ false: '#767577', true: '#808080' }}
+								thumbColor={is24Hour ? '#FFFFFF' : '#F4F4F4'}
+								onValueChange={() => {
+									setIs24Hour(!is24Hour);
+								}}
+								value={is24Hour}
+							/>
+							</View>
 
 							<Text className="text-sm font-medium text-primary">Notification Settings</Text>
 							<Button
@@ -359,6 +373,7 @@ export default function ProfileView() {
 							>
 								Configure Notifications
 							</Button>
+
 
 							<Button onPress={() => {
 								deleteEventsUntilFromDB(DateTime.now(), user.user_id)
@@ -403,6 +418,11 @@ export default function ProfileView() {
 										<Text className="flex-1 text-lg font-semibold text-primary">{defaultCal}</Text>
 									</View>
 
+									<View className='flex-row items-center rounded-xl border border-gray-100 py-4 mb-2'>
+										<Text className='pl-[5px] w-1/3 text-lg font-medium text-primary'>Time Setting</Text>
+										<Text className='flex-1 text-lg font-semibold text-primary'>{is24Hour ? "24 Hour" : "12 Hour"}</Text>
+									</View>
+
 									<View className="flex-row items-center rounded-xl border border-gray-100 py-4 mb-2">
 										<Text className="pl-[5px] w-1/3 text-lg font-medium text-primary">First Notification</Text>
 										<Text className="flex-1 text-lg font-semibold text-primary">
@@ -416,7 +436,6 @@ export default function ProfileView() {
 											{formatNotificationTime(secondNotification)}
 										</Text>
 									</View>
-
 								</View>
 							</View>
 						</View>
