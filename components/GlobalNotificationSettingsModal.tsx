@@ -3,6 +3,7 @@ import { Button } from '@/components/Button';
 import { useMemo, useState, useEffect } from 'react'
 import RadioGroup, {RadioButtonProps} from 'react-native-radio-buttons-group'
 import { NotificationTimes } from '@/constants/notificationTimes';
+import { useColorScheme } from 'nativewind';
 
 interface GlobalNotificationSettingsModalProps {
     visible: boolean;
@@ -42,6 +43,8 @@ function GlobalNotificationSettingsModal({ visible, firstNotification, secondNot
         }
     }, [firstNotification, secondNotification, notificationOptions]);
 
+    const { colorScheme } = useColorScheme();
+
     const handleSave = () => {
         const firstNotifValue = firstSelectedId ? notificationOptions.find(btn => btn.id === firstSelectedId)?.value : null;
         
@@ -73,11 +76,11 @@ function GlobalNotificationSettingsModal({ visible, firstNotification, secondNot
                         </Button>
                     </View>
 
-                    <Text className="text-lg font-medium mb-2 text-white">First Notification</Text>
+                    <Text className="text-lg font-medium mb-2 text-primary">First Notification</Text>
                     <RadioGroup
                         radioButtons={notificationOptions.map(button => ({
                             ...button,
-                            labelStyle: { color: 'white' }
+                            labelStyle: { color: colorScheme === 'dark' ? 'white' : 'black' }
                         }))}
                         onPress={setFirstSelectedId}
                         selectedId={firstSelectedId}
@@ -89,7 +92,7 @@ function GlobalNotificationSettingsModal({ visible, firstNotification, secondNot
                     />
 
                     <View className="flex-row items-center mb-2">
-                        <Text className="text-lg font-medium mr-2 text-white">Enable Second Notification</Text>
+                        <Text className="text-lg font-medium mr-2 text-primary">Enable Second Notification</Text>
                         <Switch 
                             value={enableSecondNotification}
                             onValueChange={setEnableSecondNotification}
@@ -98,11 +101,11 @@ function GlobalNotificationSettingsModal({ visible, firstNotification, secondNot
 
                     {enableSecondNotification && (
                         <>
-                            <Text className="text-lg font-medium mb-2 text-white">Second Notification</Text>
+                            <Text className="text-lg font-medium mb-2 text-primary">Second Notification</Text>
                             <RadioGroup
                                 radioButtons={notificationOptions.map(button => ({
                                     ...button,
-                                    labelStyle: { color: 'white' }
+                                    labelStyle: { color: colorScheme === 'dark' ? 'white' : 'black' }
                                 }))}
                                 onPress={setSecondSelectedId}
                                 selectedId={secondSelectedId}

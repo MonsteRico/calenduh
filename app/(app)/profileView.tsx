@@ -297,9 +297,9 @@ export default function ProfileView() {
 
 			<View className="">
 				{isEditing ? (
-					<View className="rounded-xl border border-gray-300 p-4">
-						<View className="space-y-4">
-							<Text className="text-sm font-medium text-primary">Username</Text>
+					<View className="p-6">
+						<View className="p-3">
+							<Text className="font-semibold text-primary">Username</Text>
 							<TextInput
 								className="rounded-lg border border-gray-300 p-3 text-primary"
 								style={{ backgroundColor: globColorInverse }}
@@ -308,7 +308,7 @@ export default function ProfileView() {
 								placeholder="Username"
 							/>
 
-							<Text className="text-sm font-medium text-primary">Name</Text>
+							<Text className="font-semibold text-primary mt-5">Name</Text>
 							<TextInput
 								className="rounded-lg border border-gray-300 p-3 text-primary"
 								style={{ backgroundColor: globColorInverse }}
@@ -317,10 +317,10 @@ export default function ProfileView() {
 								placeholder="Name"
 							/>
 
-							<Text className="text-sm font-medium text-primary">Birthday</Text>
+							<Text className="font-semibold text-primary mt-5">Birthday</Text>
 							{Platform.OS === "android" && (
 								<TouchableOpacity
-									className="flex flex-row items-center space-x-2 rounded-lg bg-gray-200 px-4 py-2"
+									className="rounded-lg bg-muted border border-border px-4 py-2"
 									onPress={() => setShowDatePicker(true)}
 								>
 									<Text className="font-medium text-primary">{birthday ? birthday.toLocaleString(DateTime.DATE_MED) : "No birthday set"}</Text>
@@ -340,7 +340,7 @@ export default function ProfileView() {
 								/>
 							)}
 
-							<Text className="text-primary">Default Calendar</Text>
+							<Text className="font-semibold text-primary mt-5">Default Calendar</Text>
 							<Dropdown<Calendar>
 								options={calendars}
 								defaultValue={calendars.find((cal) => cal.calendar_id === defaultCal)}
@@ -354,35 +354,64 @@ export default function ProfileView() {
 								}}
 								onSelect={(selectedCalendar) => (setDefaultCal(selectedCalendar.calendar_id))}
 							/>
-							<View className='flex-row p-2'>
-							<Text className='text-primary pt-1'>24-Hour Time</Text>
-							<Switch
-								trackColor={{ false: '#767577', true: '#808080' }}
-								thumbColor={is24Hour ? '#FFFFFF' : '#F4F4F4'}
-								onValueChange={() => {
-									setIs24Hour(!is24Hour);
-								}}
-								value={is24Hour}
-							/>
+							<View className='flex-row mt-5 pl-1'>
+								<Text className='text-primary font-semibold pt-1 pr-4'>24-Hour Time:</Text>
+								<Switch
+									trackColor={{ false: '#767577', true: '#2196F3' }}
+									thumbColor={is24Hour ? '#FFFFFF' : '#F4F4F4'}
+									onValueChange={() => {
+										setIs24Hour(!is24Hour);
+									}}
+									value={is24Hour}
+								/>
 							</View>
 
-							<Text className="text-sm font-medium text-primary">Notification Settings</Text>
-							<Button
-								onPress={() => setNotificationModalVisible(true)}
-								className="mt-2"
-							>
-								Configure Notifications
-							</Button>
+							<View className="mt-4 p-3 bg-muted rounded-lg border border-border">
+								<View className="flex-row items-center justify-between">
+									<View className="flex-1">
+										<Text className="text-primary font-semibold">Notification Settings</Text>
+										<Text className="text-muted-foreground text-sm mt-1">
+											Customize default notification settings
+										</Text>
+									</View>
+									<View className='pl-7 pr-7'>
+										<Button
+											onPress={() => setNotificationModalVisible(true)}
+											labelClasses='text-sm font-medium text-secondary'
+										>
+											Configure
+										</Button>
+									</View>
+								</View>
+							</View>
 
-
-							<Button onPress={() => {
-								deleteEventsUntilFromDB(DateTime.now(), user.user_id)
-								deleteEventsUntilNowOnServer()
-							}}>OptIn Event Deletion</Button>
+							<View className="mt-4 p-3 bg-muted rounded-lg border border-border">
+								<View className="flex-row items-center justify-between">
+									<View className="flex-1">
+										<Text className="text-primary font-semibold">Delete Past Events</Text>
+										<Text className="text-muted-foreground text-sm mt-1">
+											Permanently deletes all events before the current time
+										</Text>
+									</View>
+									<View className='pl-7 pr-7'>
+										<Button
+											variant='destructive'
+											onPress={() => {
+												deleteEventsUntilFromDB(DateTime.now(), user.user_id)
+												deleteEventsUntilNowOnServer()
+											}}
+											labelClasses='text-sm font-medium text-secondary'
+										>
+											Delete
+										</Button>
+									</View>
+								</View>
+							</View>
 
 							<View className="mt-10 flex-row items-center justify-center gap-8">
 								<Button onPress={handleSave} labelClasses="text-secondary" disabled={isUpdating}>
 									{isUpdating ? "Updating..." : "Save Changes"}
+
 								</Button>
 
 								<Button onPress={handleCancel} labelClasses="text-secondary">
@@ -393,52 +422,48 @@ export default function ProfileView() {
 					</View>
 				) : (
 					<View>
-						<View className="mb-8 rounded-lg p-4 shadow-sm">
-							<View className="rounded-xl border border-gray-300 p-4">
-								<View className="space-y-4">
-									<View className="flex-row items-center rounded-xl border border-gray-100 py-4 mb-2">
-										<Text className="pl-[5px] w-1/3 text-lg font-medium text-primary">Username</Text>
-										<Text className="flex-1 text-lg font-semibold text-primary">{username}</Text>
-									</View>
+						<View className="p-3">
+							<Text className='text-primary font-bold m-1 ml-4 text-xl'>Profile Settings</Text>
+							<View className="items-left m-2 p-3 bg-muted rounded-lg border border-border">
+								<View className='flex-row p-4'>
+									<Text className='text-primary font-semibold'>Username: </Text>
+									<Text className='text-primary ml-4'>{username}</Text>
+								</View>
+								<View className='flex-row p-4 border-t border-gray-300'>
+									<Text className='text-primary font-semibold'>Name: </Text>
+									<Text className='text-primary ml-4'>{name}</Text>
+								</View>
+								<View className='flex-row p-4 border-t border-gray-300'>
+									<Text className='text-primary font-semibold'>Birthday: </Text>
+									<Text className='text-primary ml-4'>{birthday ? birthday.toLocaleString(DateTime.DATE_MED) : "Not set"}</Text>
+								</View>
+								<View className='flex-row p-4 border-t border-gray-300'>
+									<Text className='text-primary font-semibold'>Default Calendar: </Text>
+									<Text className='text-primary ml-4'>{defaultCal ? defaultCal : "Not set"}</Text>
+								</View>
 
-									<View className="flex-row items-center rounded-xl border border-gray-100 py-4 mb-2">
-										<Text className="pl-[5px] w-1/3 text-lg font-medium text-primary">Name</Text>
-										<Text className="flex-1 text-lg font-semibold text-primary">{name}</Text>
-									</View>
-
-									<View className="flex-row items-center rounded-xl border border-gray-100 py-4 mb-2">
-										<Text className="pl-[5px] w-1/3 text-lg font-medium text-primary">Birthday</Text>
-										<Text className="flex-1 text-lg font-semibold text-primary">
-											{birthday ? birthday.toLocaleString(DateTime.DATE_MED) : "Not set"}
-										</Text>
-									</View>
-
-									<View className="flex-row items-center rounded-xl border border-gray-100 py-4 mb-2">
-										<Text className="pl-[5px] w-1/3 text-lg font-medium text-primary">Default Calendar</Text>
-										<Text className="flex-1 text-lg font-semibold text-primary">{defaultCal}</Text>
-									</View>
-
-									<View className='flex-row items-center rounded-xl border border-gray-100 py-4 mb-2'>
-										<Text className='pl-[5px] w-1/3 text-lg font-medium text-primary'>Time Setting</Text>
-										<Text className='flex-1 text-lg font-semibold text-primary'>{is24Hour ? "24 Hour" : "12 Hour"}</Text>
-									</View>
-
-									<View className="flex-row items-center rounded-xl border border-gray-100 py-4 mb-2">
-										<Text className="pl-[5px] w-1/3 text-lg font-medium text-primary">First Notification</Text>
-										<Text className="flex-1 text-lg font-semibold text-primary">
-											{formatNotificationTime(firstNotification)}
-										</Text>
-									</View>
-
-									<View className="flex-row items-center rounded-xl border border-gray-100 py-4 mb-2">
-										<Text className="pl-[5px] w-1/3 text-lg font-medium text-primary">Second Notification</Text>
-										<Text className="flex-1 text-lg font-semibold text-primary">
-											{formatNotificationTime(secondNotification)}
-										</Text>
-									</View>
+								<View className='flex-row p-4 border-t border-gray-300'>
+									<Text className='text-primary font-semibold'>Time Setting: </Text>
+									<Text className='text-primary ml-4'>{is24Hour ? "24 Hour" : "12 Hour"}</Text>
 								</View>
 							</View>
+
+							<Text className='text-primary font-bold m-1 ml-4 text-xl'>Notification Settings</Text>
+							<View className='items-left m-2 p-3 bg-muted rounded-lg border border-border'>
+								<View className='flex-row p-4'>
+									<Text className='text-primary font-semibold'>First Notification: </Text>
+									<Text className='text-primary ml-4'>{formatNotificationTime(firstNotification)}</Text>
+								</View>
+
+								<View className='flex-row p-4 border-t border-gray-300'>
+									<Text className='text-primary font-semibold'>Second Notification: </Text>
+									<Text className='text-primary ml-4'>{formatNotificationTime(secondNotification)}</Text>
+								</View>
+							</View>
+
 						</View>
+
+
 						{user.user_id == "localUser" && (
 							<View className="flex-col items-center justify-center">
 								<Button className="m-8 ml-10 mr-10" onPress={() => setSignInModalVisible(!signInModalVisible)}>
@@ -447,17 +472,20 @@ export default function ProfileView() {
 							</View>
 						)}
 
-						<Button
-							onPress={() => {
-								setEnabledCalendarIds([]);
-								Storage.setItemSync("enabledCalendarIds", JSON.stringify([]));
+						<View className='flex-1 items-center justify-center pt-20'>
+							<Button className='w-[40vw]'
+								onPress={() => {
+									setEnabledCalendarIds([]);
+									Storage.setItemSync("enabledCalendarIds", JSON.stringify([]));
 
-								signOut();
-							}}
-						>
-							Sign Out
-						</Button>
+									signOut();
+								}}
+							>
+								Sign Out
+							</Button>
+						</View>
 					</View>
+
 				)}
 			</View>
 		</View>

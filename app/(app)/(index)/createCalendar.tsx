@@ -24,7 +24,6 @@ export default function CreateCalendar() {
     const [isGroup, setIsGroup] = useState(false);
     const [selectedGroup, setSelectedGroup] = useState<Group | null>(null);
 
-
     const { data: groups, isLoading } = useMyGroups();
     const { mutate: normalCreate } = useCreateCalendar();
     const { mutate: groupCreate } = useCreateGroupCalendar();
@@ -101,55 +100,74 @@ export default function CreateCalendar() {
                     />
                 </View>
 
-                <View className="flex-row items-center mt-2">
-                    <Text className="text-primary">Make Public:</Text>
-                    <Switch
-                        trackColor={{ false: "#767577", true: "#808080" }}
-                        thumbColor={isPublic ? "#FFFFFF" : "#F4F4F4"}
-                        onValueChange={() => setIsPublic(!isPublic)}
-                        value={isPublic}
-                        style={{ marginLeft: 10 }}
-                    />
+                <View className="mt-4 p-3 bg-muted rounded-lg border border-border">
+                    <View className="flex-row items-center justify-between">
+                        <View className="flex-1">
+                            <Text className="text-primary font-semibold">Make Calendar Public</Text>
+                            <Text className="text-muted-foreground text-sm mt-1">
+                                Public calendars are visible to all app users
+                            </Text>
+                        </View>
+                        <Switch
+                            trackColor={{ false: "#767577", true: "#4CAF50" }}
+                            thumbColor={isPublic ? "#FFFFFF" : "#F4F4F4"}
+                            onValueChange={() => setIsPublic(!isPublic)}
+                            value={isPublic}
+                        />
+                    </View>
                 </View>
 
                 {user.user_id !== "localUser" &&
-                    <View className='flex-row items-center mt-2'>
-                        <Text className='text-primary'>Group Calendar:</Text>
-                        <Switch
-                            trackColor={{ false: '#767577', true: '#808080' }}
-                            thumbColor={isGroup ? '#FFFFFF' : '#F4F4F4'}
-                            onValueChange={() => {
-                                setIsGroup(!isGroup);
-                                if (!isGroup) {
-                                    setSelectedGroup(null);
-                                }
-                            }}
-                            value={isGroup}
-                            style={{ marginLeft: 10 }}
-                        />
+                    <View className='mt-4 p-3 bg-muted rounded-lg border-border'>
+                        <View className="flex-row items-center justify-between">
+                            <View className="flex-1">
+                                <Text className='text-primary font-semibold'>Group Calendar</Text>
+                                <Text className="text-muted-foreground text-sm mt-1">
+                                    Share with a specific group
+                                </Text>
+                            </View>
+                            <Switch
+                                trackColor={{ false: '#767577', true: '#2196F3' }}
+                                thumbColor={isGroup ? '#FFFFFF' : '#F4F4F4'}
+                                onValueChange={() => {
+                                    setIsGroup(!isGroup);
+                                    if (!isGroup) {
+                                        setSelectedGroup(null);
+                                    }
+                                }}
+                                value={isGroup}
+                            />
+                        </View>
 
-                    </View>
-                }
-
-
-                {isGroup &&
-                    <View className='mt-5 flex flex-col gap-2'>
-                        <Text className='text-primary'>Group Name:</Text>
-                        <Dropdown<Group>
-                            options={groups || []}
-                            renderItem={(group) => (
-                                <Text className='text-primary'>{group.name}</Text>
-                            )}
-                            onSelect={(selectedGroup) => {
-                                setSelectedGroup(selectedGroup);
-                            }}
-                        />
+                        {isGroup && (
+                            <View className="mt-3 pt-3 border-t border-gray-300">
+                                <Text className='text-primary mb-2'>Select Group:</Text>
+                                {isLoading ? (
+                                    <Text className="text-muted-foreground italic">Loading groups...</Text>
+                                ) : groups && groups.length > 0 ? (
+                                    <Dropdown<Group>
+                                        options={groups || []}
+                                        renderItem={(group) => (
+                                            <Text className='text-primary'>{group.name}</Text>
+                                        )}
+                                        onSelect={(selectedGroup) => {
+                                            setSelectedGroup(selectedGroup);
+                                        }}
+                                    />
+                                ) : (
+                                    <View className="p-2 bg-muted rounded border border-border">
+                                        <Text className="text-muted-foreground">No groups available. Create or join a group first.</Text>
+                                    </View>
+                                )}
+                            </View>
+                        )}
                     </View>
                 }
 
                 <View className="mt-6">
                     <Button
                         onPress={onSubmit}
+                        disabled={isGroup && !(groups && groups.length > 0)}
                     >
                         Create Calendar
                     </Button>

@@ -36,7 +36,7 @@ export default function CalendarInfoView() {
 			router.back();
 		}
 	})
-
+	
 	const onSubmit = () => {
 		if ((calendarName.trim() === "" || calendarName.trim() === calendar?.title
 			&& calendarColorHex === calendar?.color && isPublic === calendar?.is_public) || isLoading) {
@@ -133,15 +133,21 @@ export default function CalendarInfoView() {
 					/>
 				</View>
 
-				<View className="flex-row items-center mt-2">
-					<Text className="text-primary">Make Public:</Text>
-					<Switch
-						trackColor={{ false: "#767577", true: "#808080" }}
-						thumbColor={isPublic ? "#FFFFFF" : "#F4F4F4"}
-						onValueChange={() => setIsPublic(!isPublic)}
-						value={isPublic}
-						style={{ marginLeft: 10 }}
-					/>
+				<View className='mt-4 p-3 bg-muted rounded-lg border border-border mb-6'>
+					<View className='flex-row items-center justify-between'>
+						<View className='flex-1'>
+							<Text className='text-primary font-semibold'>Make Calendar Public</Text>
+							<Text className='text-muted-foreground text-sm mt-1'>
+								Public calendars are visible to all app users
+							</Text>
+						</View>
+						<Switch
+							trackColor={{ false: "#767577", true: "#4CAF50" }}
+                            thumbColor={isPublic ? "#FFFFFF" : "#F4F4F4"}
+							onValueChange={() => setIsPublic(!isPublic)}
+							value={isPublic}
+						/>
+					</View>
 				</View>
 
 				<Button
