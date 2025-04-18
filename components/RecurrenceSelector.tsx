@@ -131,7 +131,6 @@ const RecurrenceSelector: React.FC<RecurrenceSelectorProps> = ({
 				options={recurrenceOptions}
 				renderItem={renderRecurrenceItem}
 				onSelect={onRecurrenceSelect}
-				label="Recurrence"
 				defaultValue={selectedRecurrence}
 			/>
 

@@ -9,7 +9,7 @@ import { useColorScheme } from "nativewind";
 import { useLocalSearchParams } from "expo-router";
 import { useMyCalendars } from "@/hooks/calendar.hooks";
 import { Calendar } from "@/types/calendar.types";
-import DateTimePicker from "@react-native-community/datetimepicker";
+import DateTimePicker, { DateTimePickerEvent } from "@react-native-community/datetimepicker";
 import { DateTime } from "luxon";
 import Dropdown from "@/components/Dropdown";
 import { useCreateEvent, useEvent, useUpdateEvent } from "@/hooks/event.hooks";
@@ -17,7 +17,7 @@ import { cn } from "@/lib/utils";
 import { useSession } from "@/hooks/authContext";
 import { NotificationTimes } from "@/constants/notificationTimes";
 import { DismissKeyboardView } from "@/components/DismissKeyboardView";
-import { ScrollView } from "react-native-gesture-handler";
+import { ScrollView, TextInput } from "react-native-gesture-handler";
 import RecurrenceSelector from "@/components/RecurrenceSelector";
 
 export default function UpdateEvent() {
@@ -83,6 +83,8 @@ export default function UpdateEvent() {
 	}, [event]);
 
 	const globColor = colorScheme == "light" ? "black" : "white";
+	const globColorInverse = colorScheme == "light" ? "white" : "black"
+	
 
 	const PLACEHOLDER_DATE = DateTime.fromObject({ year: 1899, month: 1, day: 1 });
 
@@ -139,42 +141,40 @@ export default function UpdateEvent() {
 			</View>
 
 			<ScrollView className="mt-5 flex flex-col gap-2 px-8">
-				<Input label="Name:" className="text-primary" value={name} onChangeText={setName} placeholder="Event Name" />
-				<Input
-					className="text-primary"
-					label="Location:"
-					value={location}
-					onChangeText={setLocation}
-					placeholder="Location"
+				<Text className='font-semibold text-primary'>Name</Text>
+				<TextInput
+					className='rounded-lg border border-gray-300 p-3 text-primary'
+					style={{ backgroundColor: globColorInverse }}
+					value={name}
+					onChangeText={setName}
+					placeholder="Event Name"
 				/>
 
-				<Input
-					label="Description:"
-					className="text-primary"
-					value={description}
-					onChangeText={setDescription}
-					placeholder="Description"
+				<Text className='font-semibold text-primary mt-3'>Location</Text>
+				<TextInput
+					className='rounded-lg border border-gray-300 p-3 text-primary'
+					style={{ backgroundColor: globColorInverse }}
+					value={location}
+					onChangeText={setLocation}
+					placeholder='Event Location'
 					multiline={true}
 					numberOfLines={4}
 				/>
 
-				<NotificationDropdown
-					handleSelect={(item: { label: string; value: number | null }) => {
-						setFirstNotification(item.value);
-					}}
-					defaultValue={firstNotification}
+				<Text className='font-semibold text-primary mt-3'>Description</Text>
+				<TextInput
+					className='rounded-lg border border-gray-300 p-3 text-primary'
+					style={{ backgroundColor: globColorInverse }}
+					value={description}
+					onChangeText={setDescription}
+					placeholder='Description'
+					multiline={true}
 				/>
 
-				<NotificationDropdown
-					handleSelect={(item: { label: string; value: number | null }) => {
-						setSecondNotification(item.value);
-					}}
-					defaultValue={secondNotification}
-				/>
+				<View className='mt-3 border-t border-border' />
 
-				<View className="flex-col gap-2">
-					<Text className="text-primary">Calendar:</Text>
-
+				<Text className='font-semibold text-primary mt-3'>Calendar</Text>
+				<View className='mt-1'>
 					<Dropdown<Calendar>
 						options={calendars}
 						defaultValue={eventCalendarId ? calendars.find((cal) => cal.calendar_id == eventCalendarId) : undefined}
@@ -192,26 +192,24 @@ export default function UpdateEvent() {
 					/>
 				</View>
 
-				<View className="flex-row items-center gap-2">
-					<Text className="pr-[9] text-primary">All Day</Text>
-					<Switch value={isAllDay} onValueChange={(value) => toggleAllDay(value)} />
-				</View>
+				<View className='mt-4 border-t border-border' />
 
-				<View className="flex-row items-center gap-2">
-					<Text className="pr-[3] text-primary">Start Time:</Text>
+				<View className="flex-row items-center gap-2 mt-3">
+					<Text className="pr-[10] text-primary font-semibold">Start Time:</Text>
 					{Platform.OS === "android" && (
 						<TouchableOpacity
 							className="flex flex-row items-center space-x-2 rounded-lg bg-foreground px-4 py-2"
 							onPress={() => setShowStartDatePicker(true)}
 						>
-							<Text className="font-medium text-secondary">{startDate.toLocaleString({
-								year: 'numeric',
-								month: 'short',
-								day: 'numeric',
-								hour: '2-digit',
-								minute: '2-digit',
-								hour12: !is24Hour
-							})
+							<Text className="font-medium text-sm text-secondary">{
+								startDate.toLocaleString({
+									year: 'numeric',
+									month: 'short',
+									day: 'numeric',
+									hour: '2-digit',
+									minute: '2-digit',
+									hour12: !is24Hour
+								})
 							}</Text>
 						</TouchableOpacity>
 					)}
@@ -219,7 +217,6 @@ export default function UpdateEvent() {
 						<DateTimePicker
 							value={startDate.toJSDate()}
 							mode={"date"}
-							is24Hour={is24Hour}
 							onChange={(e, selectedDate) => {
 								if (selectedDate && e.type === "set") {
 									const luxonDate = DateTime.fromJSDate(selectedDate);
@@ -230,7 +227,7 @@ export default function UpdateEvent() {
 							}}
 						/>
 					)}
-					{(showStartTimePicker || Platform.OS === "ios") && (
+					{!isAllDay && (showStartTimePicker || Platform.OS === "ios") && (
 						<DateTimePicker
 							value={startDate.toJSDate()}
 							is24Hour={is24Hour}
@@ -246,23 +243,24 @@ export default function UpdateEvent() {
 					)}
 				</View>
 
-				<View className="flex-row items-center gap-2">
-					<Text className="pr-[9] text-primary">End Time:</Text>
+				<View className="flex-row items-center gap-2 mt-2">
+					<Text className="pr-[16] text-primary font-semibold">End Time:</Text>
 					{Platform.OS === "android" && (
 						<TouchableOpacity
 							className="flex flex-row items-center space-x-2 rounded-lg bg-foreground px-4 py-2"
 							onPress={() => setShowEndDatePicker(true)}
+							disabled={isAllDay}
 						>
-							<Text className="font-medium text-secondary">{endDate.toLocaleString(
-								{
+							<Text className={`font-medium text-sm ${isAllDay ? "text-gray-400" : "text-secondary"}`}>
+								{endDate.toLocaleString({
 									year: 'numeric',
 									month: 'short',
 									day: 'numeric',
 									hour: '2-digit',
 									minute: '2-digit',
 									hour12: !is24Hour
-								})
-							}</Text>
+								})}
+							</Text>
 						</TouchableOpacity>
 					)}
 					{(showEndDatePicker || Platform.OS === "ios") && (
@@ -280,7 +278,7 @@ export default function UpdateEvent() {
 							}}
 						/>
 					)}
-					{(showEndTimePicker || Platform.OS == "ios") && (
+					{!isAllDay && (showEndTimePicker || Platform.OS == "ios") && (
 						<DateTimePicker
 							value={endDate.toJSDate()}
 							is24Hour={is24Hour}
@@ -296,6 +294,15 @@ export default function UpdateEvent() {
 					)}
 				</View>
 
+
+				<View className="flex-row items-center gap-2 mt-3">
+					<Text className="pr-[] text-primary font-semibold m">All Day:</Text>
+					<Switch value={isAllDay} onValueChange={(value) => toggleAllDay(value)} />
+				</View>
+
+				<View className='mt-4 border-t border-border' />
+
+				<Text className='font-semibold text-primary mt-3 mb-1'>Recurrence</Text>
 				<RecurrenceSelector
 					onRecurrenceChange={(recurrenceValue) => {
 						setFrequency(recurrenceValue);
@@ -304,14 +311,36 @@ export default function UpdateEvent() {
 					defaultValue={frequency}
 				/>
 
+				<Text className='font-semibold text-primary mt-3 mb-1'>Priority</Text>
 				<PrioDropdown
 					handleSelect={(item: { label: string; value: number }) => {
 						setPriority(item.value);
 					}}
 					defaultValue={priority}
 				/>
+
+				<View className='mt-4 border-t border-border' />
+
+				<Text className='font-semibold text-primary mt-3 mb-1'>First Notification Time</Text>
+				<NotificationDropdown
+					handleSelect={(item: { label: string; value: number | null }) => {
+						setFirstNotification(item.value);
+					}}
+					defaultValue={firstNotification}
+				/>
+
+				<Text className='font-semibold text-primary mt-3 mb-1'>Second Notification Time</Text>
+				<NotificationDropdown
+					handleSelect={(item: { label: string; value: number | null }) => {
+						setSecondNotification(item.value);
+					}}
+					defaultValue={secondNotification}
+				/>
+
+				<View className='mb-6'/>
+
 			</ScrollView>
-			<View className="mb-4 flex flex-row items-center justify-center">
+			<View className="m-4 flex flex-row items-center justify-center">
 				{/* Get this to send event to db */}
 				<Button
 					className={cn(isPending && "opacity-50")}
@@ -382,7 +411,6 @@ const NotificationDropdown = ({
 				defaultValue={options.find((option) => option.value === defaultValue)}
 				renderItem={renderItem}
 				onSelect={handleSelect}
-				label="Notification Time"
 			/>
 		</View>
 	);
@@ -411,7 +439,6 @@ const PrioDropdown = ({
 				defaultValue={options.find((option) => option.value === defaultValue)}
 				renderItem={renderItem}
 				onSelect={handleSelect}
-				label="Priority"
 			/>
 		</View>
 	);

@@ -10,18 +10,19 @@ import { useEvent } from '@/hooks/event.hooks';
 import { useCalendar } from '@/hooks/calendar.hooks';
 import { cn } from '@/lib/utils';
 import { useSession } from '@/hooks/authContext';
+import { NotificationTimes } from '@/constants/notificationTimes';
 
 
 
 interface EventViewModalProps {
-    visible: boolean;
-    onClose: () => void;
-    calendarId: string;
-    eventId: string;
+	visible: boolean;
+	onClose: () => void;
+	calendarId: string;
+	eventId: string;
 }
 
 type TimestampDisplayProps = {
-    timestamp: DateTime;
+	timestamp: DateTime;
 	is24Hour?: boolean;
 };
 const TimestampDisplay: React.FC<TimestampDisplayProps> = ({ timestamp, is24Hour = false }) => {
@@ -39,19 +40,87 @@ const TimestampDisplay: React.FC<TimestampDisplayProps> = ({ timestamp, is24Hour
 	);
 };
 
+function convertCronToRecurrence(cronString: string) {
+	if (!cronString || typeof cronString !== 'string' || cronString.trim() === '') {
+		return '';
+	}
+
+	const parts = cronString.trim().split(/\s+/)
+	if (parts.length < 5) {
+		return '';
+	}
+	const [minute, hour, dayOfMonth, month, dayOfWeek] = parts;
+
+	if ((dayOfMonth === '*' || dayOfMonth === '?') &&
+		month === '*' &&
+		(dayOfWeek === '*' || dayOfWeek === '?')) {
+		return 'Daily';
+	}
+	if ((dayOfMonth === '*' || dayOfMonth === '?') &&
+		month === '*' &&
+		dayOfWeek !== '*' &&
+		dayOfWeek !== '?') {
+		return 'Weekly';
+	}
+	if (dayOfMonth !== '*' &&
+		dayOfMonth !== '?' &&
+		month === '*' &&
+		(dayOfWeek === '*' || dayOfWeek === '?')) {
+		return 'Monthly';
+	}
+	if ((dayOfMonth !== '*' && dayOfMonth !== '?') &&
+		month !== '*') {
+		return 'Yearly';
+	}
+	return 'Custom';
+
+}
+
+
+function convertPriorityToString(prio: number) {
+	if (prio > 3 || prio < 0) {
+		return '';	
+	}
+	if (prio === 0) {
+		return 'None';
+	} else if (prio === 1) {
+		return 'Low';
+	} else if (prio === 2) {
+		return 'Medium';
+	} else if (prio === 3) {
+		return 'High';
+	}
+}
+
+function convertNotificationToString(notif: number) {
+	if (notif === NotificationTimes.TIME_OF_EVENT) {
+		return "Time of event";
+	} else if (notif === NotificationTimes.FIFTEEN_MINUTES_MS) {
+		return "15 minutes before";
+	} else if (notif === NotificationTimes.THIRTY_MINUTES_MS) {
+		return "30 minutes before";
+	} else if (notif === NotificationTimes.ONE_HOUR_MS) {
+		return "1 hour before";
+	} else if (notif === NotificationTimes.ONE_DAY_MS) {
+		return "1 day before";
+	} else {
+		return "None"
+	}
+}
+
 function EventViewModal({ visible, onClose, calendarId, eventId }: EventViewModalProps) {
-    const {colorScheme} = useColorScheme();
+	const { colorScheme } = useColorScheme();
 
-    function openEditPage() {
-        onClose();
-        router.navigate(`/updateEvent?eventId=${eventId}&calendarId=${calendarId}`);
-    }
+	function openEditPage() {
+		onClose();
+		router.navigate(`/updateEvent?eventId=${eventId}&calendarId=${calendarId}`);
+	}
 
-    const {mutate: deleteEvent, isPending: isDeleting} = useDeleteEvent({
-        onSuccess: () => {
-            onClose();
-        }
-    })
+	const { mutate: deleteEvent, isPending: isDeleting } = useDeleteEvent({
+		onSuccess: () => {
+			onClose();
+		}
+	})
 
 	const { data: event, isLoading } = useEvent(calendarId, eventId);
 	const { data: calendar, isLoading: isLoadingCalendar } = useCalendar(calendarId);
@@ -68,74 +137,97 @@ function EventViewModal({ visible, onClose, calendarId, eventId }: EventViewModa
 		return <Text className="text-primary">Loading...</Text>;
 	}
 
-    return (
-			<Modal animationType="fade" transparent={true} visible={visible} onRequestClose={onClose}>
-				<View className="flex-1 items-center justify-center bg-black/50">
-					<View className="h-[80vh] w-[98vw] overflow-hidden rounded-lg bg-background shadow-lg">
-						<View className="flex-row items-center border-b border-gray-200 p-4">
-							<TouchableOpacity onPress={onClose} className="w-16 p-2">
-								<Text className="text-3xl text-secondary-foreground">✕</Text>
-							</TouchableOpacity>
+	return (
+		<Modal animationType="fade" transparent={true} visible={visible} onRequestClose={onClose}>
+			<View className="flex-1 items-center justify-center bg-black/50">
+				<View className="h-[80vh] w-[98vw] overflow-hidden rounded-lg bg-background shadow-lg">
+					<View className="flex-row items-center border-b border-gray-200 p-4">
+						<TouchableOpacity onPress={onClose} className="w-16 p-2">
+							<Text className="text-3xl text-secondary-foreground">✕</Text>
+						</TouchableOpacity>
 
-							<View className="flex-1 items-center">
-								<Text className={cn("text-center text-2xl text-foreground", 
-									event.priority > 0 && "text-center text-2xl font-bold text-foreground",
-									event.priority > 1 && "text-center text-2xl font-bold text-foreground underline",
-									event.priority > 2 && "text-center text-2xl font-bold text-foreground underline uppercase")}>{event.name}</Text>
-							</View>
-
-							<View className="w-16 flex-row justify-end gap-2">
-								<TouchableOpacity onPress={openEditPage}>
-									<Feather
-										name="edit-2"
-										className="mt-[1] text-primary"
-										size={24}
-										color={colorScheme == "dark" ? "white" : "black"}
-									/>
-								</TouchableOpacity>
-								<TouchableOpacity onPress={() => {
-                                    deleteEvent({event_id: eventId, calendar_id: calendarId});
-                                }}>
-									<Feather name="trash" size={24} color={"red"} />
-								</TouchableOpacity>
-							</View>
+						<View className="flex-1 items-center">
+							<Text className={cn("text-center text-2xl text-foreground",
+								event.priority > 0 && "text-center text-2xl font-bold text-foreground",
+								event.priority > 1 && "text-center text-2xl font-bold text-foreground underline",
+								event.priority > 2 && "text-center text-2xl font-bold text-foreground underline uppercase")}>{event.name}</Text>
 						</View>
 
-						<ScrollView className="p-6" contentContainerStyle={{ gap: 16 }}>
-							<View className="flex-row items-center space-x-3">
-								<Text className="w-32 text-xl font-medium text-foreground">Start Time:</Text>
-								<TimestampDisplay timestamp={event.start_time} is24Hour={is24Hour} />
-							</View>
-
-							<View className="flex-row items-center space-x-3">
-								<Text className="w-32 text-xl font-medium text-foreground">End Time:</Text>
-								<TimestampDisplay timestamp={event.end_time} is24Hour={is24Hour} />
-							</View>
-
-							<View className="space-y-3">
-								<Text className="text-xl font-medium text-foreground">Description:</Text>
-								<Text className="text-lg text-foreground">{event.description}</Text>
-							</View>
-
-							<View className="flex-row items-center space-x-3">
-								<Text className="w-32 text-xl font-medium text-foreground">Location:</Text>
-								<Text className="text-lg text-foreground">{event.location}</Text>
-							</View>
-
-							<View className="flex-row items-center space-x-3">
-								<Text className="w-32 text-xl font-medium text-foreground">Notification:</Text>
-								<Text className="text-lg text-foreground">{event.notification}</Text>
-							</View>
-
-							<View className="mt-4 flex-row items-center border-t border-gray-200 py-4">
-								<View className="mr-3 h-6 w-6 rounded-full" style={{ backgroundColor: calendar.color }} />
-								<Text className="text-lg text-foreground">{calendar.title}</Text>
-							</View>
-						</ScrollView>
+						<View className="w-16 flex-row justify-end gap-2">
+							<TouchableOpacity onPress={openEditPage}>
+								<Feather
+									name="edit-2"
+									className="mt-[1] text-primary"
+									size={24}
+									color={colorScheme == "dark" ? "white" : "black"}
+								/>
+							</TouchableOpacity>
+							<TouchableOpacity onPress={() => {
+								deleteEvent({ event_id: eventId, calendar_id: calendarId });
+							}}>
+								<Feather name="trash" size={24} color={"red"} />
+							</TouchableOpacity>
+						</View>
 					</View>
+
+
+					<ScrollView className="p-6" contentContainerStyle={{ gap: 16 }}>
+						<View className="flex-row items-center space-x-3">
+							<Text className="w-32 text-xl font-medium text-primary">Start Time:</Text>
+							<TimestampDisplay timestamp={event.start_time} is24Hour={is24Hour} />
+						</View>
+
+						<View className="flex-row items-center space-x-3">
+							<Text className="w-32 text-xl font-medium text-primary">End Time:</Text>
+							<TimestampDisplay timestamp={event.end_time} is24Hour={is24Hour} />
+						</View>
+
+						<View className='border-t border-border' />
+						<View className='flex-row'>
+							<View className="mr-3 h-6 w-6 rounded-full" style={{ backgroundColor: calendar.color }} />
+							<Text className="text-lg text-primary">{calendar.title}</Text>
+						</View>
+						<View className='border-t border-border' />
+
+						<View className='flex-row items-center'>
+							<Text className="mr-3 text-xl font-medium text-primary">Description:</Text>
+							<Text className="text-lg text-primary">{event.description}</Text>
+						</View>
+
+						<View className="flex-row items-center">
+							<Text className="mr-10 text-xl font-medium text-primary">Location:</Text>
+							<Text className="text-lg text-primary">{event.location}</Text>
+						</View>
+
+						<View className='border-t border-border' />
+
+						<View className='flex-row items-center'>
+							<Text className='mr-5 text-xl font-medium text-primary'>Recurrence:</Text>
+							<Text className='text-lg text-primary'>{convertCronToRecurrence(event.frequency ?? '')}</Text>
+						</View>
+
+						<View className='flex-row items-center'>
+							<Text className='mr-[50px] text-xl font-medium text-primary'>Priority:</Text>
+							<Text className='text-lg text-primary'>{convertPriorityToString(event.priority)}</Text>
+						</View>
+
+						<View className='border-t border-border' />
+
+						<View className="flex-row items-center space-x-3">
+							<Text className="mr-10 text-xl font-medium text-primaryd">First Notification:</Text>
+							<Text className="text-lg text-primary">{convertNotificationToString(event.first_notification ?? -1)}</Text>
+						</View>
+
+						<View className='flex-row items-center space-x-3'>
+							<Text className='mr-4 text-xl font-medium text-primary'>Second Notification:</Text>
+							<Text className='text-lg text-primary'>{convertNotificationToString(event.second_notification ?? -1)}</Text>
+						</View>
+
+					</ScrollView>
 				</View>
-			</Modal>
-		);
+			</View>
+		</Modal>
+	);
 }
 
 export { EventViewModal };
