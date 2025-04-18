@@ -5,6 +5,7 @@ export interface Calendar {
 	color: string;
 	title: string;
 	is_public: boolean;
+	invite_code: string | null;
 }
 
 export interface UpdateCalendar {

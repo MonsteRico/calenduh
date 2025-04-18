@@ -19,6 +19,7 @@ export default function CalendarInfoView() {
 	const { data: calendar, isLoading } = useCalendar(params.id as string);
 	const [calendarName, setCalendarName] = useState("");
 	const [calendarColorHex, setCalendarColorHex] = useState("");
+	const [calendarShareCode, setCalendarShareCode] = useState("");
 	const [isPublic, setIsPublic] = useState(false);
 	const [matchingColor, setMatchingColor] = useState(calendarColors[0]);
 	const { mutate: updateCalendar, isPending: isUpdating } = useUpdateCalendar({
@@ -69,6 +70,7 @@ export default function CalendarInfoView() {
 
 	useEffect(() => {
 		if (calendar && !isLoading) {
+			console.log(calendar);
 			setCalendarColorHex(calendar.color);
 			setIsPublic(calendar.is_public);
 			setCalendarName(calendar.title);
@@ -148,6 +150,11 @@ export default function CalendarInfoView() {
 							value={isPublic}
 						/>
 					</View>
+				</View>
+
+				<View className='flex-row gap-1 mb-5'>
+					<Text className='text-primary mr-2 font-semibold'>Share Code:</Text>
+					<Text className='text-primary'>{calendar.invite_code}</Text>
 				</View>
 
 				<Button
