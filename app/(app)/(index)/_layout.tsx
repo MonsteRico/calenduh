@@ -30,6 +30,12 @@ export default function MainCalendarLayout() {
 					presentation: "modal",
 				}}
 			/>
+			<Stack.Screen
+				name="updateSubCalendar"
+				options={{
+					presentation: "modal",
+				}}
+			/>
 
 			<Stack.Screen
 				name="createCalendar"

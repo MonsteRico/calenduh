@@ -5,18 +5,6 @@ import { Checkbox } from "@/components/Checkbox";
 import { Accordion } from "@/components/Accordion";
 import { useState, useEffect } from "react";
 
-interface example_calendar {
-	name: string;
-	color: string;
-	id: string;
-}
-
-const dummyCalendars: example_calendar[] = [
-	{ name: "Calendar1", color: "#0000FF", id: "a" },
-	{ name: "Calendar2", color: "#d42245", id: "b" },
-	{ name: "Calendar3", color: "#0a571e", id: "c" },
-];
-
 export default function CalendarsList({ toggleDrawer }: { toggleDrawer: () => void }) {
 	const [editMode, setEditMode] = useState(false);
 	const { enabledCalendarIds, setEnabledCalendarIds } = useEnabledCalendarIds();
@@ -26,6 +14,11 @@ export default function CalendarsList({ toggleDrawer }: { toggleDrawer: () => vo
 		router.navigate(`/updateCalendar?id=${id}`);
 		setEditMode(false);
 	};
+
+	const subEditOnPress = (id: string) => {
+		router.navigate(`/updateSubCalendar?id=${id}`);
+		setEditMode(false);
+	}
 
 	const toggleCalendar = (calendarId: string) => {
 		if (enabledCalendarIds.includes(calendarId)) {
@@ -43,7 +36,16 @@ export default function CalendarsList({ toggleDrawer }: { toggleDrawer: () => vo
 		}
 	}
 
+	const subCalendarOnPress = (id: string) => {
+		if (editMode) {
+			subEditOnPress(id);
+		} else {
+			toggleCalendar(id);
+		}
+	}
+
 	const { data: calendars, isLoading } = useMyCalendars();
+	const { data: sub_calendars, isLoading: subIsLoading } = useMySubscribedCalendars();
 
 	return (
 		<ScrollView className="mb-20 flex w-full flex-col gap-3">
@@ -77,16 +79,16 @@ export default function CalendarsList({ toggleDrawer }: { toggleDrawer: () => vo
 				</View>
 			</Accordion>
 
-			<Accordion title={"Other Calendars"}>
+			<Accordion title={"Subscribed Calendars"}>
 				<View className="flex h-auto flex-col gap-2">
-					{dummyCalendars.map((calendar, i) => (
+					{sub_calendars && sub_calendars.map((calendar, i) => (
 						<CalendarItem
-							checked={enabledCalendarIds.includes(calendar.id)}
-							key={calendar.name}
-							calendarName={calendar.name}
+							checked={enabledCalendarIds.includes(calendar.calendar_id)}
+							key={calendar.calendar_id}
+							calendarName={calendar.title}
 							calendarColor={calendar.color}
 							editMode={editMode}
-							onPress={() => calendarOnPress(calendar.id) }
+							onPress={() => subCalendarOnPress(calendar.calendar_id) }
 						/>
 					))}
 				</View>
@@ -121,7 +123,7 @@ import { cn } from "@/lib/utils";
 import { type VariantProps, cva } from "class-variance-authority";
 import FontAwesome from "@expo/vector-icons/FontAwesome";
 import { useEnabledCalendarIds } from "@/hooks/useEnabledCalendarIds";
-import { useMyCalendars } from "@/hooks/calendar.hooks";
+import { useMyCalendars, useMySubscribedCalendars } from "@/hooks/calendar.hooks";
 interface CalendarItemProps extends React.ComponentPropsWithoutRef<typeof TouchableOpacity> {
 	calendarName: string;
 	calendarColor: string;

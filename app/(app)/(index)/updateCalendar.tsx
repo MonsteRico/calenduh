@@ -70,7 +70,6 @@ export default function CalendarInfoView() {
 
 	useEffect(() => {
 		if (calendar && !isLoading) {
-			console.log(calendar);
 			setCalendarColorHex(calendar.color);
 			setIsPublic(calendar.is_public);
 			setCalendarName(calendar.title);

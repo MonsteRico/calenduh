@@ -165,6 +165,11 @@ export const getMyCalendarsFromServer = async (): Promise<Calendar[]> => {
 	return response.data;
 };
 
+export const getMySubscribedCalendarsFromServer = async (): Promise<Calendar[]> => {
+	const response = await server.get(`/calendars/@subscribed`);
+	return response.data;
+}
+
 export const getSubscribedCalendarsFromServer = async (): Promise<Calendar[]> => {
 	const response = await server.get(`/calendars/@subscribed`);
 	return response.data;

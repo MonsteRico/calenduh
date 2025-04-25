@@ -174,6 +174,36 @@ export const useGroupCalendars = (group_id: string) => {
 	})
 }
 
+export const useMySubscribedCalendars = () => {
+	const queryClient = useQueryClient();
+	const isConnected = useIsConnected();
+	const { user, sessionId } = useSession();
+
+	if (!user || !sessionId) {
+		throw new Error("User not found");
+	}
+
+	return useQuery({
+		queryKey: ["sub_calendars"],
+		queryFn: async () => {
+			if (isConnected && user.user_id !== "localUser") {
+				try {
+					const serverCalendars = await getSubscribedCalendarsFromServer();
+					return serverCalendars;
+				} catch (error) {
+					if (process.env.SHOW_LOGS == 'true') {
+						console.error('Error fetching subscribed calendars from server');
+					}
+					throw new Error('Subscribed calendarrs could not be fetched');
+				}
+			} else {
+				throw new Error("User or session not found");
+			}
+		}
+
+	})
+}
+
 export const useMyCalendars = () => {
 	const queryClient = useQueryClient();
 	const isConnected = useIsConnected();
