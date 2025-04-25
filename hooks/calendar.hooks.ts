@@ -18,6 +18,7 @@ import {
 	getGroupCalendarsFromServer,
 	createGroupCalendarOnServer,
 	getMyGroupCalendarsFromServer,
+	unsubscribeCalendarOnServer,
 } from "@/lib/calendar.helpers";
 import { addMutationToQueue, getMutationsFromDB } from "@/lib/mutation.helpers";
 import { useSession } from "./authContext";
@@ -239,7 +240,11 @@ export const useMyCalendars = () => {
 						}
 					}
 
-					return [...serverGroupCalendars, ...serverCalendars.filter((calendar) => !deletedCalendarIds.includes(calendar.calendar_id))]; // Remove any calendars that were deleted offline before they get deleted on the server
+					const combinedCalendars = [...serverGroupCalendars, ...serverCalendars.filter((calendar) => !deletedCalendarIds.includes(calendar.calendar_id))];
+					const uniqueCalendars = Array.from(
+						new Map(combinedCalendars.map(calendar => [calendar.calendar_id, calendar])).values()
+					);
+					return uniqueCalendars;
 				} catch (error) {
 					if (process.env.SHOW_LOGS == 'true') {
 						console.error("Error fetching calendars from server:", error);
@@ -559,6 +564,37 @@ export const useDeleteGroupCalendar = (
 		onSuccess: async (data, variables, context) => {
 			options?.onSuccess?.(data, variables, context);
 			setEnabledCalendarIds(enabledCalendarIds.filter((id) => id !== variables));
+			queryClient.invalidateQueries({ queryKey: ["calendars"] })
+		}
+	})
+}
+
+export const useUnsubscribeCalendar = (
+	options?: UseMutationOptions<void, Error, string>
+) => {
+	const queryClient = useQueryClient();
+	const isConnected = useIsConnected();
+	const { enabledCalendarIds, setEnabledCalendarIds } = useEnabledCalendarIds();
+	const { user, sessionId } = useSession();
+	if (!user || !sessionId) {
+		throw new Error("User not found or session not found");
+	}
+
+	return useMutation<void, Error, string>({
+		mutationFn: async (calendar_id: string) => {
+			if (isConnected && user.user_id !== 'localUser') {
+				return await unsubscribeCalendarOnServer(calendar_id);
+			} else {
+				throw new Error("Not connected to server or using a local-only account");
+			}
+		},
+		onMutate: async (calendar_id) => {
+			options?.onMutate?.(calendar_id);
+		},
+		onSuccess: async (data, variables, context) => {
+			options?.onSuccess?.(data, variables, context);
+			setEnabledCalendarIds(enabledCalendarIds.filter((id) => id !== variables));
+			queryClient.invalidateQueries({ queryKey: ["sub_calendars"] });
 		}
 	})
 }

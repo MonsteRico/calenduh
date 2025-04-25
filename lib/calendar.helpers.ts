@@ -213,3 +213,7 @@ export const updateCalendarOnServer = async (calendar: UpdateCalendar): Promise<
 export const deleteCalendarOnServer = async (calendar_id: string): Promise<void> => {
 	await server.delete(`/calendars/${calendar_id}`);
 };
+
+export const unsubscribeCalendarOnServer = async (calendar_id: string): Promise<void> => {
+	await server.delete(`/subscriptions/${calendar_id}`);
+}
