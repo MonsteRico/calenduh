@@ -19,6 +19,7 @@ import {
 	createGroupCalendarOnServer,
 	getMyGroupCalendarsFromServer,
 	unsubscribeCalendarOnServer,
+	createSubscriptionOnServer,
 } from "@/lib/calendar.helpers";
 import { addMutationToQueue, getMutationsFromDB } from "@/lib/mutation.helpers";
 import { useSession } from "./authContext";
@@ -403,6 +404,35 @@ export const useCreateGroupCalendar = (
 		}
 
 	)
+}
+
+export const useCreateSubscription = (
+	options?: UseMutationOptions<Calendar, Error, string>
+) => {
+	const queryClient = useQueryClient();
+	const isConnected = useIsConnected();
+	const { user, sessionId } = useSession();
+
+	if (!user || !sessionId) {
+		throw new Error("User not found or session not found");
+	}
+
+	return useMutation<Calendar, Error, string>({
+		mutationFn: async (invite_code: string) => {
+			if (isConnected && user.user_id !== "localUser") {
+				return await createSubscriptionOnServer(invite_code);
+			} else {
+				throw new Error("Not connected to server or using a local-only account");
+			}
+		},
+		onMutate: async (invite_code) => {
+			options?.onMutate?.(invite_code);
+		},
+		onSuccess: async (data) => {
+			options?.onSuccess?.(data, { title: data.title } as any, undefined as any);
+			await queryClient.invalidateQueries({ queryKey: ["sub_calendars"] })
+		}
+	})
 }
 
 export const useUpdateCalendar = (

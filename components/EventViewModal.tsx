@@ -11,6 +11,7 @@ import { useCalendar } from '@/hooks/calendar.hooks';
 import { cn } from '@/lib/utils';
 import { useSession } from '@/hooks/authContext';
 import { NotificationTimes } from '@/constants/notificationTimes';
+import { useMyGroups } from '@/hooks/group.hooks';
 
 
 
@@ -124,6 +125,7 @@ function EventViewModal({ visible, onClose, calendarId, eventId }: EventViewModa
 
 	const { data: event, isLoading } = useEvent(calendarId, eventId);
 	const { data: calendar, isLoading: isLoadingCalendar } = useCalendar(calendarId);
+	const { data: groups, isLoading: isLoadingGroups } = useMyGroups();
 	const { user } = useSession();
 	const [is24Hour, setIs24Hour] = useState(false);
 
@@ -152,7 +154,8 @@ function EventViewModal({ visible, onClose, calendarId, eventId }: EventViewModa
 								event.priority > 1 && "text-center text-2xl font-bold text-foreground underline",
 								event.priority > 2 && "text-center text-2xl font-bold text-foreground underline uppercase")}>{event.name}</Text>
 						</View>
-
+						
+						{(user?.user_id === calendar.user_id || groups?.some(group => group.group_id === calendar.group_id)) &&
 						<View className="w-16 flex-row justify-end gap-2">
 							<TouchableOpacity onPress={openEditPage}>
 								<Feather
@@ -168,6 +171,7 @@ function EventViewModal({ visible, onClose, calendarId, eventId }: EventViewModa
 								<Feather name="trash" size={24} color={"red"} />
 							</TouchableOpacity>
 						</View>
+					}
 					</View>
 
 
