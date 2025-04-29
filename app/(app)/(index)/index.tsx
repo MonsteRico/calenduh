@@ -188,7 +188,7 @@ export default function MonthScreen() {
 			</View>
 			<Divider className="my-4" />
 			<View className="flex flex-row flex-wrap justify-center gap-4">
-				<Text className="text-primary">Dummy text to edit</Text>
+				<Text className="text-primary">{enabledCalendarIds}</Text>
 			</View>
 		</View>
 	);

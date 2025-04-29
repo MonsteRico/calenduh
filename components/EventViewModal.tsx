@@ -12,7 +12,7 @@ import { cn } from '@/lib/utils';
 import { useSession } from '@/hooks/authContext';
 import { NotificationTimes } from '@/constants/notificationTimes';
 import { useMyGroups } from '@/hooks/group.hooks';
-
+import * as Clipboard from "expo-clipboard";
 
 
 interface EventViewModalProps {
@@ -139,6 +139,9 @@ function EventViewModal({ visible, onClose, calendarId, eventId }: EventViewModa
 		return <Text className="text-primary">Loading...</Text>;
 	}
 
+	const eventShareLink = `calenduh://createEvent?start_time=${encodeURIComponent(event.start_time.toUTC().toISO() as string)}&end_time=${encodeURIComponent(event.end_time.toUTC().toISO() as string)}&name=${encodeURIComponent(event.name)}&all_day=${encodeURIComponent(event.all_day)}&recurrence=${encodeURIComponent(event.frequency ?? "")}&location=${encodeURIComponent(event.location)}&description=${encodeURIComponent(event.description)}`
+
+
 	return (
 		<Modal animationType="fade" transparent={true} visible={visible} onRequestClose={onClose}>
 			<View className="flex-1 items-center justify-center bg-black/50">
@@ -225,6 +228,13 @@ function EventViewModal({ visible, onClose, calendarId, eventId }: EventViewModa
 						<View className='flex-row items-center space-x-3'>
 							<Text className='mr-4 text-xl font-medium text-primary'>Second Notification:</Text>
 							<Text className='text-lg text-primary'>{convertNotificationToString(event.second_notification ?? -1)}</Text>
+						</View>
+
+						<View className='flex-row items-center space-x-3'>
+							<Button variant={"default"} onPress={async () => {
+								await Clipboard.setStringAsync(eventShareLink)
+								alert("Share Link copied!")
+							}}>Copy Share Link</Button>
 						</View>
 
 					</ScrollView>

@@ -52,6 +52,8 @@ function Month({ month, year }: { month: number; year: number }) {
 		);
 	}
 
+	console.log("month events", monthsEvents)
+
 	return (
 		<View
 			style={{
