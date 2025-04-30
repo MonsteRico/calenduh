@@ -10,7 +10,7 @@ import FontAwesome from "@expo/vector-icons/FontAwesome";
 import { calendarColors } from "@/components/CalendarColorModal";
 import { ConfirmDelete } from "@/components/ConfirmDelete";
 import { DismissKeyboardView } from "@/components/DismissKeyboardView";
-
+import * as Clipboard from "expo-clipboard"
 
 export default function CalendarInfoView() {
 	//TODO: Display groups name if there is one (can't change group though)
@@ -89,8 +89,7 @@ export default function CalendarInfoView() {
 	}
 
 	return (
-		<DismissKeyboardView className='flex-1 bg-background'>
-
+		<DismissKeyboardView className="flex-1 bg-background">
 			<View className="m-2 flex-row items-center justify-between">
 				{isPresented && (
 					<Button
@@ -105,27 +104,26 @@ export default function CalendarInfoView() {
 				<Text className="items-center pl-5 text-3xl font-bold text-primary">Edit Calendar</Text>
 
 				<ConfirmDelete onDelete={() => deleteCalendar(calendarId)} buttonClass="mr-4 ml-6" />
-
 			</View>
 
-			<View className='mt-5 flex flex-col gap-2 px-8'>
+			<View className="mt-5 flex flex-col gap-2 px-8">
 				<Input
-					label='Name:'
-					className='text-primary'
+					label="Name:"
+					className="text-primary"
 					value={calendarName}
 					onChangeText={setCalendarName}
-					placeholder='Calendar Name'
+					placeholder="Calendar Name"
 				/>
 
-				<View className='flex-col gap-1'>
-					<Text className='text-primary'>Color:</Text>
-					<Dropdown<{ hex: string, name: string }>
+				<View className="flex-col gap-1">
+					<Text className="text-primary">Color:</Text>
+					<Dropdown<{ hex: string; name: string }>
 						options={calendarColors}
 						defaultValue={matchingColor}
 						renderItem={(calendarColor) => (
-							<View className='flex flex-row items-center gap-2'>
-								<View className='h-6 w-6 rounded-full' style={{ backgroundColor: calendarColor.hex }} />
-								<Text className='text-primary'>{calendarColor.name}</Text>
+							<View className="flex flex-row items-center gap-2">
+								<View className="h-6 w-6 rounded-full" style={{ backgroundColor: calendarColor.hex }} />
+								<Text className="text-primary">{calendarColor.name}</Text>
 							</View>
 						)}
 						onSelect={(selectedCalendarColor) => {
@@ -134,32 +132,35 @@ export default function CalendarInfoView() {
 					/>
 				</View>
 
-				<View className='mt-4 p-3 bg-muted rounded-lg border border-border mb-6'>
-					<View className='flex-row items-center justify-between'>
-						<View className='flex-1'>
-							<Text className='text-primary font-semibold'>Make Calendar Public</Text>
-							<Text className='text-muted-foreground text-sm mt-1'>
-								Public calendars are visible to all app users
-							</Text>
+				<View className="mb-6 mt-4 rounded-lg border border-border bg-muted p-3">
+					<View className="flex-row items-center justify-between">
+						<View className="flex-1">
+							<Text className="font-semibold text-primary">Make Calendar Public</Text>
+							<Text className="mt-1 text-sm text-muted-foreground">Public calendars are visible to all app users</Text>
 						</View>
 						<Switch
 							trackColor={{ false: "#767577", true: "#4CAF50" }}
-                            thumbColor={isPublic ? "#FFFFFF" : "#F4F4F4"}
+							thumbColor={isPublic ? "#FFFFFF" : "#F4F4F4"}
 							onValueChange={() => setIsPublic(!isPublic)}
 							value={isPublic}
 						/>
 					</View>
 				</View>
 
-				<View className='flex-row gap-1 mb-5'>
-					<Text className='text-primary mr-2 font-semibold'>Share Code:</Text>
-					<Text className='text-primary'>{calendar.invite_code}</Text>
+				<View className="mb-5 flex-row gap-1">
+					<Text className="mr-2 font-semibold text-primary">Share Code:</Text>
+					<Text className="text-primary">{calendar.invite_code}</Text>
 				</View>
 
-				<Button
-					onPress={() => onSubmit()}
-					className={cn((isUpdating || isDeleting) && "opacity-70")}
-				>
+				<Text className="font-semibold text-primary">iCal Subscribe Link:</Text>
+				<Button variant="link" className="mb-5" onPress={async () => {
+					await Clipboard.setUrlAsync(`https://calenduh.technowizzy.dev/calendars/${calendar.calendar_id}.ical`);
+					alert("iCal URL copied to clipboard. Open in your browser to download!")
+				}}>
+					<Text className="text-sm text-wrap text-primary">{`https://calenduh.technowizzy.dev/calendars/${calendar.calendar_id}.ical`}</Text>
+				</Button>
+
+				<Button onPress={() => onSubmit()} className={cn((isUpdating || isDeleting) && "opacity-70")}>
 					<Text>Save Changes</Text>
 				</Button>
 			</View>
