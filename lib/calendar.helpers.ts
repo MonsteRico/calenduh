@@ -175,13 +175,13 @@ export const getSubscribedCalendarsFromServer = async (): Promise<Calendar[]> =>
 	return response.data;
 };
 
-export const createCalendarOnServer = async (calendar: Omit<Calendar, "calendar_id">): Promise<Calendar> => {
+export const createCalendarOnServer = async (calendar: Omit<Calendar, "calendar_id" | "invite_code">): Promise<Calendar> => {
 	const response = await server.post("/calendars/", calendar);
 	console.log("create calendar on server", response.data);
 	return response.data;
 };
 
-export const createGroupCalendarOnServer = async (calendar: Omit<Calendar, "calendar_id">): Promise<Calendar> => {
+export const createGroupCalendarOnServer = async (calendar: Omit<Calendar, "calendar_id" | "invite_code">): Promise<Calendar> => {
 	const response = await server.post(`/calendars/${calendar.group_id}`, calendar);
 	return response.data;
 };
