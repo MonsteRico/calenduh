@@ -437,33 +437,36 @@ export const useCreateGroupCalendar = (
 }
 
 export const useCreateSubscription = (
-	options?: UseMutationOptions<Calendar, Error, string>
+    options?: UseMutationOptions<Calendar, Error, { invite_code: string }>
 ) => {
-	const queryClient = useQueryClient();
-	const isConnected = useIsConnected();
-	const { user, sessionId } = useSession();
-
-	if (!user || !sessionId) {
-		throw new Error("User not found or session not found");
-	}
-
-	return useMutation<Calendar, Error, string>({
-		mutationFn: async (invite_code: string) => {
-			if (isConnected && user.user_id !== "localUser") {
-				return await createSubscriptionOnServer(invite_code);
-			} else {
-				throw new Error("Not connected to server or using a local-only account");
-			}
-		},
-		onMutate: async (invite_code) => {
-			options?.onMutate?.(invite_code);
-		},
-		onSuccess: async (data) => {
-			options?.onSuccess?.(data, { title: data.title } as any, undefined as any);
-			await queryClient.invalidateQueries({ queryKey: ["sub_calendars"] })
-		}
-	})
-}
+    const queryClient = useQueryClient();
+    const isConnected = useIsConnected();
+    const { user, sessionId } = useSession();
+    
+    if (!user || !sessionId) {
+        throw new Error("User not found or session not found");
+    }
+    
+    return useMutation<Calendar, Error, { invite_code: string }>({
+        mutationFn: async ({ invite_code }) => {
+            if (isConnected && user.user_id !== "localUser") {
+                return await createSubscriptionOnServer(invite_code);
+            } else {
+                throw new Error("Not connected to server or using a local-only account");
+            }
+        },
+        onMutate: async (variables) => {
+            options?.onMutate?.(variables);
+        },
+        onSuccess: async (data, variables, context) => {
+            options?.onSuccess?.(data, variables, context);
+            await queryClient.invalidateQueries({ queryKey: ["sub_calendars"] });
+        },
+        onError: (error, variables, context) => {
+            options?.onError?.(error, variables, context);
+        }
+    });
+};
 
 export const useUpdateCalendar = (
 	options?: UseMutationOptions<UpdateCalendar, Error, UpdateCalendar, { previousCalendars: Calendar[] }>
