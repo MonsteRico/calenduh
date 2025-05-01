@@ -3,9 +3,9 @@ import { router } from "expo-router";
 import { Text, View, ScrollView, TouchableOpacity, ActivityIndicator } from "react-native";
 import { useState, useEffect } from "react";
 import { useQueryClient } from "@tanstack/react-query";
-import { useCalendars, useMySubscribedCalendars, useUnsubscribeCalendar } from "@/hooks/calendar.hooks";
+import { useAllPublicCalendars, useCalendars, useMySubscribedCalendars, useUnsubscribeCalendar } from "@/hooks/calendar.hooks";
 import { useSQLiteContext } from "expo-sqlite";
-import { getCalendarsFromDB } from "@/lib/calendar.helpers";
+import { getAllPublicCalendarsFromServer } from "@/lib/calendar.helpers";
 import { useIsConnected } from "@/hooks/useIsConnected";
 import { useEnabledCalendarIds } from "@/hooks/useEnabledCalendarIds";
 import { setEnabled } from "react-native/Libraries/Performance/Systrace";
@@ -43,7 +43,7 @@ export default function BrowsePublicCalendars() {
 	const { user } = useSession();
 
 	const { data: sub_calendars, isLoading: subIsLoading } = useMySubscribedCalendars();
-	const pub_cals = calendars?.filter((cal) => cal.is_public === true) ?? [];
+	const pub_cals = useAllPublicCalendars();
 
 	if (user?.user_id === "localUser") {
 		return (
