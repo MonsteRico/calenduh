@@ -191,6 +191,11 @@ export const createSubscriptionOnServer = async (join_code: string): Promise<Cal
 	return response.data;
 }
 
+export const getAllPublicCalendarsFromServer = async (): Promise<Calendar[]> => {
+	const response  = await server.get('/calendars/@public');
+	return response.data;
+}
+
 export const updateCalendarOnServer = async (calendar: UpdateCalendar): Promise<Calendar> => {
 	const updatedCalendar = {...calendar, is_public: calendar.is_public as unknown as number == 1 ? true : false}
 	const response = await server.put(`/calendars/${updatedCalendar.calendar_id}`, updatedCalendar).catch(function (error) {

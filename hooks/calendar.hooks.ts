@@ -20,6 +20,7 @@ import {
 	getMyGroupCalendarsFromServer,
 	unsubscribeCalendarOnServer,
 	createSubscriptionOnServer,
+	getAllPublicCalendarsFromServer,
 } from "@/lib/calendar.helpers";
 import { addMutationToQueue, getMutationsFromDB } from "@/lib/mutation.helpers";
 import { useSession } from "./authContext";
@@ -288,6 +289,35 @@ export const useSubscribedCalendars = () => {
 		},
 	});
 };
+
+export const useAllPublicCalendars = () => {
+	const queryClient = useQueryClient();
+	const isConnected = useIsConnected();
+
+	const { user, sessionId } = useSession();
+	if (!user || !sessionId) {
+		throw new Error("user not found");
+	}
+
+	return useQuery<Calendar[], Error>({
+		queryKey: ["all_public_calendars"],
+		queryFn: async () => {
+			if (isConnected && user.user_id !== "localUser") {
+				try {
+					const serverCalendars = await getAllPublicCalendarsFromServer();
+					return serverCalendars;
+				} catch (error) {
+					if (process.env.SHOW_LOGS == 'true') {
+						console.error("Error fetching public calendars from server:", error);
+					}
+					return []; 
+				}
+			} else {
+				return []; 
+			}
+		},
+	})
+}
 
 // --- Mutations --- (No changes needed in mutations)
 
