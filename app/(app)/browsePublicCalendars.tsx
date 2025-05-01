@@ -12,7 +12,7 @@ import { useIsConnected } from "@/hooks/useIsConnected";
 import { useEnabledCalendarIds } from "@/hooks/useEnabledCalendarIds";
 import { setEnabled } from "react-native/Libraries/Performance/Systrace";
 import { DismissKeyboardView } from "@/components/DismissKeyboardView";
-import { JoinPubCalModal } from "@/components/JoinPubCalModal";
+import { JoinCalendarModal } from "@/components/JoinCalendarModal";
 
 
 import { CreateGroupModal } from '@/components/CreateGroupModal';
@@ -22,6 +22,9 @@ import { EditGroupModal } from '@/components/EditGroupModal';
 import { useMyGroups } from "@/hooks/group.hooks";
 import { Feather } from '@expo/vector-icons';
 import { useSession } from "@/hooks/authContext";
+
+import { useFuzzySearchList, Highlight } from '@nozbe/microfuzz/react'
+import { Input } from "@/components/Input";
 
 export default function BrowsePublicCalendars() {
 	const isPresented = router.canGoBack();
@@ -33,7 +36,7 @@ export default function BrowsePublicCalendars() {
 	const [openSubToCalByCode, setSubToCalByCode] = useState(false);
 	const [openViewCal, setViewCal] = useState(false);
 
-	const { setEnabledCalendarIds } = useEnabledCalendarIds();
+	
 
 	const { user } = useSession();
 
@@ -58,10 +61,19 @@ export default function BrowsePublicCalendars() {
 		)
 	}
 
+	const [queryText, setQueryText] = useState('');
+
+	const filteredList = useFuzzySearchList({
+		list: calendars ?? [],
+		queryText,
+		getText: (calendar) => [calendar.title],
+		mapResultItem: ({ item, score, matches: [highlightRanges] }) => ({ item, highlightRanges })
+	})
+
 	return (
 			<DismissKeyboardView className="flex-1 bg-background">
 				{/* Modals */}
-				<JoinPubCalModal
+				<JoinCalendarModal
 					visible={openSubToCalByCode}
 					onClose={() => setSubToCalByCode(false)}
 				/>
@@ -70,6 +82,7 @@ export default function BrowsePublicCalendars() {
 					onClose={() => setViewCal(false)}
 					cal={selectedGroup}
 				/> */}
+
 	
 				{/* Header */}
 				<View className="px-4 pt-6 pb-4 bg-primary/5">
@@ -84,6 +97,19 @@ export default function BrowsePublicCalendars() {
 						</Button>
 					</View>
 				</View>
+
+				<Input placeholder="Search calendars..." value={queryText} onChangeText={setQueryText}/>
+
+				{/* Filtered Calendar List */}
+				<View className="px-4 mt-2">
+					{filteredList.map(({ item, highlightRanges }) => (
+						<View key={item.calendar_id} className="py-2">
+							<Text className="text-lg font-medium text-gray-800">
+								<Highlight text={item.title} ranges={highlightRanges} />
+							</Text>
+						</View>
+					))}
+				</View>
 	
 				{/* Groups List */}
 				<ScrollView className="flex-1 px-4 pt-4">
@@ -91,28 +117,6 @@ export default function BrowsePublicCalendars() {
 						<View className="items-center justify-center py-12">
 							<ActivityIndicator size="large" color="#6366f1" />
 							<Text className="text-center text-gray-500 mt-4">Loading your public calendars...</Text>
-						</View>
-					) sub_calendars : && sub_calendars.length > 0 ? (
-						<View className="space-y-3">
-							{groups.map((group) => (
-								<View className='p-2' key={group.group_id}>
-									<TouchableOpacity
-										onPress={() => {
-											setSelectedGroup(group);
-											setOpenViewGroup(true);
-										}}
-										className="bg-white rounded-xl p-4 flex-row justify-between items-center shadow-sm border border-gray-100"
-									>
-										<View className="flex-1">
-											<Text className="text-lg font-semibold text-gray-800">{group.name}</Text>
-											{/*<Text className="text-sm text-gray-500 mt-1">
-											{group.calendar_ids ? `${group.calendar_ids.length} calendars` : 'No calendars'}
-										</Text> */}
-										</View>
-										<Feather name="chevron-right" size={20} color="#9ca3af" />
-									</TouchableOpacity>
-								</View>
-							))}
 						</View>
 					) : (
 						<View className="items-center justify-center py-12">
