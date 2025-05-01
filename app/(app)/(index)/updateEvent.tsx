@@ -362,6 +362,7 @@ export default function UpdateEvent() {
 								second_notification: secondNotification,
 								priority: priority,
 								all_day: isAllDay,
+								img: null,
 							},
 							calendar_id: eventCalendarId,
 						});

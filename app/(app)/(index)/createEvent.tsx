@@ -1,6 +1,6 @@
 import { Button } from "@/components/Button";
 import { router } from "expo-router";
-import { StyleSheet, Text, View, TouchableOpacity, Platform, Switch } from "react-native";
+import { StyleSheet, Text, View, TouchableOpacity, Platform, Switch, Image } from "react-native";
 import { SelectList } from "react-native-dropdown-select-list";
 import React, { useEffect, useState } from "react";
 import { FontAwesome } from "@expo/vector-icons";
@@ -12,7 +12,7 @@ import { Calendar } from "@/types/calendar.types";
 import DateTimePicker, { DateTimePickerEvent } from "@react-native-community/datetimepicker";
 import { DateTime } from "luxon";
 import Dropdown from "@/components/Dropdown";
-import { useCreateEvent } from "@/hooks/event.hooks";
+import { useCreateEvent, useEventImage } from "@/hooks/event.hooks";
 import { cn } from "@/lib/utils";
 import { useSession } from "@/hooks/authContext";
 import { NotificationTimes } from "@/constants/notificationTimes";
@@ -20,6 +20,8 @@ import { DismissKeyboardView } from "@/components/DismissKeyboardView";
 import Storage from "expo-sqlite/kv-store";
 import RecurrenceSelector from "@/components/RecurrenceSelector";
 import { ScrollView, TextInput } from "react-native-gesture-handler";
+
+import { useProfilePicture } from "@/hooks/profile.hooks";
 
 export default function CreateEvent() {
 	const { user } = useSession();
@@ -57,6 +59,58 @@ export default function CreateEvent() {
 	const [is24Hour, setIs24Hour] = useState(false);
 
 	const globColorInverse = colorScheme == "light" ? "white" : "black";
+
+	const {
+		uploadPicture,
+		deletePicture,
+		pickImage,
+		eventImageUrl
+	} = useEventImage();
+
+	const [tempImageUri, setTempImageUri] = useState<string | null>(null);
+
+	const handlePickImage = async () => {
+		try {
+		  const uri = await pickImage();
+		  setTempImageUri(uri);
+		} catch (error) {
+		  console.error("Event image picker error:", error);
+		}
+	  };
+
+	const handleCreateEvent = async () => {
+		if (isPending || !eventCalendarId || !name || !startDate || !endDate) {
+			return;
+		}
+		let imageKey: string | null = null;
+		// if img exists
+		if (tempImageUri) {
+			try {
+			  const uploadResult = await uploadPicture.mutateAsync(tempImageUri);
+			  imageKey = uploadResult.key; // store s3 key to add to db
+			} catch (error) {
+			  console.error("Event image upload failed:", error);
+			}
+		}
+		console.log("IMAGE KEY IN HANDLECREATEEVENT:", imageKey);
+		createEvent({
+			newEvent: {
+				name,
+				start_time: startDate,
+				end_time: endDate,
+				calendar_id: eventCalendarId,
+				location: location,
+				first_notification: firstNotification,
+				second_notification: secondNotification,
+				description: description,
+				frequency: frequency,
+				priority: priority,
+				all_day: isAllDay,
+				img: imageKey,
+			},
+			calendar_id: eventCalendarId,
+		});
+	};
 
 	useEffect(() => {
 		if (user) {
@@ -178,7 +232,29 @@ export default function CreateEvent() {
 					onChangeText={setName}
 					placeholder="Event Name"
 				/>
-
+				
+				{/* Event Image Upload Section */}
+				<View className="mt-3">
+					<Text className="font-semibold text-primary">Event Image</Text>
+					<TouchableOpacity 
+						onPress={handlePickImage}
+						className="mt-2 h-32 items-center justify-center rounded-lg border border-dashed border-gray-400 bg-gray-100 dark:bg-gray-800"
+					>
+						{tempImageUri ? (
+							<Image 
+								source={{ uri: tempImageUri }} 
+								className="h-full w-full rounded-lg" 
+								resizeMode="cover"
+							/>
+						) : (
+							<View className="items-center">
+								<FontAwesome name="image" size={24} color={globColor} />
+								<Text className="mt-2 text-primary">Tap to add an image</Text>
+							</View>
+						)}
+					</TouchableOpacity>
+				</View>
+				
 				<Text className='font-semibold text-primary mt-3'>Location</Text>
 				<TextInput
 					className='rounded-lg border border-gray-300 p-3 text-primary'
@@ -374,30 +450,7 @@ export default function CreateEvent() {
 			</ScrollView>
 			{/* Get this to send event to db */}
 			<View className="m-4 flex flex-row items-center justify-center">
-				<Button
-					className={cn(isPending && "opacity-50")}
-					onPress={() => {
-						if (isPending || !eventCalendarId || !name || !startDate || !endDate) {
-							return;
-						}
-						createEvent({
-							newEvent: {
-								name,
-								start_time: startDate,
-								end_time: endDate,
-								calendar_id: eventCalendarId,
-								location: location,
-								first_notification: firstNotification,
-								second_notification: secondNotification,
-								description: description,
-								frequency: frequency,
-								priority: priority,
-								all_day: isAllDay,
-							},
-							calendar_id: eventCalendarId,
-						});
-					}}
-				>
+				<Button onPress={handleCreateEvent} className={cn(isPending && "opacity-50")}>
 					Create Event
 				</Button>
 			</View>
