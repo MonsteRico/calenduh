@@ -103,6 +103,38 @@ export const useCalendar = (calendar_id: string) => {
 	});
 };
 
+export const useSubscribeCalendar = (calendar_id: string) => {
+	const queryClient = useQueryClient();
+	const isConnected = useIsConnected();
+
+	const { user, sessionId } = useSession();
+	if (!user || !sessionId) {
+		throw new Error("User not found");
+	}
+
+	return useQuery<Calendar, Error>({
+		queryKey: ["calendars", calendar_id],
+		queryFn: async () => {
+			if (isConnected && user.user_id !== "localUser") {
+				try {
+					const serverCalendar = await getCalendarFromServer(calendar_id);
+					if (!serverCalendar) {
+						throw new Error("Calendar not found on server");
+					}
+					return serverCalendar;
+				} catch (error) {
+					if (process.env.SHOW_LOGS == 'true') {
+						console.error(`Error fetching calendar ${calendar_id} from server:`, error);
+					}
+					throw new Error("Calendar not found on server");
+				}
+			} else {
+				throw new Error("User or session not found");
+			}
+		},
+	});
+}
+
 export const useMultipleCalendars = (calendarIds: string[]) => {
 	const queryClient = useQueryClient();
 	const isConnected = useIsConnected();
@@ -310,10 +342,10 @@ export const useAllPublicCalendars = () => {
 					if (process.env.SHOW_LOGS == 'true') {
 						console.error("Error fetching public calendars from server:", error);
 					}
-					return []; 
+					return [];
 				}
 			} else {
-				return []; 
+				return [];
 			}
 		},
 	})
@@ -346,7 +378,7 @@ export const useCreateCalendar = (
 					return await createCalendarOnServer(newCalendar);
 				} else {
 					// Optimistic update only, server sync will happen later
-					return { ...newCalendar, calendar_id: "local-" + Crypto.randomUUID(), invite_code: null}; // Generate a temporary ID
+					return { ...newCalendar, calendar_id: "local-" + Crypto.randomUUID(), invite_code: null }; // Generate a temporary ID
 				}
 			},
 			onMutate: async (newCalendar) => {
@@ -438,36 +470,36 @@ export const useCreateGroupCalendar = (
 }
 
 export const useCreateSubscription = (
-    options?: UseMutationOptions<Calendar, Error, { invite_code: string }>
+	options?: UseMutationOptions<Calendar, Error, { invite_code: string }>
 ) => {
-    const queryClient = useQueryClient();
-    const isConnected = useIsConnected();
-    const { user, sessionId } = useSession();
-    
-    if (!user || !sessionId) {
-        throw new Error("User not found or session not found");
-    }
-    
-    return useMutation<Calendar, Error, { invite_code: string }>({
-        mutationFn: async ({ invite_code }) => {
-            if (isConnected && user.user_id !== "localUser") {
+	const queryClient = useQueryClient();
+	const isConnected = useIsConnected();
+	const { user, sessionId } = useSession();
+
+	if (!user || !sessionId) {
+		throw new Error("User not found or session not found");
+	}
+
+	return useMutation<Calendar, Error, { invite_code: string }>({
+		mutationFn: async ({ invite_code }) => {
+			if (isConnected && user.user_id !== "localUser") {
 				console.log("creating subscription on server with code", invite_code);
-                return await createSubscriptionOnServer(invite_code);
-            } else {
-                throw new Error("Not connected to server or using a local-only account");
-            }
-        },
-        onMutate: async (variables) => {
-            options?.onMutate?.(variables);
-        },
-        onSuccess: async (data, variables, context) => {
-            options?.onSuccess?.(data, variables, context);
-            await queryClient.invalidateQueries({ queryKey: ["sub_calendars"] });
-        },
-        onError: (error, variables, context) => {
-            options?.onError?.(error, variables, context);
-        }
-    });
+				return await createSubscriptionOnServer(invite_code);
+			} else {
+				throw new Error("Not connected to server or using a local-only account");
+			}
+		},
+		onMutate: async (variables) => {
+			options?.onMutate?.(variables);
+		},
+		onSuccess: async (data, variables, context) => {
+			options?.onSuccess?.(data, variables, context);
+			await queryClient.invalidateQueries({ queryKey: ["sub_calendars"] });
+		},
+		onError: (error, variables, context) => {
+			options?.onError?.(error, variables, context);
+		}
+	});
 };
 
 export const useUpdateCalendar = (

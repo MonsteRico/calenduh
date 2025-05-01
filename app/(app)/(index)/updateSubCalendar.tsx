@@ -2,14 +2,14 @@ import { router, useLocalSearchParams } from 'expo-router'
 import { Text, View } from 'react-native';
 import { Button } from '@/components/Button';
 import { useEffect, useState } from 'react';
-import { useCalendar, useUnsubscribeCalendar } from "@/hooks/calendar.hooks";
+import { useSubscribeCalendar, useUnsubscribeCalendar } from "@/hooks/calendar.hooks";
 import { calendarColors } from '@/components/CalendarColorModal';
 import { cn } from '@/lib/utils';
 
 export default function SubCalendarInfoView()  {
     const isPresented = router.canGoBack();
     const params = useLocalSearchParams();
-    const { data: calendar, isLoading } = useCalendar(params.id as string);
+    const { data: calendar, isLoading } = useSubscribeCalendar(params.id as string);
     const { mutate: unsubscribe, isPending: isUnsubscribing } = useUnsubscribeCalendar({
         onSuccess: () => {
             router.back();
@@ -18,6 +18,8 @@ export default function SubCalendarInfoView()  {
 
    
     const calendarId = params.id as string;
+
+    console.log("Calendar: ", calendar);
     
     if (isLoading) {
         return (

@@ -3,12 +3,9 @@ import { router } from "expo-router";
 import { Text, View, ScrollView, TouchableOpacity, ActivityIndicator } from "react-native";
 import { useState, useEffect } from "react";
 import { useQueryClient } from "@tanstack/react-query";
-import { useAllPublicCalendars, useCalendars, useMySubscribedCalendars, useUnsubscribeCalendar } from "@/hooks/calendar.hooks";
+import { useAllPublicCalendars, useCalendars, useMySubscribedCalendars } from "@/hooks/calendar.hooks";
 import { useSQLiteContext } from "expo-sqlite";
-import { getAllPublicCalendarsFromServer } from "@/lib/calendar.helpers";
 import { useIsConnected } from "@/hooks/useIsConnected";
-import { useEnabledCalendarIds } from "@/hooks/useEnabledCalendarIds";
-import { setEnabled } from "react-native/Libraries/Performance/Systrace";
 import { DismissKeyboardView } from "@/components/DismissKeyboardView";
 import { JoinCalendarModal } from "@/components/JoinCalendarModal";
 import { ToggleByTouch } from "@/components/ToggleByTouch";
@@ -39,28 +36,31 @@ export default function BrowsePublicCalendars() {
 		invite_code: "",
 	});
 
-	
-
 	const { user } = useSession();
 
 	const { data: sub_calendars, isLoading: subIsLoading } = useMySubscribedCalendars();
 	const { data: pub_cals, isLoading: pubIsLoading} = useAllPublicCalendars();
 
-	console.log("CHECK HERE" + pub_cals) //pub_cals is still empty
-
 	if (user?.user_id === "localUser") {
 		return (
-			<View>
-				<View className="px-4 pt-6 bg-primary/5">
-					<Text className="text-3xl font-bold text-primary mb-6">Public Calendars</Text>
+			<View className="flex-1 bg-background">
+				<View className="px-6 pt-4 pb-3 bg-muted rounded-b-lg shadow-sm">
+					<View className="flex-row justify-between items-center">
+						<View className="flex-1">
+							<Text className="text-2xl font-bold text-primary">Public Calendars</Text>
+							<Text className="text-muted-foreground text-xs">Discover and join shared calendars</Text>
+						</View>
+					</View>
 				</View>
 
-				<View className="items-center justify-center py-12">
-					<View className="bg-gray-100 rounded-full p-4 mb-4">
-						<Feather name="users" size={24} color="#6366f1" />
+				<View className="items-center justify-center py-16 px-6">
+					<View className="bg-muted rounded-full p-5 mb-6 shadow-sm">
+						<Feather name="users" size={32} color="hsl(var(--primary))" />
 					</View>
-					<Text className="text-lg font-semibold text-gray-800 text-center">Subcribing is not Enabled for Guest Accounts</Text>
-					<Text className="text-gray-500 text-center mt-2 mb-6">Create an account to subscribe to calendars</Text>
+					<Text className="text-muted-foreground text-center mt-3 mb-8 leading-5">
+						Subscribe to public calendars by creating an account
+					</Text>
+
 				</View>
 			</View>
 		)
@@ -76,67 +76,91 @@ export default function BrowsePublicCalendars() {
 	})
 
 	return (
-			<DismissKeyboardView className="flex-1 bg-background">
-				{/* Modals */}
-				<JoinCalendarModal
-					visible={openSubToCalByCode}
-					onClose={() => setSubToCalByCode(false)}
-				/>
-				<ToggleByTouch
-					visible={openToggleByTouch}
-					onClose={() => setToggleByTouch(false)}
-					cal={selectedCal}
-					sub_cals = {sub_calendars ?? []}
-				/>
+		<DismissKeyboardView className="flex-1 bg-background">
+			{/* Modals */}
+			<JoinCalendarModal
+				visible={openSubToCalByCode}
+				onClose={() => setSubToCalByCode(false)}
+			/>
+			<ToggleByTouch
+				visible={openToggleByTouch}
+				onClose={() => setToggleByTouch(false)}
+				cal={selectedCal}
+				sub_cals = {sub_calendars ?? []}
+			/>
 
-	
-				{/* Header */}
-				<View className="px-4 pt-6 pb-4 bg-primary/5">
-					<Text className="text-3xl font-bold text-primary mb-6">Public Calendars</Text>
-					<View className="flex-row justify-between">
-						<Button
-							className="flex-1 ml-2 bg-primary"
-							labelClasses="text-secondary font-medium"
-							onPress={() => { setSubToCalByCode(true) }}
-						>
-							Subcribe Via Code
-						</Button>
+			{/* Header */}
+			<View className="px-6 pt-4 pb-3 bg-muted rounded-b-lg shadow-sm">
+				<View className="flex-row justify-between items-center">
+					<View className="flex-1">
+						<Text className="text-2xl font-bold text-primary">Public Calendars</Text>
+						<Text className="text-muted-foreground text-xs">Discover and join shared calendars</Text>
 					</View>
+					<Button
+						className="bg-primary rounded-md shadow-sm"
+						labelClasses="text-primary-foreground font-medium text-sm"
+						onPress={() => { setSubToCalByCode(true) }}
+					>
+						Join via Code
+					</Button>
 				</View>
-	
-				{/* Your Pub Cals List */}
-				<ScrollView className="flex-1 px-4 pt-4">
-					{isLoading ? (
-						<View className="items-center justify-center py-12">
-							<ActivityIndicator size="large" color="#6366f1" />
-							<Text className="text-center text-gray-500 mt-4">Loading public calendars...</Text>
-						</View>
-					) : pub_cals && pub_cals.length > 0 ? (
-						<View>
-							<Input placeholder="Search calendars..." value={queryText} onChangeText={setQueryText}/>
+			</View>
 
-							<View className="px-4 mt-2">
-							{filteredList.map(({ item, highlightRanges }) => (
-								<View key={item.calendar_id} className="py-2">
-									<TouchableOpacity onPress={() => setToggleByTouch(true) }>
-										<Text className="text-lg font-medium text-gray-800">
+			{/* Search Bar */}
+			<View className="px-6 py-4">
+				<Input 
+					placeholder="Search calendars..." 
+					value={queryText} 
+					onChangeText={setQueryText}
+					className="bg-card rounded-md shadow-sm"
+				/>
+			</View>
+
+			{/* Calendar List */}
+			<ScrollView className="flex-1 px-4">
+				{isLoading || pubIsLoading ? (
+					<View className="items-center justify-center py-16">
+						<ActivityIndicator size="large" color="hsl(var(--primary))" />
+						<Text className="text-center text-muted-foreground mt-6">Loading calendars...</Text>
+					</View>
+				) : pub_cals && pub_cals.length > 0 ? (
+					<View className="pb-6">
+						<Text className="text-muted-foreground text-xs uppercase font-semibold px-4 mb-2 mt-2">
+							{filteredList.length} {filteredList.length === 1 ? 'calendar' : 'calendars'} found
+						</Text>
+
+						{filteredList.map(({ item, highlightRanges }) => (
+							<TouchableOpacity 
+								key={item.calendar_id} 
+								className="bg-card rounded-md p-4 mb-3 shadow-sm border border-border"
+								onPress={() => {
+									setSelectedCal(item)
+									setToggleByTouch(true)
+								}}
+							>
+								<View className="flex-row items-center justify-between">
+									<View className="flex-1">
+										<Text className="text-lg font-semibold text-card-foreground">
 											<Highlight text={item.title} ranges={highlightRanges} />
 										</Text>
-									</TouchableOpacity>
+										<Text className="text-muted-foreground text-sm mt-1">
+											Tap to subscribe
+										</Text>
+									</View>
+									<View className={`h-10 w-2 rounded-full bg-${item.color || 'primary'}`} />
 								</View>
-								))}
-							</View>
+							</TouchableOpacity>
+						))}
+					</View>
+				) : (
+					<View className="items-center justify-center py-16 px-6">
+						<View className="bg-muted rounded-full p-6 mb-6 shadow-sm">
+							<Feather name="calendar" size={32} color="hsl(var(--primary))" />
 						</View>
-					) : (
-						<View className="items-center justify-center py-12">
-							<View className="bg-gray-100 rounded-full p-4 mb-4">
-								<Feather name="calendar" size={24} color="#6366f1" />
-							</View>
-							<Text className="text-lg font-semibold text-gray-800 text-center">No Public Calendars Yet</Text>
-							<Text className="text-gray-500 text-center mt-2 mb-6">Create a public calendar to get started with shared scheduling.</Text>
-						</View>
-					)}
-				</ScrollView>
-			</DismissKeyboardView>
-		);
+						<Text className="text-xl font-bold text-foreground text-center">No Public Calendars</Text>					
+					</View>
+				)}
+			</ScrollView>
+		</DismissKeyboardView>
+	);
 }
