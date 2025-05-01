@@ -4,7 +4,7 @@ import { useState } from 'react';
 import { useColorScheme } from 'nativewind';
 import { Input } from '@/components/Input';
 import { DismissKeyboardView } from './DismissKeyboardView';
-import { useJoinGroup } from '@/hooks/group.hooks';
+import { useCreateSubscription } from '@/hooks/calendar.hooks';
 
 interface JoinCalendarModalProps {
     visible: boolean;
@@ -13,7 +13,7 @@ interface JoinCalendarModalProps {
 
 function JoinCalendarModal({ visible, onClose }: JoinCalendarModalProps) {
     const [code, setCode] = useState("");
-
+    const { mutate } = useCreateSubscription();
 
     const onModalClose = () => {
         setCode("");
@@ -24,10 +24,24 @@ function JoinCalendarModal({ visible, onClose }: JoinCalendarModalProps) {
         if (!code || code.trim() === "") {
             return;
         }
-        //TODO: add useJoinCalendar mutate function
-    }
+        
+        mutate(
+            { invite_code: code },
+            {
+                onSuccess: () => {
+                    onModalClose();
+                },
+                onError: () => {
+                    Alert.alert(
+                        "Subscribe Failed",
+                        "Failed to subscribe to calendar. Please check the code and try again.",
+                        [{ text: "OK" }]
+                    );
+                },
+            }
+        );
+    };
 
-   
 
     return (
         <Modal
