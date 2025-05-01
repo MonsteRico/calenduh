@@ -43,7 +43,7 @@ export default function BrowsePublicCalendars() {
 	const { user } = useSession();
 
 	const { data: sub_calendars, isLoading: subIsLoading } = useMySubscribedCalendars();
-	const pub_cals = calendars?.filter((cal) => cal.is_public) ?? [];
+	const pub_cals = calendars?.filter((cal) => cal.is_public === true) ?? [];
 
 	if (user?.user_id === "localUser") {
 		return (
@@ -134,7 +134,7 @@ export default function BrowsePublicCalendars() {
 					) : (
 						<View className="items-center justify-center py-12">
 							<View className="bg-gray-100 rounded-full p-4 mb-4">
-								<Feather name="users" size={24} color="#6366f1" />
+								<Feather name="calendar" size={24} color="#6366f1" />
 							</View>
 							<Text className="text-lg font-semibold text-gray-800 text-center">No Public Calendars Yet</Text>
 							<Text className="text-gray-500 text-center mt-2 mb-6">Create a public calendar to get started with shared scheduling.</Text>
