@@ -1,6 +1,6 @@
 import { Text, View, Modal, TouchableOpacity, Alert } from 'react-native';
 import { Button } from '@/components/Button';
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useColorScheme } from 'nativewind';
 import { Input } from '@/components/Input';
 import { DismissKeyboardView } from './DismissKeyboardView';
@@ -92,3 +92,5 @@ function JoinCalendarModal({ visible, onClose }: JoinCalendarModalProps) {
     );
 
 }
+
+export { JoinCalendarModal };

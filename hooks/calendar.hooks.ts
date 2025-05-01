@@ -20,6 +20,7 @@ import {
 	getMyGroupCalendarsFromServer,
 	unsubscribeCalendarOnServer,
 	createSubscriptionOnServer,
+	getAllPublicCalendarsFromServer,
 } from "@/lib/calendar.helpers";
 import { addMutationToQueue, getMutationsFromDB } from "@/lib/mutation.helpers";
 import { useSession } from "./authContext";
@@ -289,13 +290,42 @@ export const useSubscribedCalendars = () => {
 	});
 };
 
+export const useAllPublicCalendars = () => {
+	const queryClient = useQueryClient();
+	const isConnected = useIsConnected();
+
+	const { user, sessionId } = useSession();
+	if (!user || !sessionId) {
+		throw new Error("user not found");
+	}
+
+	return useQuery<Calendar[], Error>({
+		queryKey: ["all_public_calendars"],
+		queryFn: async () => {
+			if (isConnected && user.user_id !== "localUser") {
+				try {
+					const serverCalendars = await getAllPublicCalendarsFromServer();
+					return serverCalendars;
+				} catch (error) {
+					if (process.env.SHOW_LOGS == 'true') {
+						console.error("Error fetching public calendars from server:", error);
+					}
+					return []; 
+				}
+			} else {
+				return []; 
+			}
+		},
+	})
+}
+
 // --- Mutations --- (No changes needed in mutations)
 
 export const useCreateCalendar = (
 	options?: UseMutationOptions<
 		Calendar,
 		Error,
-		Omit<Calendar, "calendar_id">,
+		Omit<Calendar, "calendar_id" | "invite_code">,
 		{ previousCalendars: Calendar[]; tempId: string }
 	>
 ) => {
@@ -308,15 +338,15 @@ export const useCreateCalendar = (
 	}
 	console.log("user", user);
 
-	return useMutation<Calendar, Error, Omit<Calendar, "calendar_id">, { previousCalendars: Calendar[]; tempId: string }>(
+	return useMutation<Calendar, Error, Omit<Calendar, "calendar_id" | "invite_code">, { previousCalendars: Calendar[]; tempId: string }>(
 		{
-			mutationFn: async (newCalendar: Omit<Calendar, "calendar_id">) => {
+			mutationFn: async (newCalendar: Omit<Calendar, "calendar_id" | "invite_code">) => {
 				if (isConnected && user.user_id !== "localUser") {
 					console.log("creating calendar on server");
 					return await createCalendarOnServer(newCalendar);
 				} else {
 					// Optimistic update only, server sync will happen later
-					return { ...newCalendar, calendar_id: "local-" + Crypto.randomUUID() }; // Generate a temporary ID
+					return { ...newCalendar, calendar_id: "local-" + Crypto.randomUUID(), invite_code: null}; // Generate a temporary ID
 				}
 			},
 			onMutate: async (newCalendar) => {
@@ -329,6 +359,7 @@ export const useCreateCalendar = (
 				const optimisticCalendar: Calendar = {
 					...newCalendar,
 					calendar_id: tempId,
+					invite_code: null,
 				};
 
 				setEnabledCalendarIds([...enabledCalendarIds, tempId]);
@@ -375,7 +406,7 @@ export const useCreateCalendar = (
 };
 
 export const useCreateGroupCalendar = (
-	options?: UseMutationOptions<Calendar, Error, Omit<Calendar, "calendar_id">>
+	options?: UseMutationOptions<Calendar, Error, Omit<Calendar, "calendar_id" | "invite_code">>
 ) => {
 	const queryClient = useQueryClient();
 	const isConnected = useIsConnected();
@@ -385,9 +416,9 @@ export const useCreateGroupCalendar = (
 		throw new Error("User not found or session not found");
 	}
 
-	return useMutation<Calendar, Error, Omit<Calendar, "calendar_id">>(
+	return useMutation<Calendar, Error, Omit<Calendar, "calendar_id" | "invite_code">>(
 		{
-			mutationFn: async (newCalendar: Omit<Calendar, "calendar_id">) => {
+			mutationFn: async (newCalendar: Omit<Calendar, "calendar_id" | "invite_code">) => {
 				if (isConnected && user.user_id !== "localUser") {
 					return await createGroupCalendarOnServer(newCalendar);
 				} else {
@@ -420,6 +451,7 @@ export const useCreateSubscription = (
     return useMutation<Calendar, Error, { invite_code: string }>({
         mutationFn: async ({ invite_code }) => {
             if (isConnected && user.user_id !== "localUser") {
+				console.log("creating subscription on server with code", invite_code);
                 return await createSubscriptionOnServer(invite_code);
             } else {
                 throw new Error("Not connected to server or using a local-only account");
