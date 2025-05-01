@@ -27,7 +27,21 @@ export default function CreateEvent() {
 	function minuteToNearest15MinuteInterval(minute: number) {
 		return Math.round(minute / 15) * 15;
 	}
-	const { givenDate } = useLocalSearchParams<{ givenDate: string }>();
+
+	const local = useLocalSearchParams();
+
+	console.log(local);
+
+	const { givenDate, start_time, end_time, name:nameFromLink, all_day, recurrence, location:locationFromLink, description:descriptionFromLink } = useLocalSearchParams<{
+		givenDate?: string;
+		start_time?: string;
+		end_time?: string;
+		name?: string;
+		all_day?: string;
+		recurrence?: string;
+		location?: string;
+		description?: string;
+	}>();
 	let eventDay = givenDate != null ? DateTime.fromISO(givenDate as string) : today;
 	eventDay = eventDay.set({ hour: today.hour, minute: minuteToNearest15MinuteInterval(today.minute) });
 
@@ -39,12 +53,8 @@ export default function CreateEvent() {
 	const [endDate, setEndDate] = useState(eventDay.plus({ hours: 1 })); //DateTimePicker
 	const [location, setLocation] = useState(""); //Text box
 	const [description, setDescription] = useState(""); //Text box
-	const [firstNotification, setFirstNotification] = useState<number | null>(
-		NotificationTimes.FIFTEEN_MINUTES_MS
-	);
-	const [secondNotification, setSecondNotification] = useState<number | null>(
-		NotificationTimes.NONE
-	);
+	const [firstNotification, setFirstNotification] = useState<number | null>(NotificationTimes.FIFTEEN_MINUTES_MS);
+	const [secondNotification, setSecondNotification] = useState<number | null>(NotificationTimes.NONE);
 	const [eventCalendarId, setEventCalendarId] = useState<string>(""); //Single Select List
 	const [frequency, setFrequency] = useState<null | string>(null);
 	const [priority, setPriority] = useState<number>(0); //Single Select List
@@ -65,6 +75,18 @@ export default function CreateEvent() {
 	}, [user]);
 
 	useEffect(() => {
+		if (start_time && end_time) {
+			setStartDate(DateTime.fromISO(decodeURIComponent(start_time)))
+			setEndDate(DateTime.fromISO(decodeURIComponent(end_time)))
+			setName(decodeURIComponent(nameFromLink ?? name))
+			setLocation(decodeURIComponent(locationFromLink ?? location))
+			setDescription(decodeURIComponent(descriptionFromLink ?? description))
+			setIsAllDay(all_day == "true" ? true : false)
+			setFrequency(decodeURIComponent(recurrence ?? ""))
+		}
+	}, [start_time])
+
+	useEffect(() => {
 		const loadNotificationSettings = async () => {
 			try {
 				const savedFirst = await Storage.getItem("firstNotification");
@@ -72,18 +94,16 @@ export default function CreateEvent() {
 
 				if (savedFirst !== null && savedFirst !== undefined) {
 					setFirstNotification(savedFirst === "null" ? null : Number(savedFirst));
-				}
-				else {
-					setFirstNotification(NotificationTimes.FIFTEEN_MINUTES_MS)
+				} else {
+					setFirstNotification(NotificationTimes.FIFTEEN_MINUTES_MS);
 				}
 				if (savedSecond !== null && savedSecond !== undefined) {
 					setSecondNotification(savedSecond === "null" ? null : Number(savedSecond));
-				}
-				else {
-					setSecondNotification(NotificationTimes.NONE)
+				} else {
+					setSecondNotification(NotificationTimes.NONE);
 				}
 			} catch (error) {
-				if (process.env.SHOW_LOGS == 'true') {
+				if (process.env.SHOW_LOGS == "true") {
 					console.error("Error loading notification settings:", error);
 				}
 				setFirstNotification(NotificationTimes.FIFTEEN_MINUTES_MS);
@@ -133,8 +153,6 @@ export default function CreateEvent() {
 		}
 	};
 
-
-
 	const onStartDateSet = (e: DateTimePickerEvent, selectedDate: Date) => {
 		if (selectedDate && e.type === "set" && isAllDay) {
 			const luxonDate = DateTime.fromJSDate(selectedDate);
@@ -169,30 +187,30 @@ export default function CreateEvent() {
 				<Text className="items-center pl-10 text-3xl font-bold text-primary">Create Event</Text>
 			</View>
 
-			<ScrollView className="mt-5 flex flex-col gap-2 px-8">			
-				<Text className='font-semibold text-primary'>Name</Text>
+			<ScrollView className="mt-5 flex flex-col gap-2 px-8">
+				<Text className="font-semibold text-primary">Name</Text>
 				<TextInput
-					className='rounded-lg border border-gray-300 p-3 text-primary'
+					className="rounded-lg border border-gray-300 p-3 text-primary"
 					style={{ backgroundColor: globColorInverse }}
 					value={name}
 					onChangeText={setName}
 					placeholder="Event Name"
 				/>
 
-				<Text className='font-semibold text-primary mt-3'>Location</Text>
+				<Text className="mt-3 font-semibold text-primary">Location</Text>
 				<TextInput
-					className='rounded-lg border border-gray-300 p-3 text-primary'
+					className="rounded-lg border border-gray-300 p-3 text-primary"
 					style={{ backgroundColor: globColorInverse }}
 					value={location}
 					onChangeText={setLocation}
-					placeholder='Event Location'
+					placeholder="Event Location"
 					multiline={true}
 					numberOfLines={4}
 				/>
 
-				<Text className='font-semibold text-primary mt-3'>Description</Text>
+				<Text className="mt-3 font-semibold text-primary">Description</Text>
 				<TextInput
-					className='rounded-lg border border-gray-300 p-3 text-primary'
+					className="rounded-lg border border-gray-300 p-3 text-primary"
 					style={{ backgroundColor: globColorInverse }}
 					value={description}
 					onChangeText={setDescription}
@@ -200,50 +218,50 @@ export default function CreateEvent() {
 					multiline={true}
 				/>
 
-				<View className='mt-3 border-t border-border'/>
+				<View className="mt-3 border-t border-border" />
 
-				<Text className='font-semibold text-primary mt-3'>Calendar</Text>
-				<View className='mt-1'>
+				<Text className="mt-3 font-semibold text-primary">Calendar</Text>
+				<View className="mt-1">
 					<Dropdown<Calendar>
-							options={calendars}
-							defaultValue={
-								user.default_calendar_id
-									? calendars.find((cal) => cal.calendar_id === user.default_calendar_id)
-									: undefined
-							}
-							renderItem={(calendar) => {
-								return (
-									<View className="flex flex-row items-center gap-2">
-										<View className="h-6 w-6 rounded-full" style={{ backgroundColor: calendar.color }} />
-										<Text className="text-primary">{calendar.title}</Text>
-									</View>
-								);
-							}}
-							onSelect={(selectedCalendar) => {
-								setEventCalendarId(selectedCalendar.calendar_id);
-							}}
-						/>
+						options={calendars}
+						defaultValue={
+							user.default_calendar_id
+								? calendars.find((cal) => cal.calendar_id === user.default_calendar_id)
+								: undefined
+						}
+						renderItem={(calendar) => {
+							return (
+								<View className="flex flex-row items-center gap-2">
+									<View className="h-6 w-6 rounded-full" style={{ backgroundColor: calendar.color }} />
+									<Text className="text-primary">{calendar.title}</Text>
+								</View>
+							);
+						}}
+						onSelect={(selectedCalendar) => {
+							setEventCalendarId(selectedCalendar.calendar_id);
+						}}
+					/>
 				</View>
 
-				<View className='mt-4 border-t border-border'/>
+				<View className="mt-4 border-t border-border" />
 
-				<View className="flex-row items-center gap-2 mt-3">
-					<Text className="pr-[10] text-primary font-semibold">Start Time:</Text>
+				<View className="mt-3 flex-row items-center gap-2">
+					<Text className="pr-[10] font-semibold text-primary">Start Time:</Text>
 					{Platform.OS === "android" && (
 						<TouchableOpacity
 							className="flex flex-row items-center space-x-2 rounded-lg bg-foreground px-4 py-2"
 							onPress={() => setShowStartDatePicker(true)}
 						>
-							<Text className="font-medium text-sm text-secondary">{
-								startDate.toLocaleString({
-									year: 'numeric',
-									month: 'short',
-									day: 'numeric',
-									hour: '2-digit',
-									minute: '2-digit',
-									hour12: !is24Hour
-								})
-							}</Text>
+							<Text className="text-sm font-medium text-secondary">
+								{startDate.toLocaleString({
+									year: "numeric",
+									month: "short",
+									day: "numeric",
+									hour: "2-digit",
+									minute: "2-digit",
+									hour12: !is24Hour,
+								})}
+							</Text>
 						</TouchableOpacity>
 					)}
 					{(showStartDatePicker || Platform.OS === "ios") && (
@@ -275,22 +293,22 @@ export default function CreateEvent() {
 					)}
 				</View>
 
-				<View className="flex-row items-center gap-2 mt-2">
-					<Text className="pr-[16] text-primary font-semibold">End Time:</Text>
+				<View className="mt-2 flex-row items-center gap-2">
+					<Text className="pr-[16] font-semibold text-primary">End Time:</Text>
 					{Platform.OS === "android" && (
 						<TouchableOpacity
 							className="flex flex-row items-center space-x-2 rounded-lg bg-foreground px-4 py-2"
 							onPress={() => setShowEndDatePicker(true)}
 							disabled={isAllDay}
 						>
-							<Text className={`font-medium text-sm ${isAllDay ? "text-gray-400" : "text-secondary"}`}>
+							<Text className={`text-sm font-medium ${isAllDay ? "text-gray-400" : "text-secondary"}`}>
 								{endDate.toLocaleString({
-									year: 'numeric',
-									month: 'short',
-									day: 'numeric',
-									hour: '2-digit',
-									minute: '2-digit',
-									hour12: !is24Hour
+									year: "numeric",
+									month: "short",
+									day: "numeric",
+									hour: "2-digit",
+									minute: "2-digit",
+									hour12: !is24Hour,
 								})}
 							</Text>
 						</TouchableOpacity>
@@ -325,16 +343,15 @@ export default function CreateEvent() {
 						/>
 					)}
 				</View>
-				
 
-				<View className="flex-row items-center gap-2 mt-3">
-					<Text className="pr-[] text-primary font-semibold m">All Day:</Text>
+				<View className="mt-3 flex-row items-center gap-2">
+					<Text className="m pr-[] font-semibold text-primary">All Day:</Text>
 					<Switch value={isAllDay} onValueChange={(value) => toggleAllDay(value)} />
 				</View>
 
-				<View className='mt-4 border-t border-border'/>
+				<View className="mt-4 border-t border-border" />
 
-				<Text className='font-semibold text-primary mt-3 mb-1'>Recurrence</Text>
+				<Text className="mb-1 mt-3 font-semibold text-primary">Recurrence</Text>
 				<RecurrenceSelector
 					onRecurrenceChange={(recurrenceValue) => {
 						setFrequency(recurrenceValue);
@@ -343,17 +360,17 @@ export default function CreateEvent() {
 					start_time={startDate}
 				/>
 
-				<Text className='font-semibold text-primary mt-3 mb-1'>Priority</Text>
+				<Text className="mb-1 mt-3 font-semibold text-primary">Priority</Text>
 				<PrioDropdown
 					handleSelect={(item: { label: string; value: number }) => {
 						setPriority(item.value);
 					}}
 					defaultValue={priority}
 				/>
-				
-				<View className='mt-4 border-t border-border'/>
 
-				<Text className='font-semibold text-primary mt-3 mb-1'>First Notification Time</Text>
+				<View className="mt-4 border-t border-border" />
+
+				<Text className="mb-1 mt-3 font-semibold text-primary">First Notification Time</Text>
 				<NotificationDropdown
 					handleSelect={(item: { label: string; value: number | null }) => {
 						setFirstNotification(item.value);
@@ -361,7 +378,7 @@ export default function CreateEvent() {
 					defaultValue={firstNotification}
 				/>
 
-				<Text className='font-semibold text-primary mt-3 mb-1'>Second Notification Time</Text>
+				<Text className="mb-1 mt-3 font-semibold text-primary">Second Notification Time</Text>
 				<NotificationDropdown
 					handleSelect={(item: { label: string; value: number | null }) => {
 						setSecondNotification(item.value);
@@ -369,8 +386,7 @@ export default function CreateEvent() {
 					defaultValue={secondNotification}
 				/>
 
-				<View className='mb-6'/>
-
+				<View className="mb-6" />
 			</ScrollView>
 			{/* Get this to send event to db */}
 			<View className="m-4 flex flex-row items-center justify-center">
@@ -412,13 +428,13 @@ const NotificationDropdown = ({
 	handleSelect: (
 		item:
 			| {
-				label: string;
-				value: number;
-			}
+					label: string;
+					value: number;
+			  }
 			| {
-				label: string;
-				value: null;
-			}
+					label: string;
+					value: null;
+			  }
 	) => void;
 	defaultValue?: number | null | undefined;
 }) => {

@@ -1,25 +1,25 @@
 {
-  "expo": {
-    "name": "calenduh",
-    "slug": "calenduh",
-    "version": "1.0.0",
-    "orientation": "portrait",
-    "icon": "./assets/images/icon.png",
-    "scheme": "calenduh",
-    "userInterfaceStyle": "automatic",
-    "newArchEnabled": true,
-    "ios": {
-      "supportsTablet": true,
-      "bundleIdentifier": "com.calenduh.calenduh",
-      "usesAppleSignIn": true,
-      "infoPlist": {
-        "NSAppTransportSecurity": {
-          "NSAllowsArbitraryLoads": true
-        },
-        "ITSAppUsesNonExemptEncryption": false
-      }
-    },
-    "android": {
+	"expo": {
+		"name": "calenduh",
+		"slug": "calenduh",
+		"version": "1.0.0",
+		"orientation": "portrait",
+		"icon": "./assets/images/icon.png",
+		"scheme": "calenduh",
+		"userInterfaceStyle": "automatic",
+		"newArchEnabled": true,
+		"ios": {
+			"supportsTablet": true,
+			"bundleIdentifier": "com.calenduh.calenduh",
+			"usesAppleSignIn": true,
+			"infoPlist": {
+				"NSAppTransportSecurity": {
+					"NSAllowsArbitraryLoads": true
+				},
+				"ITSAppUsesNonExemptEncryption": false
+			}
+		},
+		"android": {
 			"adaptiveIcon": {
 				"foregroundImage": "./assets/images/adaptive-icon.png",
 				"backgroundColor": "#ffffff"
@@ -27,37 +27,43 @@
 			"package": "com.calenduh.calenduh",
 			"googleServicesFile": "./google-services.json"
 		},
-    "web": {
-      "bundler": "metro",
-      "output": "static",
-      "favicon": "./assets/images/favicon.png"
-    },
-    "plugins": [
-      "expo-apple-authentication",
-      "expo-router",
-      [
-        "expo-splash-screen",
-        {
-          "image": "./assets/images/splash-icon.png",
-          "imageWidth": 200,
-          "resizeMode": "contain",
-          "backgroundColor": "#ffffff"
-        }
-      ],
-      "expo-secure-store",
-      "expo-sqlite"
-    ],
-    "experiments": {
-      "typedRoutes": true
-    },
-    "extra": {
-      "router": {
-        "origin": false
-      },
-      "eas": {
-        "projectId": "299a58ce-c29a-44dc-83bf-1c4d63b37b89"
-      }
-    },
-    "owner": "calenduh"
-  }
+		"web": {
+			"bundler": "metro",
+			"output": "static",
+			"favicon": "./assets/images/favicon.png"
+		},
+		"plugins": [
+			"expo-apple-authentication",
+			"expo-router",
+			[
+				"expo-splash-screen",
+				{
+					"image": "./assets/images/splash-icon.png",
+					"imageWidth": 200,
+					"resizeMode": "contain",
+					"backgroundColor": "#ffffff"
+				}
+			],
+			"expo-secure-store",
+			"expo-sqlite",
+			[
+				"expo-image-picker",
+				{
+					"photosPermission": "The app accesses your photos to let you change your profile picture and attach pictures to events."
+				}
+			]
+		],
+		"experiments": {
+			"typedRoutes": true
+		},
+		"extra": {
+			"router": {
+				"origin": false
+			},
+			"eas": {
+				"projectId": "299a58ce-c29a-44dc-83bf-1c4d63b37b89"
+			}
+		},
+		"owner": "calenduh"
+	}
 }
