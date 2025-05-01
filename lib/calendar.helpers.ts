@@ -187,8 +187,10 @@ export const createGroupCalendarOnServer = async (calendar: Omit<Calendar, "cale
 };
 
 export const createSubscriptionOnServer = async (join_code: string): Promise<Calendar> => {
-	const response = await server.post(`/subscriptions/${join_code}`);
-	return response.data;
+    const response = await server.post('/subscriptions', {
+        invite_code: join_code
+    });
+    return response.data;
 }
 
 export const getAllPublicCalendarsFromServer = async (): Promise<Calendar[]> => {

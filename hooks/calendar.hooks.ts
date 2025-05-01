@@ -451,6 +451,7 @@ export const useCreateSubscription = (
     return useMutation<Calendar, Error, { invite_code: string }>({
         mutationFn: async ({ invite_code }) => {
             if (isConnected && user.user_id !== "localUser") {
+				console.log("creating subscription on server with code", invite_code);
                 return await createSubscriptionOnServer(invite_code);
             } else {
                 throw new Error("Not connected to server or using a local-only account");
