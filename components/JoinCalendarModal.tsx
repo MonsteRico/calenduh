@@ -78,3 +78,5 @@ function JoinCalendarModal({ visible, onClose }: JoinCalendarModalProps) {
     );
 
 }
+
+export { JoinCalendarModal };
