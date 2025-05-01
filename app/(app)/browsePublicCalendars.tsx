@@ -43,7 +43,9 @@ export default function BrowsePublicCalendars() {
 	const { user } = useSession();
 
 	const { data: sub_calendars, isLoading: subIsLoading } = useMySubscribedCalendars();
-	const pub_cals = useAllPublicCalendars();
+	const { data: pub_cals, isLoading: pubIsLoading} = useAllPublicCalendars();
+
+	console.log("CHECK HERE" + pub_cals) //pub_cals is still empty
 
 	if (user?.user_id === "localUser") {
 		return (
@@ -94,10 +96,6 @@ export default function BrowsePublicCalendars() {
 						</Button>
 					</View>
 				</View>
-
-				
-
-				
 	
 				{/* Your Pub Cals List */}
 				<ScrollView className="flex-1 px-4 pt-4">
