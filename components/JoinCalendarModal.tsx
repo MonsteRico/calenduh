@@ -1,19 +1,27 @@
 import { Text, View, Modal, TouchableOpacity, Alert } from 'react-native';
 import { Button } from '@/components/Button';
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useColorScheme } from 'nativewind';
 import { Input } from '@/components/Input';
 import { DismissKeyboardView } from './DismissKeyboardView';
 import { useCreateSubscription } from '@/hooks/calendar.hooks';
+import { Calendar } from '@/types/calendar.types';
 
 interface JoinCalendarModalProps {
     visible: boolean;
     onClose: () => void;
+    calendar?: Calendar;
 }
 
-function JoinCalendarModal({ visible, onClose }: JoinCalendarModalProps) {
+function JoinCalendarModal({ visible, onClose, calendar }: JoinCalendarModalProps) {
     const [code, setCode] = useState("");
     const { mutate } = useCreateSubscription();
+
+    useEffect(() => {
+        if (visible) {
+            setCode(calendar?.invite_code ?? "");
+        }
+    }, [visible, calendar]);
 
     const onModalClose = () => {
         setCode("");
