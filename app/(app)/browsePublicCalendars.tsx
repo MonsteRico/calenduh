@@ -11,6 +11,7 @@ import { useEnabledCalendarIds } from "@/hooks/useEnabledCalendarIds";
 import { setEnabled } from "react-native/Libraries/Performance/Systrace";
 import { DismissKeyboardView } from "@/components/DismissKeyboardView";
 import { JoinCalendarModal } from "@/components/JoinCalendarModal";
+import { ToggleByTouch } from "@/components/ToggleByTouch";
 
 import { Feather } from '@expo/vector-icons';
 import { useSession } from "@/hooks/authContext";
@@ -27,7 +28,7 @@ export default function BrowsePublicCalendars() {
 	const db = useSQLiteContext();
 
 	const [openSubToCalByCode, setSubToCalByCode] = useState(false);
-	const [openViewCal, setViewCal] = useState(false);
+	const [openToggleByTouch, setToggleByTouch] = useState(false);
 	const [selectedCal, setSelectedCal] = useState<Calendar>({
 		calendar_id: "",
 		user_id: null,
@@ -81,6 +82,12 @@ export default function BrowsePublicCalendars() {
 					visible={openSubToCalByCode}
 					onClose={() => setSubToCalByCode(false)}
 				/>
+				<ToggleByTouch
+					visible={openToggleByTouch}
+					onClose={() => setToggleByTouch(false)}
+					cal={selectedCal}
+					sub_cals = {sub_calendars ?? []}
+				/>
 
 	
 				{/* Header */}
@@ -111,21 +118,12 @@ export default function BrowsePublicCalendars() {
 							<View className="px-4 mt-2">
 							{filteredList.map(({ item, highlightRanges }) => (
 								<View key={item.calendar_id} className="py-2">
-									<Text className="text-lg font-medium text-gray-800">
-										<Highlight text={item.title} ranges={highlightRanges} />
-									</Text>
-
-									<Button
-										className="bg-primary mt-2"
-										labelClasses="text-white font-medium"
-										onPress={() => {
-										setSelectedCal(item);
-										setSubToCalByCode(true);
-										}}
-									>
-										Subscribe
-									</Button>
-									</View>
+									<TouchableOpacity onPress={() => setToggleByTouch(true) }>
+										<Text className="text-lg font-medium text-gray-800">
+											<Highlight text={item.title} ranges={highlightRanges} />
+										</Text>
+									</TouchableOpacity>
+								</View>
 								))}
 							</View>
 						</View>
