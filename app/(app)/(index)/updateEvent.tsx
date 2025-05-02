@@ -1,6 +1,6 @@
 import { Button } from "@/components/Button";
 import { router } from "expo-router";
-import { StyleSheet, Text, View, TouchableOpacity, Platform, Switch } from "react-native";
+import { StyleSheet, Text, View, TouchableOpacity, Platform, Switch, ActivityIndicator } from "react-native";
 import { SelectList } from "react-native-dropdown-select-list";
 import React, { useEffect, useState } from "react";
 import { FontAwesome } from "@expo/vector-icons";
@@ -12,13 +12,17 @@ import { Calendar } from "@/types/calendar.types";
 import DateTimePicker, { DateTimePickerEvent } from "@react-native-community/datetimepicker";
 import { DateTime } from "luxon";
 import Dropdown from "@/components/Dropdown";
-import { useCreateEvent, useEvent, useUpdateEvent } from "@/hooks/event.hooks";
+import { useCreateEvent, useEvent, useUpdateEvent, useEventImage } from "@/hooks/event.hooks";
 import { cn } from "@/lib/utils";
 import { useSession } from "@/hooks/authContext";
 import { NotificationTimes } from "@/constants/notificationTimes";
 import { DismissKeyboardView } from "@/components/DismissKeyboardView";
 import { ScrollView, TextInput } from "react-native-gesture-handler";
 import RecurrenceSelector from "@/components/RecurrenceSelector";
+
+import { Image } from 'react-native';
+import * as ImagePicker from 'expo-image-picker';
+import { updateEventInDB } from "@/lib/event.helpers";
 
 export default function UpdateEvent() {
 	const { eventId, calendarId } = useLocalSearchParams<{ eventId: string; calendarId: string }>();
@@ -44,7 +48,8 @@ export default function UpdateEvent() {
 	const [priority, setPriority] = useState<number>(0);
 	const [isAllDay, setIsAllDay] = useState(false);
 	const [frequency, setFrequency] = useState<string | null>(null);
-
+	const [img, setImg] = useState<string | null>(null);
+	const [tempImageUri, setTempImageUri] = useState<string | null>(null);
 	const [showStartDatePicker, setShowStartDatePicker] = useState(false);
 	const [showStartTimePicker, setShowStartTimePicker] = useState(false);
 	const [showEndDatePicker, setShowEndDatePicker] = useState(false);
@@ -61,9 +66,9 @@ export default function UpdateEvent() {
 	const { data: calendars, isLoading: calendarsIsLoading } = useMyCalendars();
 
 	const { mutate: updateEvent, isPending } = useUpdateEvent({
-		onSuccess: () => {
-			router.back();
-		},
+		// onSuccess: () => {
+		// 	router.back();
+		// },
 	});
 
 	useEffect(() => {
@@ -79,9 +84,38 @@ export default function UpdateEvent() {
 			setFrequency(event.frequency);
 			setPriority(event.priority);
 			setIsAllDay(event.all_day);
+			setImg(event.img);
 		}
 	}, [event]);
 
+	const {
+		uploadPicture,
+		deletePicture,
+		pickImage,
+		eventImageUrl
+	} = useEventImage();
+
+	const handlePickImage = async () => {
+		try {
+			const uri = await pickImage();
+			setTempImageUri(uri);
+			
+			const uploadResult = await uploadPicture.mutateAsync(uri);
+			const imageKey = uploadResult.filename || uploadResult.key;
+			console.log("Uploaded image key:", imageKey);
+			
+			// update db
+			if (!user) throw new Error("User not authenticated");
+			await updateEventInDB(eventId, { event_id: eventId, img: imageKey }, user.user_id);
+			
+			// update local state
+			setImg(imageKey);
+			setTempImageUri(null);
+		} catch (error) {
+			setTempImageUri(null);
+			console.error("Image upload failed:", error);
+		}
+	};
 	const globColor = colorScheme == "light" ? "black" : "white";
 	const globColorInverse = colorScheme == "light" ? "white" : "black"
 	
@@ -337,38 +371,108 @@ export default function UpdateEvent() {
 					defaultValue={secondNotification}
 				/>
 
+				<View className='mt-4 border-t border-border' />
+
+				{tempImageUri ? (
+					<Image 
+						source={{ uri: tempImageUri }}
+						style={{ 
+							width: '100%', 
+							height: 200,
+							borderRadius: 8,
+							resizeMode: 'contain'
+						}}
+					/>
+					) : img ? (
+					<Image 
+						source={{ uri: `${process.env.EXPO_PUBLIC_S3_URL}/${img}` }}
+						style={{ 
+							width: '100%', 
+							height: 200,
+							borderRadius: 8,
+							resizeMode: 'contain'
+						}}
+					/>
+				) : null}
+
+				<Text className='font-semibold text-primary mt-3'>Image</Text>
+				<View className="flex-row gap-2 mt-2">
+
+				<Button 
+					onPress={handlePickImage}  // Use the defined function
+					variant="secondary"
+					className="flex-1"
+					disabled={uploadPicture.isPending}
+				>
+				{uploadPicture.isPending ? (
+					<ActivityIndicator color={globColor} />
+				) : img ? (
+					'Change Image'
+				) : (
+					'Add Image'
+				)}
+				</Button>
+				
+				{img && (
+					<Button 
+					onPress={async () => {
+						try {
+							await deletePicture.mutateAsync();
+							setImg(null);
+						} catch (error) {
+							console.error("Image deletion failed:", error);
+						}
+					}}
+					variant="destructive"
+					className="flex-1"
+					disabled={deletePicture.isPending}
+					>
+					{deletePicture.isPending ? (
+						<ActivityIndicator color={globColor} />
+					) : (
+						'Remove'
+					)}
+					</Button>
+				)}
+				</View>
+
 				<View className='mb-6'/>
 
 			</ScrollView>
 			<View className="m-4 flex flex-row items-center justify-center">
 				{/* Get this to send event to db */}
-				<Button
-					className={cn(isPending && "opacity-50")}
-					onPress={() => {
-						if (isPending || !eventCalendarId || !name || !startDate || !endDate) {
-							return;
-						}
-						updateEvent({
-							updatedEvent: {
-								event_id: eventId,
-								name,
-								start_time: startDate,
-								end_time: endDate,
+				{!uploadPicture.isPending && (
+					<Button
+						className={cn(isPending && "opacity-50")}
+						onPress={() => {
+							if (isPending || !eventCalendarId || !name || !startDate || !endDate) {
+								return;
+							}
+							updateEvent({
+								updatedEvent: {
+									event_id: eventId,
+									name,
+									start_time: startDate,
+									end_time: endDate,
+									calendar_id: eventCalendarId,
+									location,
+									description,
+									frequency: frequency,
+									first_notification: firstNotification,
+									second_notification: secondNotification,
+									priority: priority,
+									all_day: isAllDay,
+									img: img,
+								},
 								calendar_id: eventCalendarId,
-								location,
-								description,
-								frequency: frequency,
-								first_notification: firstNotification,
-								second_notification: secondNotification,
-								priority: priority,
-								all_day: isAllDay,
-							},
-							calendar_id: eventCalendarId,
-						});
-					}}
-				>
-					Update Event
-				</Button>
+							}, {
+								onSuccess: () => router.back()
+							});
+						}}
+					>
+						Update Event
+					</Button>
+				)}
 			</View>
 		</DismissKeyboardView>
 	);

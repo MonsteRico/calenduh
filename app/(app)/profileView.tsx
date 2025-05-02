@@ -20,12 +20,15 @@ import { migrateUserCalendarsInDB, migrateUserServer } from "@/lib/user.helper";
 import { useEnabledCalendarIds } from "@/hooks/useEnabledCalendarIds";
 import Storage from "expo-sqlite/kv-store";
 import { useUpdateUser } from "@/hooks/profile.hooks";
+import { UpdateUser } from "@/types/user.types";
 import Dropdown from "@/components/Dropdown";
 import { Calendar } from "@/types/calendar.types";
 import { GlobalNotificationSettingsModal } from "@/components/GlobalNotificationSettingsModal";
 import { NotificationTimes } from "@/constants/notificationTimes";
 import { deleteEventsUntilFromDB, deleteEventsUntilNowOnServer } from "@/lib/event.helpers";
 
+import { Image } from "react-native";
+import { useProfilePicture } from "@/hooks/profile.hooks";
 
 export default function ProfileView() {
 	const isPresented = router.canGoBack();
@@ -55,24 +58,48 @@ export default function ProfileView() {
 
 	const { enabledCalendarIds = [], setEnabledCalendarIds } = useEnabledCalendarIds();
 
+	const [tempImageUri, setTempImageUri] = useState<string | null>(null);
+    const [deleteImageFlag, setDeleteImageFlag] = useState(false);
+
+    const {
+        uploadPicture,
+        deletePicture,
+        pickImage,
+        profilePictureUrl
+    } = useProfilePicture();
+
+	const { mutate: updateUser, isPending: isUpdatingUser } = useUpdateUser({
+        onSuccess: () => {
+            console.log("ProfileView: updateUser onSuccess callback triggered.");
+            setIsEditing(false);
+			router.navigate("/(app)/profileView"); // Navigate back after updating
+        },
+        onError: (error) => {
+            console.error("ProfileView: updateUser failed:", error);
+        }
+    });
+
+
 	const handleEditToggle = () => {
 		setIsEditing(!isEditing);
 	};
 
-	const { mutate: updateUser, isPending: isUpdating } = useUpdateUser({
-		onSuccess: () => {
-			setIsEditing(false);
-			router.navigate("/(app)/profileView"); // Navigate back after updating
-		}
-	});
-
 	useEffect(() => {
 		if (!user) return;
-		setName(user.name || "")
-		setUserName(user.username)
-		setBirthday(user.birthday ? DateTime.fromFormat(user.birthday, "yyyy-MM-dd") as DateTime<true> : undefined)
-		setDefaultCal(user.default_calendar_id)
-		setIs24Hour(user.is_24_hour)
+		setName(user.name || "");
+		setUserName(user.username);
+		setBirthday(user.birthday ? DateTime.fromFormat(user.birthday, "yyyy-MM-dd") as DateTime<true> : undefined);
+		setDefaultCal(user.default_calendar_id);
+		setIs24Hour(user.is_24_hour);
+
+		// load pfp from user data
+		if (user.profile_picture) {
+			const profilePicUrl = `${process.env.EXPO_PUBLIC_S3_URL}/${user.profile_picture}.png`;
+			console.log("Initial profile picture URL:", profilePicUrl);
+		}
+
+		setTempImageUri(null);
+        setDeleteImageFlag(false);
 
 		// load global notification settings
 		const loadNotificationSettings = async () => {
@@ -96,40 +123,61 @@ export default function ProfileView() {
 		loadNotificationSettings();
 	}, [user])
 
+    const handlePickImage = async () => {
+        const uri = await pickImage();
+        if (uri) {
+            setTempImageUri(uri);
+            setDeleteImageFlag(false);
+        }
+    };
+
+    const handleMarkForDelete = () => {
+        setTempImageUri(null);
+        setDeleteImageFlag(true);
+    };
+
 	const handleSave = async () => {
+		console.log("handleSave starting");
 		if (!user) {
 			return;
 		}
 
 		const oldDefault = user.default_calendar_id;
+		let finalProfilePictureKey: string | null | undefined = user.profile_picture;
+		try {
+			if (deleteImageFlag) {
+                if (finalProfilePictureKey) {
+                    console.log("deletePicture mutation");
+                    await deletePicture.mutateAsync();
+                    finalProfilePictureKey = null;
+                    console.log("deletion mutation successful.");
+                }
+            } else if (tempImageUri) {
+                console.log("uploadPicture mutation");
+           		const uploadedKey = await uploadPicture.mutateAsync(tempImageUri);
+                console.log("upload mutation successful. Received key:", uploadedKey);
+				finalProfilePictureKey = uploadedKey;
+            }
+			console.log("FINAL PFP KEY:", finalProfilePictureKey);
+			const updatePayload: UpdateUser = {
+				user_id: user.user_id,
+				username: username,
+				name: name,
+				birthday: birthday ? birthday.toFormat("yyyy-MM-dd") : undefined,
+				default_calendar_id: defaultCal,
+				is_24_hour: is24Hour,
+				profile_picture: finalProfilePictureKey ?? undefined
+			};
 
-		await updateUser({
-			user_id: user.user_id,
-			username: username,
-			name: name,
-			birthday: birthday ? birthday.toFormat("yyyy-MM-dd") : undefined,
-			default_calendar_id: defaultCal,
-			is_24_hour: is24Hour,
-		}, {
-			onSuccess: () => {
-				setIsEditing(false);
-
-				if (defaultCal) {
-					const filteredIds = oldDefault ?
-						enabledCalendarIds.filter(id => id !== oldDefault) :
-						[...enabledCalendarIds];
-
-					if (!filteredIds.includes(defaultCal)) {
-						setEnabledCalendarIds([...filteredIds, defaultCal]);
-					} else {
-						setEnabledCalendarIds(filteredIds);
-					}
-				}
-
-				//router.back()
-			},
-		});
-	}
+            console.log("updateUser mutation with payload:", updatePayload);
+            await updateUser(updatePayload);
+            setTempImageUri(null);
+            setDeleteImageFlag(false);
+		} catch (error) {
+			console.error('failed to update user:', error);
+		}
+	};
+	
 	const handleSaveNotificationSettings = (firstNotif: number | null, secondNotif: number | null) => {
 		setFirstNotification(firstNotif);
 		setSecondNotification(secondNotif);
@@ -147,6 +195,8 @@ export default function ProfileView() {
 
 	const handleCancel = () => {
 		setIsEditing(false);
+		setTempImageUri(null);
+    	setDeleteImageFlag(false);
 	}
 
 		;
@@ -278,6 +328,77 @@ export default function ProfileView() {
 				onSave={handleSaveNotificationSettings}
 			/>
 
+			{/* Profile picture */}
+			<View className="items-center my-4">
+				<View className="relative">
+					{/* {(tempImageUri || (profilePictureUrl && !deleteImageFlag)) ? ( */}
+					{(!deleteImageFlag && (tempImageUri || profilePictureUrl)) ? (
+						<Image
+							source={{ uri: tempImageUri || profilePictureUrl || '' }}
+							className="w-32 h-32 rounded-full"
+							onError={(e) => console.warn('Image loading error:', e.nativeEvent.error)}
+							onLoad={() => console.log('Image loaded successfully from:', profilePictureUrl)}
+						/>
+					) : (
+						<View className="w-32 h-32 rounded-full bg-gray-300 items-center justify-center">
+							<Feather name="user" size={48} color="gray" />
+						</View>
+					)}
+					
+					{isEditing && (
+						<View className="absolute bottom-0 right-0 flex-row gap-2">
+							<TouchableOpacity 
+								className="bg-primary p-2 rounded-full"
+								onPress={async () => {
+									const uri = await pickImage();
+									if (uri) {
+										setTempImageUri(uri);
+										setDeleteImageFlag(false);
+									}
+								}}
+							>
+								<Feather name="edit" size={16} color="white" />
+							</TouchableOpacity>
+							
+							{(tempImageUri || profilePictureUrl) && (
+								<TouchableOpacity 
+									className="bg-red-500 p-2 rounded-full"
+									onPress={async () => {
+										setTempImageUri(null);
+										setDeleteImageFlag(true);
+										if (profilePictureUrl) {
+											await deletePicture.mutateAsync();
+										}
+									}}
+								>
+									<Feather name="trash-2" size={16} color="white" />
+								</TouchableOpacity>
+							)}
+						</View>
+					)}
+				</View>
+				{isEditing && tempImageUri && (
+					<Button 
+						className="mt-2"
+						onPress={async () => {
+							await uploadPicture.mutateAsync(tempImageUri);
+							setTempImageUri(null);
+							setDeleteImageFlag(false);
+							setIsEditing(false); // workaround: not sure how to stay on edit profile page after changing profile pic, so instead just exit edit mode before leaving
+						}}
+						disabled={uploadPicture.isPending}
+					>
+						{uploadPicture.isPending ? 'Uploading...' : 'Save Picture'}
+					</Button>
+				)}
+			</View>
+									{/* onPress={async () => {
+										setTempImageUri(null);
+										setDeleteImageFlag(true);
+										if (profilePictureUrl) {
+											await deletePicture.mutateAsync();
+										}
+									}} */}
 			<View className="ml-1 mr-1 flex-row items-center justify-center relative">
 				<Text className="text-2xl font-bold text-primary">User Profile</Text>
 				<View className="absolute right-0 flex-row gap-6">
@@ -408,12 +529,15 @@ export default function ProfileView() {
 								</View>
 							</View>
 
+
 							<View className="mt-10 flex-row items-center justify-center gap-8">
-								<Button onPress={handleSave} labelClasses="text-secondary" disabled={isUpdating}>
-									{isUpdating ? "Updating..." : "Save Changes"}
-
+								<Button 
+									onPress={handleSave} 
+									labelClasses="text-secondary" 
+									disabled={isUpdatingUser || uploadPicture.isPending}
+								>
+									{(isUpdatingUser || uploadPicture.isPending) ? "Saving..." : "Save Changes"}
 								</Button>
-
 								<Button onPress={handleCancel} labelClasses="text-secondary">
 									Cancel
 								</Button>
@@ -423,6 +547,21 @@ export default function ProfileView() {
 				) : (
 					<View>
 						<View className="p-3">
+
+							{/* <View className="items-center my-4">
+								{profilePictureUrl ? (
+									<Image
+									source={{ uri: profilePictureUrl }}
+									className="w-32 h-32 rounded-full"
+									/>
+								) : (
+									<View className="w-32 h-32 rounded-full bg-gray-300 items-center justify-center">
+									<Feather name="user" size={48} color="gray" />
+									</View>
+								)}
+							</View> */}
+
+
 							<Text className='text-primary font-bold m-1 ml-4 text-xl'>Profile Settings</Text>
 							<View className="items-left m-2 p-3 bg-muted rounded-lg border border-border">
 								<View className='flex-row p-4'>
@@ -485,6 +624,7 @@ export default function ProfileView() {
 							</Button>
 						</View>
 					</View>
+					
 
 				)}
 			</View>

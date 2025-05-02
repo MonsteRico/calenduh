@@ -25,6 +25,9 @@ import { useSession } from "./authContext";
 import { DateTime, Duration, Interval } from "luxon";
 import * as Crypto from "expo-crypto";
 import { cancelScheduledEventNotifications, scheduleEventNotifications } from "@/lib/notifications";
+import * as SecureStore from "expo-secure-store";
+import * as FileSystem from 'expo-file-system';
+import * as ImagePicker from 'expo-image-picker';
 
 // --- Queries ---
 
@@ -593,4 +596,147 @@ export const usePruneOldEvents = (
 			await queryClient.invalidateQueries({ queryKey: ["event"] });
 		},
 	});
+};
+
+
+// event image hook
+export const useEventImage = () => {
+	const { user, sessionId } = useSession();
+	const queryClient = useQueryClient();
+
+	const uploadPicture = useMutation({
+		mutationFn: async (uri: string) => {
+			if (!user || !sessionId) {
+				throw new Error("User not authenticated");
+			}
+	
+			const formData = new FormData();
+			const fileInfo = await FileSystem.getInfoAsync(uri);
+			
+			if (!fileInfo.exists) {
+				throw new Error('Selected file does not exist');
+			}
+	
+			formData.append('file', {
+				uri,
+				name: `event_${user.user_id}.png`, // change later?
+				type: 'image/png',
+			} as any);
+	
+			// create headers with cookie
+			const headers = new Headers();
+			headers.append('Accept', 'application/json');
+			headers.append('Authorization', `Bearer ${sessionId}`); 
+			headers.append('Cookie', `sessionId=${sessionId}`);
+			console.log('Event image request headers:', Object.fromEntries(headers.entries()));
+	
+			const response = await fetch(`${process.env.EXPO_PUBLIC_SERVER_URL}/files/uploadFile`, {
+				method: 'POST',
+				body: formData,
+				headers,
+				credentials: 'include'
+			});
+
+			console.log('Event image upload response status=', response.status);
+			let fileKey;
+			try {
+			const jsonResponse = await response.json();
+			fileKey = typeof jsonResponse === 'string' 
+				? jsonResponse.replace(/^"|"$/g, '') // Remove surrounding quotes if present
+				: jsonResponse.key || jsonResponse;
+			} catch {
+			fileKey = (await response.text()).trim().replace(/^"|"$/g, '');
+			}
+
+			// const responseData = await response.json();
+			console.log('Event image upload response body (fileKey)=', fileKey);
+	
+			if (!response.ok) {
+				throw new Error(`Upload failed: ${response.status} --- ${JSON.stringify(fileKey)}`);
+			}
+
+			const fileExtension = uri.split('.').pop()?.toLowerCase();
+
+			return {
+				key: fileKey,
+				filename: fileKey.includes('.') ? fileKey : `${fileKey}`
+			};
+		},
+		onSuccess: async (response) => {
+			// // update local user data in SecureStore
+			// const userString = await SecureStore.getItemAsync('user');
+			// if (userString) {
+			// 	const currentUser = JSON.parse(userString);
+			// 	const updatedUser = {
+			// 		...currentUser,
+			// 		profile_picture: response.key // key from upload response
+			// 	};
+			// 	await SecureStore.setItemAsync('user', JSON.stringify(updatedUser));
+				
+			// 	// refresh the user data
+			// 	queryClient.invalidateQueries({ queryKey: ['loginData'] });
+			// }
+		},
+		onError: (error) => {
+			console.error('Event image upload failed:', error);
+		}
+	});
+
+	const deletePicture = useMutation({
+		mutationFn: async () => {
+			if (!user?.profile_picture) {
+				return;
+			}
+
+			const response = await fetch(`${process.env.EXPO_PUBLIC_SERVER_URL}/files/deleteEventImage`, {
+				method: 'DELETE',
+				credentials: 'include'
+			});
+
+			if (!response.ok) {
+				const errorData = await response.json().catch(() => ({}));
+				throw new Error(errorData.message || 'Deletion failed');
+			}
+		},
+		onSuccess: () => {
+			// update user's profile picture in local state
+			queryClient.setQueryData(['user', user?.user_id], (old: any) => ({
+				...old,
+				profile_picture: null
+			}));
+		},
+		onError: (error: Error) => {
+			console.error("Profile picture deletion failed:", error.message);
+		}
+	});
+
+	const pickImage = async () => {
+		const permissionResult = await ImagePicker.requestMediaLibraryPermissionsAsync();
+		if (!permissionResult.granted) {
+			throw new Error("Permission to access photos is required");
+		}
+
+		const result = await ImagePicker.launchImageLibraryAsync({
+			mediaTypes: ImagePicker.MediaTypeOptions.Images,
+			allowsEditing: true,
+			aspect: [1, 1],
+			quality: 0.8,
+		});
+
+		if (result.canceled || !result.assets?.[0]?.uri) {
+			throw new Error("No image selected");
+		}
+
+		return result.assets[0].uri;
+	};
+
+	console.log("CURRENT USER OBJECT:", user);
+	return {
+		uploadPicture,
+		deletePicture,
+		pickImage,
+		eventImageUrl: user?.profile_picture 
+		? `${process.env.EXPO_PUBLIC_S3_URL}/${user.profile_picture}`
+		: null
+	};
 };

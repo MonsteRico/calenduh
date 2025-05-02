@@ -14,6 +14,7 @@ import { NotificationTimes } from '@/constants/notificationTimes';
 import { useMyGroups } from '@/hooks/group.hooks';
 import * as Clipboard from "expo-clipboard";
 
+import { Image } from 'react-native';
 
 interface EventViewModalProps {
 	visible: boolean;
@@ -205,6 +206,17 @@ function EventViewModal({ visible, onClose, calendarId, eventId }: EventViewModa
 							<Text className="mr-10 text-xl font-medium text-primary">Location:</Text>
 							<Text className="text-lg text-primary">{event.location}</Text>
 						</View>
+
+						{event.img && (
+							<View className="mt-4">
+								<Text className="mb-2 text-xl font-medium text-primary">Image:</Text>
+								<Image
+								source={{ uri: `${process.env.EXPO_PUBLIC_S3_URL}/${event.img}` }}
+								className="h-48 w-full rounded-lg"
+								resizeMode="contain"
+								/>
+							</View>
+						)}
 
 						<View className='border-t border-border' />
 
