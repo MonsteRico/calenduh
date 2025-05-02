@@ -655,11 +655,11 @@ export const useEventImage = () => {
 				throw new Error(`Upload failed: ${response.status} --- ${JSON.stringify(fileKey)}`);
 			}
 
-			const fileExtension = uri.split('.').pop()?.toLowerCase() || 'png';
+			const fileExtension = uri.split('.').pop()?.toLowerCase();
 
 			return {
 				key: fileKey,
-				filename: fileKey.includes('.') ? fileKey : `${fileKey}.${fileExtension}`
+				filename: fileKey.includes('.') ? fileKey : `${fileKey}`
 			};
 		},
 		onSuccess: async (response) => {

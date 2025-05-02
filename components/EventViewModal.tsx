@@ -11,8 +11,7 @@ import { useCalendar } from '@/hooks/calendar.hooks';
 import { cn } from '@/lib/utils';
 import { useSession } from '@/hooks/authContext';
 import { NotificationTimes } from '@/constants/notificationTimes';
-
-
+import { Image } from 'react-native';
 
 interface EventViewModalProps {
 	visible: boolean;
@@ -198,6 +197,17 @@ function EventViewModal({ visible, onClose, calendarId, eventId }: EventViewModa
 							<Text className="mr-10 text-xl font-medium text-primary">Location:</Text>
 							<Text className="text-lg text-primary">{event.location}</Text>
 						</View>
+
+						{event.img && (
+							<View className="mt-4">
+								<Text className="mb-2 text-xl font-medium text-primary">Event Image:</Text>
+								<Image
+								source={{ uri: `${process.env.EXPO_PUBLIC_S3_URL}/${event.img}` }}
+								className="h-48 w-full rounded-lg"
+								resizeMode="cover"
+								/>
+							</View>
+						)}
 
 						<View className='border-t border-border' />
 
