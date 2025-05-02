@@ -51,6 +51,12 @@
 				{
 					"photosPermission": "The app accesses your photos to let you change your profile picture and attach pictures to events."
 				}
+			],
+			[
+				"expo-document-picker",
+				{
+					"iCloudContainerEnvironment": "Production"
+				}
 			]
 		],
 		"experiments": {
