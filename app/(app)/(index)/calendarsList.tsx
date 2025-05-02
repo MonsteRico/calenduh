@@ -8,7 +8,6 @@ import { useState, useEffect } from "react";
 export default function CalendarsList({ toggleDrawer }: { toggleDrawer: () => void }) {
 	const [editMode, setEditMode] = useState(false);
 	const { enabledCalendarIds, setEnabledCalendarIds } = useEnabledCalendarIds();
-	
 
 	const editOnPress = (id: string) => {
 		router.navigate(`/updateCalendar?id=${id}`);
@@ -18,7 +17,7 @@ export default function CalendarsList({ toggleDrawer }: { toggleDrawer: () => vo
 	const subEditOnPress = (id: string) => {
 		router.navigate(`/updateSubCalendar?id=${id}`);
 		setEditMode(false);
-	}
+	};
 
 	const toggleCalendar = (calendarId: string) => {
 		if (enabledCalendarIds.includes(calendarId)) {
@@ -31,10 +30,10 @@ export default function CalendarsList({ toggleDrawer }: { toggleDrawer: () => vo
 	const calendarOnPress = (id: string) => {
 		if (editMode) {
 			editOnPress(id);
- 		} else {
+		} else {
 			toggleCalendar(id);
 		}
-	}
+	};
 
 	const subCalendarOnPress = (id: string) => {
 		if (editMode) {
@@ -42,7 +41,7 @@ export default function CalendarsList({ toggleDrawer }: { toggleDrawer: () => vo
 		} else {
 			toggleCalendar(id);
 		}
-	}
+	};
 
 	const { data: calendars, isLoading } = useMyCalendars();
 	const { data: sub_calendars, isLoading: subIsLoading } = useMySubscribedCalendars();
@@ -51,46 +50,53 @@ export default function CalendarsList({ toggleDrawer }: { toggleDrawer: () => vo
 		<ScrollView className="mb-20 flex w-full flex-col gap-3">
 			<Accordion title={"My Calendars"} defaultOpen className="mb-5 text-primary">
 				<View className="flex h-auto flex-col gap-2">
-					{calendars && calendars.filter((calendar) => calendar.group_id === null).map((calendar, i) => (
-						<CalendarItem
-							checked={enabledCalendarIds.includes(calendar.calendar_id)}
-							key={calendar.calendar_id}
-							calendarName={calendar.title}
-							calendarColor={calendar.color}
-							editMode={editMode}
-							onPress={() => calendarOnPress(calendar.calendar_id) }
-						/>
-					))}
+					{calendars &&
+						calendars
+							.filter((calendar) => calendar.group_id === null)
+							.map((calendar, i) => (
+								<CalendarItem
+									checked={enabledCalendarIds.includes(calendar.calendar_id)}
+									key={calendar.calendar_id}
+									calendarName={calendar.title}
+									calendarColor={calendar.color}
+									editMode={editMode}
+									onPress={() => calendarOnPress(calendar.calendar_id)}
+								/>
+							))}
 				</View>
 			</Accordion>
 
 			<Accordion title={"Group Calendars"} className="mb-5">
 				<View className="flex h-auto flex-col gap-2">
-				{calendars && calendars.filter((calendar) => calendar.group_id !== null).map((calendar, i) => (
-						<CalendarItem
-							checked={enabledCalendarIds.includes(calendar.calendar_id)}
-							key={calendar.calendar_id}
-							calendarName={calendar.title}
-							calendarColor={calendar.color}
-							editMode={editMode}
-							onPress={() => calendarOnPress(calendar.calendar_id) }
-						/>
-					))}
+					{calendars &&
+						calendars
+							.filter((calendar) => calendar.group_id !== null)
+							.map((calendar, i) => (
+								<CalendarItem
+									checked={enabledCalendarIds.includes(calendar.calendar_id)}
+									key={calendar.calendar_id}
+									calendarName={calendar.title}
+									calendarColor={calendar.color}
+									editMode={editMode}
+									onPress={() => calendarOnPress(calendar.calendar_id)}
+								/>
+							))}
 				</View>
 			</Accordion>
 
 			<Accordion title={"Subscribed Calendars"}>
 				<View className="flex h-auto flex-col gap-2">
-					{sub_calendars && sub_calendars.map((calendar, i) => (
-						<CalendarItem
-							checked={enabledCalendarIds.includes(calendar.calendar_id)}
-							key={calendar.calendar_id}
-							calendarName={calendar.title}
-							calendarColor={calendar.color}
-							editMode={editMode}
-							onPress={() => subCalendarOnPress(calendar.calendar_id) }
-						/>
-					))}
+					{sub_calendars &&
+						sub_calendars.map((calendar, i) => (
+							<CalendarItem
+								checked={enabledCalendarIds.includes(calendar.calendar_id)}
+								key={calendar.calendar_id}
+								calendarName={calendar.title}
+								calendarColor={calendar.color}
+								editMode={editMode}
+								onPress={() => subCalendarOnPress(calendar.calendar_id)}
+							/>
+						))}
 				</View>
 			</Accordion>
 			<Button
@@ -114,11 +120,30 @@ export default function CalendarsList({ toggleDrawer }: { toggleDrawer: () => vo
 			>
 				{editMode ? "Cancel" : "Edit Calendar"}
 			</Button>
+
+			<View className="my-4 gap-3">
+				<Button
+					className=""
+					onPress={() => {
+						router.push("/(app)/(index)/importCalendar?importType=url");
+					}}
+				>
+					Import iCal from Link
+				</Button>
+
+				<Button
+					onPress={() => {
+						router.push("/(app)/(index)/importCalendar?importType=file");
+					}}
+				>
+					Import iCal from File
+				</Button>
+			</View>
 		</ScrollView>
 	);
 }
 
-import {Pressable, TouchableOpacity, } from "react-native";
+import { Pressable, TouchableOpacity } from "react-native";
 import { cn } from "@/lib/utils";
 import { type VariantProps, cva } from "class-variance-authority";
 import FontAwesome from "@expo/vector-icons/FontAwesome";
@@ -140,7 +165,6 @@ function CalendarItem({
 	onPress,
 }: CalendarItemProps) {
 	const [isChecked, setIsChecked] = useState(checked);
-
 
 	useEffect(() => {
 		setIsChecked(checked);

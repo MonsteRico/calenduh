@@ -5,24 +5,47 @@ import { useState } from "react";
 import { Input } from "@/components/Input";
 import { DismissKeyboardView } from "@/components/DismissKeyboardView";
 import * as DocumentPicker from "expo-document-picker";
-import { useMutation } from "@tanstack/react-query";
+import { useMutation, useQueryClient } from "@tanstack/react-query";
+import { cn } from "@/lib/utils";
+import server from "@/constants/serverAxiosClient";
+import { errorCatcher } from "@/lib/easyAxiosCatch";
 
 // Placeholder API functions (replace with your actual API calls)
-const uploadIcalFile = async (file) => {
-	// Simulate API call
-	await new Promise((resolve) => setTimeout(resolve, 1000));
-	console.log("File uploaded:", file);
-	return { success: true, message: "File uploaded successfully" };
+const uploadIcalFile = async (file: { uri: string; name: string; mimeType?: string; size?: number }) => {
+	const formData = new FormData();
+	// @ts-expect-error
+	formData.append("file" , {
+		uri: file.uri,
+		type: file.mimeType,
+		name: file.name,
+	})
+	console.log("File imported:", file);
+	const response = await server
+		.post("/calendars/import", formData)
+	console.log("reponse");
+	const data = response.data;
+	if (response.status == 200) {
+		return { success: true, message: "File imported successfully" };
+	} else {
+		console.log("FAILED", response);
+		return { success: false, message: "Something went wrong on the server" };
+	}
 };
 
-const importIcalFromUrl = async (url) => {
-	// Simulate API call
-	await new Promise((resolve) => setTimeout(resolve, 1000));
+const importIcalFromUrl = async (url: string) => {
 	console.log("URL imported:", url);
-	return { success: true, message: "URL imported successfully" };
+	const response = await server.post("/calendars/import/web", {
+		url,
+	});
+	const data = response.data;
+	if (response.status == 200) {
+		return { success: true, message: "URL imported successfully" };
+	} else {
+		return { success: false, message: "Something went wrong on the server" };
+	}
 };
 
-export default function CalendarInfoView() {
+export default function ImportCalendarView() {
 	const isPresented = router.canGoBack();
 	const params = useLocalSearchParams();
 	const importType = params?.importType;
@@ -49,33 +72,37 @@ export default function CalendarInfoView() {
 }
 
 function ImportFromFile() {
+	const queryClient = useQueryClient();
 	const [selectedFile, setSelectedFile] = useState<{
 		uri: string;
 		name: string;
-		type: string | undefined;
-		size: number | undefined;
+		mimeType?: string;
+		size?: number;
 	} | null>(null);
-	const uploadFileMutation = useMutation({ mutationFn: uploadIcalFile });
+	const uploadFileMutation = useMutation({
+		mutationFn: uploadIcalFile,
+		onSuccess: () => {
+			queryClient.invalidateQueries({
+				queryKey: ["calendars"],
+			});
+			router.back();
+		},
+	});
 	const pickDocument = async () => {
 		let result = await DocumentPicker.getDocumentAsync({
 			type: "text/calendar", // MIME type for iCal files
+			copyToCacheDirectory: true,
 		});
 
 		if (!result.assets) {
 			return;
 		}
-
-		const file = result.assets[0];
-
-		if (!result.canceled && file) {
-			setSelectedFile({
-				uri: file.uri,
-				name: file.name,
-				type: file.mimeType,
-				size: file.size,
-			});
+		const fileData = result.assets[0];
+		if (!result.canceled && fileData) {
+			setSelectedFile(fileData);
 		} else {
 			console.log("Document picking cancelled");
+			console.log(result);
 		}
 	};
 
@@ -86,15 +113,16 @@ function ImportFromFile() {
 	};
 
 	return (
-		<View className="m-4">
+		<View className="m-4 gap-4">
 			<Text className="mb-2 text-xl font-bold text-primary">Importing iCal from a File</Text>
-			<Text className="mb-4 text-secondary">
+			<Text className="mb-4 text-primary">
 				Calendars imported this way will NOT be synced with their origin iCal. Whatever events are in the iCal as you
-				downloaded are all that will be imported
+				downloaded are all that will be imported. Any edits or additions made to the calendar will be kept and not
+				overwritten.
 			</Text>
 			<Button onPress={pickDocument}>Select iCal File</Button>
 			{selectedFile && <Text className="mt-2 text-secondary">Selected File: {selectedFile.name}</Text>}
-			<Button onPress={handleSubmit} disabled={!selectedFile || uploadFileMutation.isPending}>
+			<Button onPress={handleSubmit} className={cn(!selectedFile && "opacity-50")} disabled={!selectedFile}>
 				Upload File
 			</Button>
 
@@ -108,21 +136,31 @@ function ImportFromFile() {
 }
 
 function ImportFromURL() {
+	const queryClient = useQueryClient();
 	const [url, setUrl] = useState("");
-	const importUrlMutation = useMutation({ mutationFn: importIcalFromUrl });
+	const importUrlMutation = useMutation({
+		mutationFn: importIcalFromUrl,
+		onSuccess: () => {
+			queryClient.invalidateQueries({
+				queryKey: ["calendars"],
+			});
+			router.back();
+		},
+	});
 
 	const handleSubmit = async () => {
 		importUrlMutation.mutate(url);
 	};
 
 	return (
-		<View className="m-4">
+		<View className="m-4 gap-4">
 			<Text className="mb-2 text-xl font-bold text-primary">Importing iCal from a URL</Text>
-			<Text className="mb-4 text-secondary">
-				Calendars imported this way will be synced with their origin iCal about every 4 hours.
+			<Text className="mb-4 text-primary">
+				Calendars imported this way will be synced with their origin iCal about every 4 hours. Any edits you make to
+				events or the calendar will be overwritten. Any new events added will not be synced back to the origin.
 			</Text>
-			<Input placeholder="Enter iCal URL" value={url} onChangeText={setUrl} className="mb-2" />
-			<Button onPress={handleSubmit} disabled={!url || importUrlMutation.isPending}>
+			<Input placeholder="Enter iCal URL" autoComplete={undefined} value={url} onChangeText={setUrl} className="mb-2" />
+			<Button onPress={handleSubmit} disabled={!url}>
 				Import
 			</Button>
 
