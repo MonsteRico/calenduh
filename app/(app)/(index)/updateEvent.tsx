@@ -417,7 +417,7 @@ export default function UpdateEvent() {
 					<Button 
 					onPress={async () => {
 						try {
-							await deletePicture.mutateAsync();
+							await deletePicture.mutateAsync({ calendar_id: calendarId, event_id: eventId });
 							setImg(null);
 						} catch (error) {
 							console.error("Image deletion failed:", error);
