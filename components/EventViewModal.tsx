@@ -200,11 +200,11 @@ function EventViewModal({ visible, onClose, calendarId, eventId }: EventViewModa
 
 						{event.img && (
 							<View className="mt-4">
-								<Text className="mb-2 text-xl font-medium text-primary">Event Image:</Text>
+								<Text className="mb-2 text-xl font-medium text-primary">Image:</Text>
 								<Image
 								source={{ uri: `${process.env.EXPO_PUBLIC_S3_URL}/${event.img}` }}
 								className="h-48 w-full rounded-lg"
-								resizeMode="cover"
+								resizeMode="contain"
 								/>
 							</View>
 						)}

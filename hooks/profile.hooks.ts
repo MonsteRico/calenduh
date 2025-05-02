@@ -157,8 +157,15 @@ export const useProfilePicture = () => {
                 return;
             }
 
+            const headers = new Headers();
+            headers.append('Accept', 'application/json');
+            headers.append('Authorization', `Bearer ${sessionId}`); 
+            headers.append('Cookie', `sessionId=${sessionId}`);
+            console.log('Profile pic request headers:', Object.fromEntries(headers.entries())); 
+
             const response = await fetch(`${process.env.EXPO_PUBLIC_SERVER_URL}/files/profile`, {
                 method: 'DELETE',
+                headers,
                 credentials: 'include'
             });
 

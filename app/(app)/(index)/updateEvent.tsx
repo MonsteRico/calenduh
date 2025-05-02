@@ -380,7 +380,7 @@ export default function UpdateEvent() {
 							width: '100%', 
 							height: 200,
 							borderRadius: 8,
-							resizeMode: 'cover'
+							resizeMode: 'contain'
 						}}
 					/>
 					) : img ? (
@@ -390,7 +390,7 @@ export default function UpdateEvent() {
 							width: '100%', 
 							height: 200,
 							borderRadius: 8,
-							resizeMode: 'cover'
+							resizeMode: 'contain'
 						}}
 					/>
 				) : null}
@@ -441,36 +441,38 @@ export default function UpdateEvent() {
 			</ScrollView>
 			<View className="m-4 flex flex-row items-center justify-center">
 				{/* Get this to send event to db */}
-				<Button
-					className={cn(isPending && "opacity-50")}
-					onPress={() => {
-						if (isPending || !eventCalendarId || !name || !startDate || !endDate) {
-							return;
-						}
-						updateEvent({
-							updatedEvent: {
-								event_id: eventId,
-								name,
-								start_time: startDate,
-								end_time: endDate,
+				{!uploadPicture.isPending && (
+					<Button
+						className={cn(isPending && "opacity-50")}
+						onPress={() => {
+							if (isPending || !eventCalendarId || !name || !startDate || !endDate) {
+								return;
+							}
+							updateEvent({
+								updatedEvent: {
+									event_id: eventId,
+									name,
+									start_time: startDate,
+									end_time: endDate,
+									calendar_id: eventCalendarId,
+									location,
+									description,
+									frequency: frequency,
+									first_notification: firstNotification,
+									second_notification: secondNotification,
+									priority: priority,
+									all_day: isAllDay,
+									img: img,
+								},
 								calendar_id: eventCalendarId,
-								location,
-								description,
-								frequency: frequency,
-								first_notification: firstNotification,
-								second_notification: secondNotification,
-								priority: priority,
-								all_day: isAllDay,
-								img: img,
-							},
-							calendar_id: eventCalendarId,
-						}, {
-							onSuccess: () => router.back()
-						});
-					}}
-				>
-					Update Event
-				</Button>
+							}, {
+								onSuccess: () => router.back()
+							});
+						}}
+					>
+						Update Event
+					</Button>
+				)}
 			</View>
 		</DismissKeyboardView>
 	);

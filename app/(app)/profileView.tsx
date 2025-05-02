@@ -195,6 +195,8 @@ export default function ProfileView() {
 
 	const handleCancel = () => {
 		setIsEditing(false);
+		setTempImageUri(null);
+    	setDeleteImageFlag(false);
 	}
 
 		;
@@ -329,7 +331,8 @@ export default function ProfileView() {
 			{/* Profile picture */}
 			<View className="items-center my-4">
 				<View className="relative">
-					{tempImageUri || profilePictureUrl ? (
+					{/* {(tempImageUri || (profilePictureUrl && !deleteImageFlag)) ? ( */}
+					{(!deleteImageFlag && (tempImageUri || profilePictureUrl)) ? (
 						<Image
 							source={{ uri: tempImageUri || profilePictureUrl || '' }}
 							className="w-32 h-32 rounded-full"
@@ -348,7 +351,10 @@ export default function ProfileView() {
 								className="bg-primary p-2 rounded-full"
 								onPress={async () => {
 									const uri = await pickImage();
-									if (uri) setTempImageUri(uri);
+									if (uri) {
+										setTempImageUri(uri);
+										setDeleteImageFlag(false);
+									}
 								}}
 							>
 								<Feather name="edit" size={16} color="white" />
@@ -359,6 +365,7 @@ export default function ProfileView() {
 									className="bg-red-500 p-2 rounded-full"
 									onPress={async () => {
 										setTempImageUri(null);
+										setDeleteImageFlag(true);
 										if (profilePictureUrl) {
 											await deletePicture.mutateAsync();
 										}
@@ -376,6 +383,8 @@ export default function ProfileView() {
 						onPress={async () => {
 							await uploadPicture.mutateAsync(tempImageUri);
 							setTempImageUri(null);
+							setDeleteImageFlag(false);
+							setIsEditing(false); // workaround: not sure how to stay on edit profile page after changing profile pic, so instead just exit edit mode before leaving
 						}}
 						disabled={uploadPicture.isPending}
 					>
@@ -383,7 +392,13 @@ export default function ProfileView() {
 					</Button>
 				)}
 			</View>
-
+									{/* onPress={async () => {
+										setTempImageUri(null);
+										setDeleteImageFlag(true);
+										if (profilePictureUrl) {
+											await deletePicture.mutateAsync();
+										}
+									}} */}
 			<View className="ml-1 mr-1 flex-row items-center justify-center relative">
 				<Text className="text-2xl font-bold text-primary">User Profile</Text>
 				<View className="absolute right-0 flex-row gap-6">
@@ -405,20 +420,6 @@ export default function ProfileView() {
 				{isEditing ? (
 					<View className="p-6">
 						<View className="p-3">
-							{/* TEMPORARY PLACEMENT BC I CANT SCROLL ON XCODE PROFILE */}
-							<View className="mt-10 flex-row items-center justify-center gap-8">
-								<Button 
-									onPress={handleSave} 
-									labelClasses="text-secondary" 
-									disabled={isUpdatingUser || uploadPicture.isPending}
-								>
-									{(isUpdatingUser || uploadPicture.isPending) ? "Saving..." : "Save Changes"}
-								</Button>
-								<Button onPress={handleCancel} labelClasses="text-secondary">
-									Cancel
-								</Button>
-							</View>
-
 							<Text className="font-semibold text-primary">Username</Text>
 							<TextInput
 								className="rounded-lg border border-gray-300 p-3 text-primary"
@@ -528,8 +529,8 @@ export default function ProfileView() {
 								</View>
 							</View>
 
-							{/* TEMPORARY COMMENT BC I CANT SCROLL ON XCODE PROFILE */}
-							{/* <View className="mt-10 flex-row items-center justify-center gap-8">
+
+							<View className="mt-10 flex-row items-center justify-center gap-8">
 								<Button 
 									onPress={handleSave} 
 									labelClasses="text-secondary" 
@@ -540,7 +541,7 @@ export default function ProfileView() {
 								<Button onPress={handleCancel} labelClasses="text-secondary">
 									Cancel
 								</Button>
-							</View> */}
+							</View>
 						</View>
 					</View>
 				) : (
@@ -559,20 +560,6 @@ export default function ProfileView() {
 									</View>
 								)}
 							</View> */}
-
- 							{/* TEMPORARY PLACEMENT BC I CANT SCROLL ON XCODE PROFILE */}
-							<View className='flex-1 items-center justify-center pt-20'>
-								<Button className='w-[40vw]'
-									onPress={() => {
-										setEnabledCalendarIds([]);
-										Storage.setItemSync("enabledCalendarIds", JSON.stringify([]));
-
-										signOut();
-									}}
-								>
-									Sign Out
-								</Button>
-							</View>
 
 
 							<Text className='text-primary font-bold m-1 ml-4 text-xl'>Profile Settings</Text>
@@ -624,8 +611,7 @@ export default function ProfileView() {
 							</View>
 						)}
 
-						{/* TEMPORARY COMMENT BC I CANT SCROLL ON XCODE PROFILE */}
-						{/* <View className='flex-1 items-center justify-center pt-20'>
+						<View className='flex-1 items-center justify-center pt-20'>
 							<Button className='w-[40vw]'
 								onPress={() => {
 									setEnabledCalendarIds([]);
@@ -636,7 +622,7 @@ export default function ProfileView() {
 							>
 								Sign Out
 							</Button>
-						</View> */}
+						</View>
 					</View>
 					
 

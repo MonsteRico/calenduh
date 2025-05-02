@@ -244,7 +244,7 @@ export default function CreateEvent() {
 							<Image 
 								source={{ uri: tempImageUri }} 
 								className="h-full w-full rounded-lg" 
-								resizeMode="cover"
+								resizeMode="contain"
 							/>
 						) : (
 							<View className="items-center">
