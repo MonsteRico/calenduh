@@ -683,13 +683,20 @@ export const useEventImage = () => {
 	});
 
 	const deletePicture = useMutation({
-		mutationFn: async () => {
+		mutationFn: async ({ calendar_id, event_id }: { calendar_id: string; event_id: string }) => {
 			if (!user?.profile_picture) {
 				return;
 			}
 
-			const response = await fetch(`${process.env.EXPO_PUBLIC_SERVER_URL}/files/deleteEventImage`, {
+			const headers = new Headers();
+			headers.append('Accept', 'application/json');
+			headers.append('Authorization', `Bearer ${sessionId}`); 
+			headers.append('Cookie', `sessionId=${sessionId}`);
+			console.log('Event image request headers:', Object.fromEntries(headers.entries()));
+
+			const response = await fetch(`${process.env.EXPO_PUBLIC_SERVER_URL}/files/deleteEventImage/${calendar_id}/${event_id}`, {
 				method: 'DELETE',
+				headers,
 				credentials: 'include'
 			});
 
