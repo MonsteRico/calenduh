@@ -333,6 +333,7 @@ export const useAllPublicCalendars = () => {
 
 	return useQuery<Calendar[], Error>({
 		queryKey: ["all_public_calendars"],
+		staleTime: 30000,
 		queryFn: async () => {
 			if (isConnected && user.user_id !== "localUser") {
 				try {
